@@ -49,3 +49,18 @@ jobs:
           build/host/bin/sadame plan examples/01-hello
           build/host/bin/sadame apply examples/01-hello
           build/host/bin/sadame plan examples/01-hello --json
+      # The same pattern as docs/guides/drift-in-ci.md, on the runner itself:
+      # no drift after apply, exit 1 once the file is edited.
+      - name: Drift check
+        run: |
+          build/host/bin/sadame drift examples/01-hello --json > drift.json
+          echo "edited by hand" > /tmp/sadame-hello.txt
+          status=0
+          build/host/bin/sadame drift examples/01-hello || status=$?
+          test "$status" -eq 1
+      - name: Keep the drift report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: drift-report
+          path: drift.json
