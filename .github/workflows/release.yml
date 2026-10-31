@@ -1,0 +1,65 @@
+# Publishes a GitHub release when a v* tag is pushed: builds and verifies
+# the binaries (build.yml), writes SHA256SUMS, and attaches both with the
+# CHANGELOG.md section as notes. Run it by hand (workflow_dispatch) for a
+# dry run that assembles everything but publishes nothing.
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Release binaries
+    uses: ./.github/workflows/build.yml
+
+  publish:
+    name: Publish
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      IS_TAG: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: sadame-*
+          path: dist
+          merge-multiple: true
+      - run: chmod 0755 dist/sadame-*
+      - run: bundle exec rake checksums
+      - name: The tag matches Sadame::VERSION
+        if: env.IS_TAG == 'true'
+        run: |
+          version=$(ruby -e 'require "./lib/sadame/version"; print Sadame::VERSION')
+          test "v$version" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME does not match version $version"; exit 1; }
+      - name: Release notes
+        run: |
+          if [ "$IS_TAG" = true ]; then section="${GITHUB_REF_NAME#v}"; else section=Unreleased; fi
+          ruby script/build/release-notes.rb "$section" > release-notes.md
+          cat release-notes.md
+      - name: Publish the release
+        if: env.IS_TAG == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "sadame $GITHUB_REF_NAME" --notes-file release-notes.md --verify-tag
+      - name: Keep the assembled files (dry run)
+        if: env.IS_TAG != 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-dry-run
+          path: |
+            dist
+            release-notes.md
