@@ -15,8 +15,14 @@ difference as a diff, and applies it, from a single binary.**
 
 ## Install (30 seconds)
 
-Release binaries are not published yet. From a checkout, run sadame with
-Ruby 3.2+, or build the single binary (needs a C compiler and git):
+From the first release (0.1.0) on, one command installs the static binary
+after checking its SHA-256 checksum:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | sh
+```
+
+Until then, run it from a checkout with Ruby 3.2+, or build the binary:
 
 ```sh
 git clone https://github.com/enderkus/sadame.git && cd sadame
@@ -54,7 +60,7 @@ with runnable examples from [`examples/`](examples/).
 | | Sadame | Ansible | Itamae | mitamae |
 |---|---|---|---|---|
 | Recipes written in | Ruby | YAML + Jinja2 | Ruby | Ruby (Itamae-compatible) |
-| Distributed as | single mruby binary (built from source until 0.1.0) | Python package | Ruby gem | single mruby binary |
+| Distributed as | single static binary (Linux amd64/arm64, macOS; first release: 0.1.0) | Python package | Ruby gem | single mruby binary |
 | Runs on remote hosts | not yet (planned for 0.1: copies itself over `scp`, runs over `ssh`) | yes, over SSH; target needs Python | yes, commands sent over SSH | no; you copy the binary and run it on the host |
 | Inventory | not yet (planned: `hosts.rb` in Ruby) | INI or YAML files, inventory plugins | none built in | none built in |
 | Dry run | `sadame plan`, unified diff | `--check --diff` | `--dry-run` | `--dry-run` |

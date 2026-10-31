@@ -32,7 +32,7 @@ ssh deploy@web1.example.com 'sudo sadame drift sadame-recipe --json' > drift.jso
 
 On the server:
 
-- sadame installed (see [Getting started](../getting-started.md#install-from-source));
+- sadame installed (see [Install](../install.md));
 - a user the CI job can log in as, here `deploy`, allowed to run sadame
   with sudo without a password, for example with this line in
   `/etc/sudoers.d/sadame` (adjust the path to where sadame is installed):

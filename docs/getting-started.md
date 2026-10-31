@@ -5,29 +5,15 @@ This page takes you from a source checkout to your first `plan` and
 and learn to read the diff sadame prints when a machine has drifted from its
 recipe.
 
-## Install from source
+## Install
 
-Release binaries are not published yet. Until they are, use a checkout of the
-repository in one of two ways.
-
-**Run it with Ruby.** Any Ruby 3.2 or newer works; nothing else is needed.
+Install the single binary as described on the [Install](install.md) page,
+or run sadame from a checkout of the repository with Ruby 3.2 or newer:
 
 ```sh
 git clone https://github.com/enderkus/sadame.git
 cd sadame
 bin/sadame --version
-```
-
-**Build the single binary.** This compiles sadame with mruby into one file
-with no runtime dependencies. You need a C compiler, `git`, Ruby and `rake`
-for the build only.
-
-```sh
-git clone https://github.com/enderkus/sadame.git
-cd sadame
-rake build:native
-sudo install -m 0755 build/host/bin/sadame /usr/local/bin/sadame
-sadame --version
 ```
 
 The rest of this page writes `sadame`; use `bin/sadame` if you run it from
