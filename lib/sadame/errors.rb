@@ -30,8 +30,16 @@ module Sadame
     end
   end
 
-  # Finds "path:line" for an error raised while evaluating the file at path,
-  # so recipe errors point at the line the user wrote.
+  # The message for an error raised while evaluating the file at path,
+  # starting with "path:line" so it points at the line the user wrote.
+  # Syntax errors already name the file and line in both runtimes.
+  def self.located_message(error, path)
+    return error.message if error.is_a?(SyntaxError)
+
+    "#{error_location(error, path)}: #{error.message}"
+  end
+
+  # Finds "path:line" for an error raised while evaluating the file at path.
   def self.error_location(error, path)
     prefix = "#{path}:"
     entry = (error.backtrace || []).find { |line| line.start_with?(prefix) }

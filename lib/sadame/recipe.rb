@@ -39,7 +39,7 @@ module Sadame
     rescue RecipeError => e
       raise e
     rescue ScriptError, StandardError => e
-      raise RecipeError, "#{Sadame.error_location(e, @path)}: #{e.message}"
+      raise RecipeError, Sadame.located_message(e, @path)
     end
 
     def package(name, options = {})
