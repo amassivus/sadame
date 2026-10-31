@@ -13,7 +13,14 @@ module Sadame
   # that is missing, not_if: exits non-zero and only_if: exits zero. Without
   # any guard it runs on every apply and always shows up in plan and drift.
   # Guards run during plan too, so they must not change anything.
+  #
+  # With action: :nothing the command never runs on its own, only when
+  # another resource notifies it:
+  #
+  #   exec "systemctl daemon-reload", action: :nothing
   class ExecResource < Resource
+    ACTION_CHOICES = %w[run nothing].freeze
+
     IDENTIFIER_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
 
     def self.type_name
@@ -21,7 +28,7 @@ module Sadame
     end
 
     def self.allowed_options
-      [:command, :only_if, :not_if, :creates, :cwd, :env]
+      [:command, :only_if, :not_if, :creates, :cwd, :env, :action]
     end
 
     def self.actions
@@ -33,6 +40,8 @@ module Sadame
     end
 
     def diff
+      return [] if options[:action].to_s == "nothing"
+
       reason = pending_reason
       return [] if reason.nil?
 
@@ -70,6 +79,7 @@ module Sadame
     private
 
     def validate
+      validate_choice(:action, ACTION_CHOICES)
       [:command, :only_if, :not_if, :creates, :cwd].each do |key|
         value = options[key]
         next if value.nil? || value.is_a?(String)

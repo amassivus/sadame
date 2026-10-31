@@ -74,7 +74,17 @@ class ExecResourceTest < SadameTest
     assert_includes error.message, "boom"
   end
 
+  def test_action_nothing_has_no_changes_but_runs_when_notified
+    shell = linux_shell
+    command = exec_resource({ action: :nothing }, shell, "systemctl daemon-reload")
+    assert_empty command.diff
+    command.run_action(:run)
+    assert_equal "systemctl daemon-reload", shell.commands.last
+  end
+
   def test_validation
+    error = assert_raises(Sadame::ResourceError) { exec_resource({ action: :sometimes }, linux_shell) }
+    assert_includes error.message, "action must be one of run, nothing"
     error = assert_raises(Sadame::ResourceError) { exec_resource({ env: { "BAD-NAME" => "x" } }, linux_shell) }
     assert_includes error.message, "is not a valid variable name"
     error = assert_raises(Sadame::ResourceError) { exec_resource({ not_if: ["test", "-f"] }, linux_shell) }
