@@ -9,9 +9,9 @@
 **Sadame describes a machine's desired state in plain Ruby, shows the
 difference as a diff, and applies it, from a single binary.**
 
-> Status: in development towards 0.1.0. `plan` and `apply` work on the local
-> machine today; drift detection, `hosts.rb` inventories, pushing to remote
-> hosts over SSH, and release binaries are being built.
+> Status: in development towards 0.1.0. `plan`, `apply` and `drift` work on
+> the local machine today; `hosts.rb` inventories, pushing to remote hosts
+> over SSH, and release binaries are being built.
 
 ## Install (30 seconds)
 
@@ -58,7 +58,7 @@ with runnable examples from [`examples/`](examples/).
 | Runs on remote hosts | not yet (planned for 0.1: copies itself over `scp`, runs over `ssh`) | yes, over SSH; target needs Python | yes, commands sent over SSH | no; you copy the binary and run it on the host |
 | Inventory | not yet (planned: `hosts.rb` in Ruby) | INI or YAML files, inventory plugins | none built in | none built in |
 | Dry run | `sadame plan`, unified diff | `--check --diff` | `--dry-run` | `--dry-run` |
-| Drift check for CI | not yet (planned: `sadame drift`, exit 1 on difference) | no dedicated command | no dedicated command; `--detailed-exitcode` exits 2 when resources changed | no |
+| Drift check for CI | `sadame drift`: exit 1 on difference, `--json` report | no dedicated command | no dedicated command; `--detailed-exitcode` exits 2 when resources changed | no |
 | Machine-readable output | `--json` | callback plugins (e.g. `json`) | no | no |
 
 ## License
