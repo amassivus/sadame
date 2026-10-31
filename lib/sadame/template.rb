@@ -128,6 +128,11 @@ module Sadame
       def evaluate(code, path)
         instance_eval(code, path, 1)
       end
+
+      # Older Rubies put inspect into NameError messages; keep those short.
+      def inspect
+        "#<Sadame::Template::Scope>"
+      end
     end
   end
 end
