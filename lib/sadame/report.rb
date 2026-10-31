@@ -94,10 +94,6 @@ module Sadame
       entries.any? { |entry| entry.failed? } || notification_runs.any? { |run| run.failed? }
     end
 
-    def changed?
-      entries.any? { |entry| !entry.unchanged? && !entry.failed? && entry.status != :skipped }
-    end
-
     # Number of entries per status, in a fixed order.
     def counts
       result = {}
