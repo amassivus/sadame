@@ -103,12 +103,16 @@ module Sadame
       candidates = if relative.start_with?("/")
                      [relative]
                    else
-                     [File.join(source_dir, relative), File.join(source_dir, subdirectory, relative)]
+                     [in_source_dir(relative), in_source_dir(File.join(subdirectory, relative))]
                    end
       found = candidates.find { |candidate| File.file?(candidate) }
       return found if found
 
       raise ResourceError, "#{id}: cannot find #{relative} (looked in #{candidates.join(", ")})"
+    end
+
+    def in_source_dir(relative)
+      source_dir == "." ? relative : File.join(source_dir, relative)
     end
 
     def absent?

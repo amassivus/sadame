@@ -69,7 +69,8 @@ module Sadame
     # Evaluates another recipe, relative to this recipe's directory. The
     # ".rb" extension is optional. A recipe is only ever included once.
     def include_recipe(name)
-      path = File.join(recipe_dir, name.to_s.end_with?(".rb") ? name.to_s : "#{name}.rb")
+      file_name = name.to_s.end_with?(".rb") ? name.to_s : "#{name}.rb"
+      path = recipe_dir == "." ? file_name : File.join(recipe_dir, file_name)
       raise Error, "include_recipe cannot find #{path}" unless File.file?(path)
       return if @loaded.include?(File.expand_path(path))
 
