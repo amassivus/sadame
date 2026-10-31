@@ -40,6 +40,10 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
+# Captured terminal sessions are embedded into pages, not published alone.
+exclude_docs: |
+  transcripts/
+
 markdown_extensions:
   - admonition
   - attr_list
@@ -50,11 +54,16 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.highlight
   - pymdownx.inlinehilite
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   # Code from examples/ is embedded with --8<-- "examples/...", so the docs
-  # always show the files the tests run.
+  # always show the files the tests run. Terminal output comes from
+  # docs/transcripts/, captured with `rake docs:transcripts`.
   - pymdownx.snippets:
       base_path: ["."]
       check_paths: true
@@ -63,8 +72,12 @@ nav:
   - Home: index.md
   - Users:
       - Getting started: getting-started.md
+      - "Concepts: plan, apply, drift": concepts/plan-apply-drift.md
+      - "Guide: drift in CI": guides/drift-in-ci.md
+      - "Reference: JSON output": reference/json-output.md
   - Recipe authors:
       - Recipe basics: recipes/basics.md
+      - Notifications: recipes/notifications.md
       - Resources:
           - package: resources/package.md
           - file: resources/file.md
