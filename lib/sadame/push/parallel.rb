@@ -39,7 +39,7 @@ module Sadame
 
       def printer(name)
         prefix = @color ? "#{COLOR_PREFIX}[#{name}]#{COLOR_RESET} " : "[#{name}] "
-        ->(line) { @io.write("#{prefix}#{line.chomp}\n") }
+        ->(line) { @io.write("#{line.chomp.empty? ? prefix.rstrip : prefix + line.chomp}\n") }
       end
 
       def start(item, name, job)

@@ -123,10 +123,10 @@ module Sadame
 
     def list_hosts(options)
       base_dir = recipe_directory(options[:recipe])
-      base_vars = Vars.load_file(File.join(base_dir, "vars.rb"))
+      base_vars = Vars.load_file(in_directory(base_dir, "vars.rb"))
       inventory = load_inventory(options, base_dir)
       if inventory.empty? && options[:hosts].empty?
-        raise UsageError, "no hosts: #{File.join(base_dir, DEFAULT_INVENTORY)} not found; use --inventory or -h"
+        raise UsageError, "no hosts: #{in_directory(base_dir, DEFAULT_INVENTORY)} not found; use --inventory or -h"
       end
 
       targets = select_targets(inventory, options, base_vars)
@@ -145,7 +145,7 @@ module Sadame
     end
 
     def load_inventory(options, base_dir)
-      path = options[:inventory] || File.join(base_dir, DEFAULT_INVENTORY)
+      path = options[:inventory] || in_directory(base_dir, DEFAULT_INVENTORY)
       return Inventory.load(path, shell: @shell) if File.file?(path)
       raise UsageError, "inventory not found: #{path}" if options[:inventory]
 
@@ -234,6 +234,10 @@ module Sadame
       raise UsageError, "recipe not found: #{path}" unless File.file?(path)
 
       path
+    end
+
+    def in_directory(directory, name)
+      directory == "." ? name : File.join(directory, name)
     end
 
     # For `hosts`, RECIPE only says where hosts.rb and vars.rb are.
