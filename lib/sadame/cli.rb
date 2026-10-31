@@ -41,7 +41,8 @@ module Sadame
         --json              Print a JSON report instead of text
         --color             Always use colors
         --no-color          Never use colors (also: NO_COLOR environment variable)
-        --name NAME         Name this machine in reports (default: local)
+        --host-name NAME    host_name in recipes and reports for local runs (default: local)
+        --host-groups G,... host_groups in recipes for local runs
         --version           Print the version
         --help              Print this help
 
@@ -92,7 +93,7 @@ module Sadame
 
       file_vars = options[:vars_file] ? load_vars_file(options[:vars_file]) : {}
       vars = Vars.merge(base_vars, file_vars, options[:vars])
-      host = Host.new(@shell, name: options[:name] || "local")
+      host = Host.new(@shell, name: options[:host_name] || "local", groups: options[:host_groups].map { |group| group.to_sym })
       resources = Recipe.load(recipe_path, host: host, vars: vars)
       runner = Runner.new(host: host, output: build_output(options))
       report = case options[:command]
@@ -105,7 +106,9 @@ module Sadame
 
     def run_remote(options, recipe_path, base_vars)
       raise UsageError, "--vars-file is for local runs; put the vars in hosts.rb or vars.rb" if options[:vars_file]
-      raise UsageError, "--name is for local runs; targets are named after their host" if options[:name]
+      if options[:host_name] || !options[:host_groups].empty?
+        raise UsageError, "--host-name and --host-groups are for local runs; targets get them from hosts.rb"
+      end
 
       inventory = load_inventory(options, File.dirname(recipe_path))
       targets = select_targets(inventory, options, base_vars)
@@ -157,7 +160,7 @@ module Sadame
 
     def parse(argv)
       options = { vars: {}, hosts: [], groups: [], limit: nil, inventory: nil, sudo: false, json: false,
-                  color: nil, vars_file: nil, name: nil, help: false, version: false }
+                  color: nil, vars_file: nil, host_name: nil, host_groups: [], help: false, version: false }
       positional = []
       arguments = argv.dup
 
@@ -177,7 +180,8 @@ module Sadame
         when "--limit" then options[:limit] = value(name, inline_value || arguments.shift)
         when "--inventory" then options[:inventory] = value(name, inline_value || arguments.shift)
         when "--vars-file" then options[:vars_file] = value(name, inline_value || arguments.shift)
-        when "--name" then options[:name] = value(name, inline_value || arguments.shift)
+        when "--host-name" then options[:host_name] = value(name, inline_value || arguments.shift)
+        when "--host-groups" then options[:host_groups].concat(list_value(name, inline_value || arguments.shift))
         else
           raise UsageError, "unknown option #{argument}" if argument.start_with?("-")
 

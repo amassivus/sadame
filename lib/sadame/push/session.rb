@@ -81,8 +81,10 @@ module Sadame
       def run_script(command, binary, recipe, run_dir, arguments)
         sadame = "\"$HOME/.sadame/bin/#{binary.sha256}/sadame\""
         sadame = "sudo -n #{sadame}" if target.sudo
-        invocation = ([sadame, command, Shell.escape(recipe), "--vars-file", ".sadame-vars.rb",
-                       "--name", Shell.escape(target.name)] + arguments).join(" ")
+        invocation = [sadame, command, Shell.escape(recipe), "--vars-file", ".sadame-vars.rb",
+                      "--host-name", Shell.escape(target.name)]
+        invocation += ["--host-groups", Shell.escape(target.groups.join(","))] unless target.groups.empty?
+        invocation = (invocation + arguments).join(" ")
         "cd #{run_dir} && tar -xzf bundle.tgz && rm -f bundle.tgz && #{invocation}; " \
           "status=$?; cd && rm -rf #{run_dir}; exit $status"
       end

@@ -169,11 +169,17 @@ class CLITest < SadameTest
   end
 
   def test_vars_file_and_name_for_local_runs
-    status, stdout, = run_cli(["plan", BASIC, "--vars-file", "test/fixtures/vars/vars.rb", "--name", "web1", "--json"],
+    status, stdout, = run_cli(["plan", BASIC, "--vars-file", "test/fixtures/vars/vars.rb", "--host-name", "web1", "--json"],
                               shell: fresh_debian_shell)
     assert_equal 0, status
     assert_includes stdout, "\"host\": \"web1\""
     assert_includes stdout, "server_name example.com;"
+  end
+
+  def test_host_groups_for_local_runs
+    _status, stdout, = run_cli(["plan", "test/fixtures/recipes/roles/site.rb", "--host-groups", "web"],
+                               shell: fresh_debian_shell)
+    assert_includes stdout, "+ package[nginx]"
   end
 
   def test_option_values_can_be_attached_with_equals

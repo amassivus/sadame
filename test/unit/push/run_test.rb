@@ -23,7 +23,7 @@ class PushRunTest < SadameTest
 
   def remote_script(target, arguments)
     invocation = ["\"$HOME/.sadame/bin/#{SUM}/sadame\"", "drift", "recipe.rb", "--vars-file", ".sadame-vars.rb",
-                  "--name", target.name] + arguments
+                  "--host-name", target.name] + arguments
     "cd .sadame/run/r1 && tar -xzf bundle.tgz && rm -f bundle.tgz && #{invocation.join(" ")}; " \
       "status=$?; cd && rm -rf .sadame/run/r1; exit $status"
   end

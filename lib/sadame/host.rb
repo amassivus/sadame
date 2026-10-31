@@ -4,11 +4,13 @@ module Sadame
   # The machine being configured: its shell plus facts read from it once
   # and then reused by every resource.
   class Host
-    attr_reader :shell, :name
+    attr_reader :shell, :name, :groups
 
-    def initialize(shell, name: "local")
+    # name and groups are what recipes see as host_name and host_groups.
+    def initialize(shell, name: "local", groups: [])
       @shell = shell
       @name = name
+      @groups = groups
       @platform = nil
       @package_manager = nil
       @systemd = nil

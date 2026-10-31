@@ -113,6 +113,16 @@ class RecipeTest < SadameTest
     assert_includes error.message, "notifies timing must be :delayed or :immediately, got :later"
   end
 
+  def test_host_name_and_groups_choose_roles
+    host = Sadame::Host.new(linux_shell, name: "web1.example.com", groups: [:web, :all])
+    resources = Sadame::Recipe.load("test/fixtures/recipes/roles/site.rb", host: host, vars: {})
+    assert_equal ["file[/etc/motd]", "package[nginx]"], resources.to_a.map { |resource| resource.id }
+    assert_equal "web1.example.com\n", resources.find("file[/etc/motd]").desired[:content]
+
+    local = Sadame::Recipe.load("test/fixtures/recipes/roles/site.rb", host: host_for(linux_shell), vars: {})
+    assert_equal ["file[/etc/motd]"], local.to_a.map { |resource| resource.id }
+  end
+
   def test_notifies_accepts_a_list
     host = host_for(linux_shell)
     resource = Sadame::FileResource.new("/etc/x", { content: "x", notifies: [[:reload, "service[a]"], [:run, "exec[b]"]] },

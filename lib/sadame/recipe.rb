@@ -12,7 +12,8 @@ module Sadame
   #   user "deploy", shell: "/bin/bash", groups: ["docker"]
   #   include_recipe "roles/web"
   #
-  # `vars` and `platform` are available for decisions in plain Ruby.
+  # `vars`, `platform`, `host_name` and `host_groups` are available for
+  # decisions in plain Ruby.
   class Recipe
     attr_reader :vars
 
@@ -80,6 +81,20 @@ module Sadame
 
     def platform
       @host.platform
+    end
+
+    # The name of the host being configured: its name in hosts.rb or -h, or
+    # "local" (see --host-name).
+    def host_name
+      @host.name
+    end
+
+    # The groups the host belongs to in hosts.rb, as symbols, including
+    # groups that include them. Empty for local runs (see --host-groups).
+    #
+    #   include_recipe "roles/web" if host_groups.include?(:web)
+    def host_groups
+      @host.groups
     end
 
     private

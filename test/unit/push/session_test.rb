@@ -51,7 +51,7 @@ class PushSessionTest < SadameTest
       @ssh.scp("/w/bundle.tgz", ".sadame/run/r1/bundle.tgz"),
       @ssh.scp("/w/vars-0.rb", ".sadame/run/r1/.sadame-vars.rb"),
       @ssh.ssh("cd .sadame/run/r1 && tar -xzf bundle.tgz && rm -f bundle.tgz && " \
-               "\"$HOME/.sadame/bin/#{SUM}/sadame\" apply site.rb --vars-file .sadame-vars.rb --name db1 --color; " \
+               "\"$HOME/.sadame/bin/#{SUM}/sadame\" apply site.rb --vars-file .sadame-vars.rb --host-name db1 --color; " \
                "status=$?; cd && rm -rf .sadame/run/r1; exit $status")
     ]
     assert_equal expected, @shell.commands.last(5)
@@ -70,9 +70,14 @@ class PushSessionTest < SadameTest
     assert_includes @shell.commands.last, "sudo -n \"$HOME/.sadame/bin/#{SUM}/sadame\" apply"
   end
 
+  def test_passes_the_host_groups
+    run_session(@target.with(groups: [:db, :all]))
+    assert_includes @shell.commands.last, "--host-name db1 --host-groups db,all --color;"
+  end
+
   def test_streams_or_captures_the_output
     script = "cd .sadame/run/r1 && tar -xzf bundle.tgz && rm -f bundle.tgz && " \
-             "\"$HOME/.sadame/bin/#{SUM}/sadame\" apply site.rb --vars-file .sadame-vars.rb --name db1 --color; " \
+             "\"$HOME/.sadame/bin/#{SUM}/sadame\" apply site.rb --vars-file .sadame-vars.rb --host-name db1 --color; " \
              "status=$?; cd && rm -rf .sadame/run/r1; exit $status"
     @shell.on(@ssh.ssh(script), stdout: "line one\nline two\n", exit_status: 1)
     lines = []
