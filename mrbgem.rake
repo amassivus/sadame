@@ -20,6 +20,6 @@ MRuby::Gem::Specification.new("sadame") do |spec|
   %w[
     mruby-io mruby-dir mruby-sprintf mruby-time mruby-struct mruby-string-ext
     mruby-array-ext mruby-hash-ext mruby-enum-ext mruby-kernel-ext mruby-eval
-    mruby-object-ext mruby-env mruby-process mruby-exec mruby-regexp-pcre mruby-iijson
+    mruby-env mruby-process mruby-exec mruby-regexp-pcre mruby-iijson
   ].each { |name| spec.add_dependency(name) }
 end

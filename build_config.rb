@@ -17,7 +17,6 @@ def sadame_gems(conf)
   conf.gem core: "mruby-enum-ext"
   conf.gem core: "mruby-kernel-ext"
   conf.gem core: "mruby-eval"        # recipes, vars.rb and templates are evaluated at run time
-  conf.gem core: "mruby-object-ext"  # instance_exec, used to evaluate DSL blocks
 
   # Third-party gems.
   conf.gem github: "iij/mruby-env"
