@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{#
+  Link previews (Open Graph and Twitter cards) for every page, using the
+  project banner. A plain meta tag needs no image processing at build time.
+#}
+{% block extrahead %}
+  {% set preview_image = config.site_url ~ "assets/banner.png" %}
+  {% if page and page.meta and page.meta.description %}
+    {% set preview_description = page.meta.description %}
+  {% else %}
+    {% set preview_description = config.site_description %}
+  {% endif %}
+  {% if page and page.title and not page.is_homepage %}
+    {% set preview_title = page.title ~ " - " ~ config.site_name %}
+  {% else %}
+    {% set preview_title = config.site_name %}
+  {% endif %}
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ config.site_name }}">
+  <meta property="og:title" content="{{ preview_title }}">
+  <meta property="og:description" content="{{ preview_description }}">
+  {% if page and page.canonical_url %}
+    <meta property="og:url" content="{{ page.canonical_url }}">
+  {% endif %}
+  <meta property="og:image" content="{{ preview_image }}">
+  <meta property="og:image:width" content="2172">
+  <meta property="og:image:height" content="724">
+  <meta property="og:image:alt" content="Sadame">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ preview_title }}">
+  <meta name="twitter:description" content="{{ preview_description }}">
+  <meta name="twitter:image" content="{{ preview_image }}">
+{% endblock %}

@@ -8,6 +8,8 @@ copyright: Copyright &copy; 2026 Ender Kus. Released under the MIT License.
 
 theme:
   name: material
+  # overrides/main.html adds link-preview tags (Open Graph, Twitter cards).
+  custom_dir: overrides
   # The light-scheme logo; docs/stylesheets/extra.css swaps in
   # logo-white.png on the dark scheme.
   logo: assets/logo-black.png
