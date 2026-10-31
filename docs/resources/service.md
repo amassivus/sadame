@@ -18,6 +18,7 @@ restart when they change, through `notifies:`.
 |---|---|---|---|
 | `enable` | `true` or `false` | unmanaged | Start at boot (`systemctl enable`) or not (`systemctl disable`). Enabled means `systemctl is-enabled` prints `enabled`. |
 | `state` | `:running` or `:stopped` | unmanaged | Running now (`systemctl start`) or not (`systemctl stop`). Running means `systemctl is-active` prints `active`. |
+| `user` | String | none | Manage the unit in this user's systemd instance (`systemctl --user -M USER@`), such as a unit in `~/.config/systemd/user/`. The user must be logged in or have lingering enabled (`loginctl enable-linger USER`). |
 | `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
 | `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
 

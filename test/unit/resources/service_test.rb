@@ -48,6 +48,14 @@ class ServiceResourceTest < SadameTest
     assert_equal [:start, :stop, :restart, :reload, :enable, :disable], Sadame::ServiceResource.actions
   end
 
+  def test_user_units_use_the_users_systemd_instance
+    shell = linux_shell.on("test -d /run/systemd/system")
+    shell.on("systemctl --user -M alice@ is-enabled backup.timer", stdout: "disabled\n", exit_status: 1)
+    service = build_resource(Sadame::ServiceResource, "backup.timer", { user: "alice", enable: true }, shell: shell)
+    service.apply(service.diff)
+    assert_equal "systemctl --user -M alice@ enable backup.timer", shell.commands.last
+  end
+
   def test_requires_systemd
     shell = linux_shell.on("test -d /run/systemd/system", exit_status: 1)
     error = assert_raises(Sadame::ResourceError) { service_resource({ state: :running }, shell).diff }

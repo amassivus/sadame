@@ -9,6 +9,11 @@ module Sadame
   #
   # Other resources can ask it to start, stop, restart or reload through
   # notifies:.
+  #
+  # With user:, the unit belongs to that user's systemd instance
+  # (systemctl --user -M USER@), such as a timer in ~/.config/systemd/user.
+  # The user's instance must be running: the user is logged in, or has
+  # lingering enabled (loginctl enable-linger USER).
   class ServiceResource < Resource
     STATES = %w[running stopped].freeze
     ACTIONS = [:start, :stop, :restart, :reload, :enable, :disable].freeze
@@ -18,7 +23,7 @@ module Sadame
     end
 
     def self.allowed_options
-      [:enable, :state]
+      [:enable, :state, :user]
     end
 
     def self.actions
@@ -61,6 +66,10 @@ module Sadame
     def validate
       validate_choice(:state, STATES)
       validate_boolean(:enable)
+      user = options[:user]
+      return if user.nil? || (user.is_a?(String) && !user.empty?)
+
+      raise ResourceError, "#{id}: user must be a user name"
     end
 
     def require_systemd
@@ -70,15 +79,21 @@ module Sadame
     end
 
     def enabled?
-      shell.run("systemctl is-enabled #{quote(name)}").stdout.strip == "enabled"
+      shell.run("#{systemctl_command} is-enabled #{quote(name)}").stdout.strip == "enabled"
     end
 
     def active?
-      shell.run("systemctl is-active #{quote(name)}").stdout.strip == "active"
+      shell.run("#{systemctl_command} is-active #{quote(name)}").stdout.strip == "active"
     end
 
     def systemctl(verb)
-      shell.run!("systemctl #{verb} #{quote(name)}")
+      shell.run!("#{systemctl_command} #{verb} #{quote(name)}")
+    end
+
+    def systemctl_command
+      return "systemctl" if options[:user].nil?
+
+      "systemctl --user -M #{quote("#{options[:user]}@")}"
     end
   end
 end
