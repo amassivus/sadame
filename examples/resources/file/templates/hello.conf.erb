@@ -1,0 +1,6 @@
+# Managed by sadame. Local changes will be overwritten.
+listen = <%= locals[:port] %>
+environment = <%= vars[:environment] %>
+<% vars[:upstreams].each do |upstream| -%>
+upstream = <%= upstream %>
+<% end -%>
