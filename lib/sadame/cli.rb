@@ -1,47 +1,64 @@
 # frozen_string_literal: true
 
 module Sadame
-  # Command-line interface: parses arguments, loads the recipe and vars,
-  # runs the command and returns the process exit status.
+  # Command-line interface: parses arguments, loads the recipe, vars and
+  # inventory, runs the command locally or on remote targets, and returns
+  # the process exit status.
   #
-  # Exit status (see Report#exit_status):
+  # Exit status (see Report#exit_status and Push::Run):
   #   0 success
   #   1 apply failed, or drift found differences
-  #   2 usage or recipe error, or plan/drift could not read some state
+  #   2 usage or recipe error, a state that could not be read, or a target
+  #     that could not be reached
   class CLI
-    COMMANDS = %w[plan apply drift].freeze
+    COMMANDS = %w[plan apply drift hosts].freeze
     DEFAULT_RECIPE = "recipe.rb"
+    DEFAULT_INVENTORY = "hosts.rb"
 
     USAGE = <<~TEXT
       Usage: sadame COMMAND [RECIPE] [options]
 
       Commands:
         plan     Show what apply would change, as a diff. Changes nothing.
-        apply    Make the host match the recipe.
-        drift    Like plan, but exit 1 when the host differs from the recipe.
+        apply    Make the hosts match the recipe.
+        drift    Like plan, but exit 1 when a host differs from the recipe.
+        hosts    Show the selected hosts with their connection options and vars.
 
       RECIPE is a recipe file or a directory containing recipe.rb
-      (default: ./recipe.rb). vars.rb next to the recipe is loaded if present.
+      (default: ./recipe.rb). vars.rb and hosts.rb next to it are loaded if
+      present. Without -h, -g or --limit, sadame runs on this machine.
+
+      Targets:
+        -h, --host [USER@]HOST[:PORT],...   Run on these hosts over SSH
+        -g, --group GROUP,...               Run on the hosts of these groups
+        --limit GLOB                        Only hosts whose name matches, e.g. "web*"
+        --inventory PATH                    Use this inventory instead of ./hosts.rb
+        --sudo                              Run sadame with sudo on every target
 
       Options:
-        --var KEY=VALUE   Set vars[:KEY]; repeatable, overrides vars.rb
-        --json            Print a JSON report instead of text
-        --no-color        Disable colors (also: NO_COLOR environment variable)
-        --version         Print the version
-        --help            Print this help
+        --var KEY=VALUE     Set vars[:KEY]; repeatable, overrides everything else
+        --vars-file PATH    Load more vars from a Ruby file (local runs)
+        --json              Print a JSON report instead of text
+        --color             Always use colors
+        --no-color          Never use colors (also: NO_COLOR environment variable)
+        --name NAME         Name this machine in reports (default: local)
+        --version           Print the version
+        --help              Print this help
 
       Exit status:
-        0  success; for drift, the host matches the recipe
+        0  success; for drift, every host matches the recipe
         1  apply failed, or drift found differences
-        2  usage or recipe error, or the state of a resource could not be read
+        2  usage or recipe error, the state of a resource could not be read,
+           or a host could not be reached
     TEXT
 
-    def initialize(argv, stdout: $stdout, stderr: $stderr, shell: nil, environment: ENV)
+    def initialize(argv, stdout: $stdout, stderr: $stderr, shell: nil, environment: ENV, forking: true)
       @argv = argv
       @stdout = stdout
       @stderr = stderr
-      @shell = shell
+      @shell = shell || Shell.new
       @environment = environment
+      @forking = forking
     end
 
     def run
@@ -61,9 +78,21 @@ module Sadame
     private
 
     def execute(options)
+      return list_hosts(options) if options[:command] == "hosts"
+
       recipe_path = resolve_recipe(options[:recipe])
-      vars = Vars.merge(Vars.load_file(File.join(File.dirname(recipe_path), "vars.rb")), options[:vars])
-      host = Host.new(@shell || Shell.new)
+      base_vars = Vars.load_file(File.join(File.dirname(recipe_path), "vars.rb"))
+      return run_remote(options, recipe_path, base_vars) if remote?(options)
+
+      run_local(options, recipe_path, base_vars)
+    end
+
+    def run_local(options, recipe_path, base_vars)
+      raise UsageError, "--sudo only applies to -h, -g and --limit; run `sudo sadame` here instead" if options[:sudo]
+
+      file_vars = options[:vars_file] ? load_vars_file(options[:vars_file]) : {}
+      vars = Vars.merge(base_vars, file_vars, options[:vars])
+      host = Host.new(@shell, name: options[:name] || "local")
       resources = Recipe.load(recipe_path, host: host, vars: vars)
       runner = Runner.new(host: host, output: build_output(options))
       report = case options[:command]
@@ -74,32 +103,107 @@ module Sadame
       report.exit_status
     end
 
+    def run_remote(options, recipe_path, base_vars)
+      raise UsageError, "--vars-file is for local runs; put the vars in hosts.rb or vars.rb" if options[:vars_file]
+      raise UsageError, "--name is for local runs; targets are named after their host" if options[:name]
+
+      inventory = load_inventory(options, File.dirname(recipe_path))
+      targets = select_targets(inventory, options, base_vars)
+      color = color?(options)
+      Push::Run.new(
+        targets: targets, command: options[:command], recipe_path: recipe_path, shell: @shell, stdout: @stdout,
+        binary_store: Push::BinaryStore.new(@shell, environment: @environment),
+        parallel: Push::Parallel.new(@stdout, color: color, forking: @forking),
+        json: options[:json], color: color
+      ).call
+    end
+
+    def list_hosts(options)
+      base_dir = recipe_directory(options[:recipe])
+      base_vars = Vars.load_file(File.join(base_dir, "vars.rb"))
+      inventory = load_inventory(options, base_dir)
+      if inventory.empty? && options[:hosts].empty?
+        raise UsageError, "no hosts: #{File.join(base_dir, DEFAULT_INVENTORY)} not found; use --inventory or -h"
+      end
+
+      targets = select_targets(inventory, options, base_vars)
+      listing = HostsListing.new(@stdout, color: color?(options))
+      options[:json] ? listing.render_json(targets) : listing.render(targets, inventory.path)
+      0
+    end
+
+    def select_targets(inventory, options, base_vars)
+      inventory.select(host_specs: options[:hosts], group_names: options[:groups], limit: options[:limit],
+                       base_vars: base_vars, cli_vars: options[:vars], sudo: options[:sudo])
+    end
+
+    def remote?(options)
+      !options[:hosts].empty? || !options[:groups].empty? || !options[:limit].nil?
+    end
+
+    def load_inventory(options, base_dir)
+      path = options[:inventory] || File.join(base_dir, DEFAULT_INVENTORY)
+      return Inventory.load(path, shell: @shell) if File.file?(path)
+      raise UsageError, "inventory not found: #{path}" if options[:inventory]
+
+      Inventory.empty
+    end
+
+    def load_vars_file(path)
+      raise UsageError, "vars file not found: #{path}" unless File.file?(path)
+
+      Vars.load_file(path)
+    end
+
     def parse(argv)
-      options = { vars: {}, json: false, color: true, help: false, version: false }
+      options = { vars: {}, hosts: [], groups: [], limit: nil, inventory: nil, sudo: false, json: false,
+                  color: nil, vars_file: nil, name: nil, help: false, version: false }
       positional = []
       arguments = argv.dup
 
       until arguments.empty?
         argument = arguments.shift
-        case argument
+        name, inline_value = split_option(argument)
+        case name
         when "--help" then options[:help] = true
         when "--version" then options[:version] = true
         when "--json" then options[:json] = true
+        when "--sudo" then options[:sudo] = true
+        when "--color" then options[:color] = true
         when "--no-color" then options[:color] = false
-        when "--var" then add_var(options, arguments.shift)
+        when "--var" then add_var(options, inline_value || arguments.shift)
+        when "-h", "--host" then options[:hosts].concat(list_value(name, inline_value || arguments.shift))
+        when "-g", "--group" then options[:groups].concat(list_value(name, inline_value || arguments.shift))
+        when "--limit" then options[:limit] = value(name, inline_value || arguments.shift)
+        when "--inventory" then options[:inventory] = value(name, inline_value || arguments.shift)
+        when "--vars-file" then options[:vars_file] = value(name, inline_value || arguments.shift)
+        when "--name" then options[:name] = value(name, inline_value || arguments.shift)
         else
-          if argument.start_with?("--var=")
-            add_var(options, argument["--var=".size..])
-          elsif argument.start_with?("-")
-            raise UsageError, "unknown option #{argument}"
-          else
-            positional << argument
-          end
+          raise UsageError, "unknown option #{argument}" if argument.start_with?("-")
+
+          positional << argument
         end
       end
       return options if options[:help] || options[:version]
 
       assign_positional(options, positional)
+    end
+
+    # "--limit=web*" is the same as "--limit web*".
+    def split_option(argument)
+      return [argument, nil] unless argument.start_with?("--") && argument.include?("=")
+
+      argument.split("=", 2)
+    end
+
+    def value(name, text)
+      raise UsageError, "#{name} needs a value" if text.nil? || text.empty?
+
+      text
+    end
+
+    def list_value(name, text)
+      value(name, text).split(",").map { |item| item.strip }.reject { |item| item.empty? }
     end
 
     def assign_positional(options, positional)
@@ -128,6 +232,14 @@ module Sadame
       path
     end
 
+    # For `hosts`, RECIPE only says where hosts.rb and vars.rb are.
+    def recipe_directory(argument)
+      return "." if argument.nil?
+      return argument if File.directory?(argument)
+
+      File.dirname(argument)
+    end
+
     def build_output(options)
       return Output::Json.new(@stdout) if options[:json]
 
@@ -135,7 +247,7 @@ module Sadame
     end
 
     def color?(options)
-      return false unless options[:color]
+      return options[:color] unless options[:color].nil?
       return false if @environment["NO_COLOR"] && !@environment["NO_COLOR"].empty?
 
       @stdout.respond_to?(:tty?) && @stdout.tty?

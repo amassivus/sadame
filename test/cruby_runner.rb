@@ -3,6 +3,7 @@
 # Runs the suite on CRuby with minitest. `rake test:mruby` runs the same
 # test files under mruby with mruby-mtest.
 require "minitest/autorun"
+require "json" # the binary has JSON from mruby-iijson; see bin/sadame
 require "sadame"
 require "support/test_helpers"
 require "support/fake_shell"

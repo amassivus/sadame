@@ -53,7 +53,7 @@ module TestHelpers
     stdout = FakeIO.new
     stderr = FakeIO.new
     status = Sadame::CLI.new(arguments, stdout: stdout, stderr: stderr, shell: shell,
-                                        environment: environment).run
+                                        environment: environment, forking: false).run
     [status, stdout.string, stderr.string]
   end
 end

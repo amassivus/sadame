@@ -127,6 +127,62 @@ class CLITest < SadameTest
     assert_includes stdout, "\"notifications\": [\n        {\n          \"action\": \"reload\",\n"
   end
 
+  def test_hosts_lists_targets_with_their_vars
+    status, stdout, = run_cli(["hosts", "--inventory", "test/fixtures/inventories/basic/hosts.rb", "-g", "db"])
+    assert_equal 0, status
+    assert_includes stdout, "sadame #{Sadame::VERSION} hosts: 1 host from test/fixtures/inventories/basic/hosts.rb\n"
+    assert_includes stdout, "\ndb1.example.com\n  address   db1.example.com\n  user      admin\n  port      2222\n"
+    assert_includes stdout, "  sudo      yes\n  ssh_opts  -i '~/.ssh/db'\n  groups    db, all\n"
+    assert_includes stdout, "    env    \"production\"  group all\n"
+  end
+
+  def test_hosts_json
+    _status, stdout, = run_cli(["hosts", "--inventory", "test/fixtures/inventories/basic/hosts.rb", "--limit", "web2*",
+                                "--json"])
+    assert_includes stdout, "\"command\": \"hosts\""
+    assert_includes stdout, "\"name\": \"web2.example.com\""
+    assert_includes stdout, "\"layer\": \"group all\""
+  end
+
+  def test_hosts_needs_an_inventory_or_hosts
+    status, _stdout, stderr = run_cli(["hosts", "examples/01-hello"])
+    assert_equal 2, status
+    assert_includes stderr, "no hosts: examples/01-hello/hosts.rb not found; use --inventory or -h"
+  end
+
+  def test_remote_only_and_local_only_options
+    status, _stdout, stderr = run_cli(["plan", "examples/01-hello", "--sudo"])
+    assert_equal 2, status
+    assert_includes stderr, "--sudo only applies to -h, -g and --limit"
+
+    status, _stdout, stderr = run_cli(["plan", "examples/01-hello", "-h", "web1", "--vars-file", "x.rb"])
+    assert_equal 2, status
+    assert_includes stderr, "--vars-file is for local runs"
+
+    status, _stdout, stderr = run_cli(["plan", "examples/01-hello", "-g", "web"])
+    assert_equal 2, status
+    assert_includes stderr, "unknown group web (no groups are defined)"
+
+    status, _stdout, stderr = run_cli(["plan", "examples/01-hello", "--inventory", "missing.rb", "-g", "web"])
+    assert_equal 2, status
+    assert_includes stderr, "inventory not found: missing.rb"
+  end
+
+  def test_vars_file_and_name_for_local_runs
+    status, stdout, = run_cli(["plan", BASIC, "--vars-file", "test/fixtures/vars/vars.rb", "--name", "web1", "--json"],
+                              shell: fresh_debian_shell)
+    assert_equal 0, status
+    assert_includes stdout, "\"host\": \"web1\""
+    assert_includes stdout, "server_name example.com;"
+  end
+
+  def test_option_values_can_be_attached_with_equals
+    status, stdout, = run_cli(["hosts", "--inventory=test/fixtures/inventories/basic/hosts.rb", "--group=db",
+                               "--host=extra.example.com", "--limit=*.example.com"])
+    assert_equal 0, status
+    assert_includes stdout, "2 hosts from"
+  end
+
   def test_recipe_errors_exit_with_two
     status, stdout, stderr = run_cli(["plan", "test/fixtures/recipes/unknown_option"])
     assert_equal 2, status

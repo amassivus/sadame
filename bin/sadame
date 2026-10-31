@@ -3,6 +3,9 @@
 
 # Runs sadame from a source checkout with CRuby. Release builds are a single
 # mruby binary and do not use this file.
+# The binary includes mruby-iijson, so recipes and hosts.rb can call
+# JSON.parse; load CRuby's JSON to give them the same here.
+require "json"
 require_relative "../lib/sadame"
 
 exit Sadame.main(ARGV)
