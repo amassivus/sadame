@@ -1,0 +1,74 @@
+site_name: Sadame
+site_description: Configuration management in plain Ruby, in one binary.
+site_url: https://enderkus.github.io/sadame/
+repo_url: https://github.com/enderkus/sadame
+repo_name: enderkus/sadame
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2026 Ender Kus. Released under the MIT License.
+
+theme:
+  name: material
+  # The light-scheme logo; docs/stylesheets/extra.css swaps in
+  # logo-white.png on the dark scheme.
+  logo: assets/logo-black.png
+  favicon: assets/favicon.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: red
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: red
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - content.code.copy
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  # Code from examples/ is embedded with --8<-- "examples/...", so the docs
+  # always show the files the tests run.
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+
+nav:
+  - Home: index.md
+  - Users:
+      - Getting started: getting-started.md
+  - Recipe authors:
+      - Recipe basics: recipes/basics.md
+      - Resources:
+          - package: resources/package.md
+          - file: resources/file.md
+          - directory: resources/directory.md
+          - service: resources/service.md
+          - exec: resources/exec.md
+          - user: resources/user.md
+  - Contributors:
+      - Contributing: contributing/index.md

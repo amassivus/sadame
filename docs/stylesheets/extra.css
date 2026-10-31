@@ -1,0 +1,33 @@
+/* Brand colour taken from the logo. */
+:root {
+  --sadame-red: #bd304c;
+}
+
+[data-md-color-scheme="default"] {
+  --md-typeset-a-color: var(--sadame-red);
+  --md-accent-fg-color: var(--sadame-red);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-typeset-a-color: #e8798f;
+  --md-accent-fg-color: #e8798f;
+}
+
+/* theme.logo is logo-black.png, made for light backgrounds. On the dark
+   scheme, the header and mobile-nav logos show logo-white.png instead: the
+   image is hidden and its link draws the light logo as a background, which
+   works in every browser. */
+[data-md-color-scheme="slate"] .md-logo img {
+  visibility: hidden;
+}
+
+[data-md-color-scheme="slate"] .md-logo {
+  background: url("../assets/logo-white.png") no-repeat center / contain;
+  background-origin: content-box;
+}
+
+/* The logo files have generous padding; give them a little more height. */
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  height: 2rem;
+}
