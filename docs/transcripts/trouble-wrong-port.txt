@@ -1,0 +1,6 @@
+$ sadame plan site.rb -h deploy@db1.example.com:22
+
+Hosts
+  db1.example.com  unreachable  connect failed: ssh: connect to host db1.example.com port 22: Connection refused
+
+plan on 1 host: 1 unreachable. Finished in 0.01s.

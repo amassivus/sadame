@@ -26,4 +26,4 @@ Summary
   skipped      0
   notified     0
 
-Finished in 3.57s.
+Finished in 5.25s.

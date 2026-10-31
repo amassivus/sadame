@@ -146,4 +146,46 @@ module Transcripts
       ]
     }
   ].freeze
+
+  # Sessions in the SSH lab of test/integration/push/lab.rb, run in its
+  # controller. A step with target: runs its commands on that lab machine
+  # instead, as root, and one with controller: true runs them in the
+  # controller without recording them; neither is saved.
+  EXAMPLE_08 = "/sadame/examples/08-multi-role-inventory"
+
+  LAB_SCENARIOS = [
+    {
+      name: "remote",
+      steps: [
+        { save: "inventory-hosts", dir: EXAMPLE_08, commands: ["sadame hosts"] },
+        { save: "inventory-hosts-var", dir: EXAMPLE_08, commands: ["sadame hosts --limit web2.example.com --var workers=16"] },
+        { save: "remote-plan-web", dir: EXAMPLE_08, commands: ["sadame plan site.rb -g web"] },
+        { save: "remote-apply-all", dir: EXAMPLE_08, commands: ["sadame apply site.rb -g all"] },
+        { save: "remote-drift-clean", dir: EXAMPLE_08, commands: ["sadame drift site.rb -g all", "echo $?"] },
+        { target: "web2", commands: ["sed -i 's/workers     = 8/workers     = 12/' /etc/demo-app/web.conf"] },
+        { save: "remote-drift-limit", dir: EXAMPLE_08, commands: ["sadame drift site.rb --limit 'web*'", "echo $?"] },
+        { save: "remote-drift-json", dir: EXAMPLE_08, commands: ["sadame drift site.rb -h web2.example.com --json"] },
+        { save: "remote-host-flag", dir: EXAMPLE_08, commands: ["sadame plan site.rb -h deploy@db1.example.com:2222"] },
+        { save: "remote-unreachable", dir: EXAMPLE_08,
+          commands: ["sadame plan site.rb -g db -h deploy@db2.example.com", "echo $?"] },
+        { save: "inventory-dynamic", dir: "/sadame/examples/11-dynamic-inventory", commands: ["sadame hosts -g db"] }
+      ]
+    },
+    {
+      name: "remote-troubleshooting",
+      steps: [
+        { save: "trouble-permission-denied", dir: EXAMPLE_08, commands: ["sadame plan site.rb -h nobody@web1.example.com"] },
+        { save: "trouble-wrong-port", dir: EXAMPLE_08, commands: ["sadame plan site.rb -h deploy@db1.example.com:22"] },
+        { save: "trouble-sudo-password", dir: EXAMPLE_08,
+          commands: ["sadame plan site.rb -h ops@web1.example.com --sudo"] },
+        { save: "trouble-missing-binary", dir: EXAMPLE_08,
+          commands: ["SADAME_BINARY_DIR=/opt/empty sadame plan site.rb -h web1.example.com"] },
+        { controller: true,
+          commands: ["ssh deploy@web1.example.com true",
+                     "ssh-keygen -R web1.example.com",
+                     "echo \"web1.example.com $(cut -d ' ' -f 1,2 /root/.ssh/id_ed25519.pub)\" >> /root/.ssh/known_hosts"] },
+        { save: "trouble-host-key", dir: EXAMPLE_08, commands: ["sadame plan site.rb -h web1.example.com"] }
+      ]
+    }
+  ].freeze
 end

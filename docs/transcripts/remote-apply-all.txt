@@ -1,0 +1,181 @@
+$ sadame apply site.rb -g all
+[db1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/ed24c04d850c6091dd95b976a6c671145ce37c3d541acda2c6662cf52aa17c10/
+[web2.example.com] sadame 0.1.0.dev apply on web2.example.com (Debian GNU/Linux 12 (bookworm))
+[web2.example.com]
+[web1.example.com] sadame 0.1.0.dev apply on web1.example.com (Debian GNU/Linux 12 (bookworm))
+[web1.example.com]
+[web2.example.com] changed    file[/etc/motd]
+[web2.example.com]            --- /etc/motd
+[web2.example.com]            +++ /etc/motd (desired)
+[web2.example.com]            @@ -1,7 +1,3 @@
+[web2.example.com]            -
+[web2.example.com]            -The programs included with the Debian GNU/Linux system are free software;
+[web2.example.com]            -the exact distribution terms for each program are described in the
+[web2.example.com]            -individual files in /usr/share/doc/*/copyright.
+[web2.example.com]            -
+[web2.example.com]            -Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+[web2.example.com]            -permitted by applicable law.
+[web2.example.com]            +web2.example.com (production)
+[web2.example.com]            +Groups: web, all
+[web2.example.com]            +Managed by sadame. Local changes will be overwritten.
+[web1.example.com] changed    file[/etc/motd]
+[web1.example.com]            --- /etc/motd
+[web1.example.com]            +++ /etc/motd (desired)
+[web1.example.com]            @@ -1,7 +1,3 @@
+[web1.example.com]            -
+[web1.example.com]            -The programs included with the Debian GNU/Linux system are free software;
+[web1.example.com]            -the exact distribution terms for each program are described in the
+[web1.example.com]            -individual files in /usr/share/doc/*/copyright.
+[web1.example.com]            -
+[web1.example.com]            -Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+[web1.example.com]            -permitted by applicable law.
+[web1.example.com]            +web1.example.com (production)
+[web1.example.com]            +Groups: web, all
+[web1.example.com]            +Managed by sadame. Local changes will be overwritten.
+[db1.example.com] sadame 0.1.0.dev apply on db1.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com]
+[db1.example.com] changed    file[/etc/motd]
+[db1.example.com]            --- /etc/motd
+[db1.example.com]            +++ /etc/motd (desired)
+[db1.example.com]            @@ -1,7 +1,3 @@
+[db1.example.com]            -
+[db1.example.com]            -The programs included with the Debian GNU/Linux system are free software;
+[db1.example.com]            -the exact distribution terms for each program are described in the
+[db1.example.com]            -individual files in /usr/share/doc/*/copyright.
+[db1.example.com]            -
+[db1.example.com]            -Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+[db1.example.com]            -permitted by applicable law.
+[db1.example.com]            +db1.example.com (production)
+[db1.example.com]            +Groups: db, all
+[db1.example.com]            +Managed by sadame. Local changes will be overwritten.
+[web1.example.com] changed    package[nginx]
+[web1.example.com]            state: absent -> installed
+[web1.example.com] changed    directory[/etc/demo-app]
+[web1.example.com]            state: absent -> present
+[web1.example.com]            mode: 0755
+[web1.example.com] changed    file[/etc/demo-app/web.conf]
+[web1.example.com]            state: absent -> present
+[web1.example.com]            mode: 0644
+[web1.example.com]            --- /dev/null
+[web1.example.com]            +++ /etc/demo-app/web.conf (desired)
+[web1.example.com]            @@ -0,0 +1,3 @@
+[web1.example.com]            +# Managed by sadame.
+[web1.example.com]            +environment = production
+[web1.example.com]            +workers     = 4
+[web1.example.com] changed    file[/etc/nginx/conf.d/demo-app.conf]
+[web1.example.com]            state: absent -> present
+[web1.example.com]            mode: 0644
+[web1.example.com]            --- /dev/null
+[web1.example.com]            +++ /etc/nginx/conf.d/demo-app.conf (desired)
+[web1.example.com]            @@ -0,0 +1,8 @@
+[web1.example.com]            +# Managed by sadame.
+[web1.example.com]            +server {
+[web1.example.com]            +  listen 8080;
+[web1.example.com]            +  server_name www.example.com;
+[web1.example.com]            +  location / {
+[web1.example.com]            +    return 200 "production\n";
+[web1.example.com]            +  }
+[web1.example.com]            +}
+[web1.example.com] changed    service[nginx]
+[web1.example.com]            state: stopped -> running
+[web1.example.com] notified   service[nginx]: reload (delayed, from file[/etc/nginx/conf.d/demo-app.conf])
+[web1.example.com]
+[web1.example.com] Summary
+[web1.example.com]   changed      6  file[/etc/motd]
+[web1.example.com]                   package[nginx]
+[web1.example.com]                   directory[/etc/demo-app]
+[web1.example.com]                   file[/etc/demo-app/web.conf]
+[web1.example.com]                   file[/etc/nginx/conf.d/demo-app.conf]
+[web1.example.com]                   service[nginx]
+[web1.example.com]   unchanged    0
+[web1.example.com]   failed       0
+[web1.example.com]   skipped      0
+[web1.example.com]   notified     1  service[nginx]: reload
+[web1.example.com]
+[web1.example.com] Finished in 9.21s.
+[web2.example.com] changed    package[nginx]
+[web2.example.com]            state: absent -> installed
+[web2.example.com] changed    directory[/etc/demo-app]
+[web2.example.com]            state: absent -> present
+[web2.example.com]            mode: 0755
+[web2.example.com] changed    file[/etc/demo-app/web.conf]
+[web2.example.com]            state: absent -> present
+[web2.example.com]            mode: 0644
+[web2.example.com]            --- /dev/null
+[web2.example.com]            +++ /etc/demo-app/web.conf (desired)
+[web2.example.com]            @@ -0,0 +1,3 @@
+[web2.example.com]            +# Managed by sadame.
+[web2.example.com]            +environment = production
+[web2.example.com]            +workers     = 8
+[web2.example.com] changed    file[/etc/nginx/conf.d/demo-app.conf]
+[web2.example.com]            state: absent -> present
+[web2.example.com]            mode: 0644
+[web2.example.com]            --- /dev/null
+[web2.example.com]            +++ /etc/nginx/conf.d/demo-app.conf (desired)
+[web2.example.com]            @@ -0,0 +1,8 @@
+[web2.example.com]            +# Managed by sadame.
+[web2.example.com]            +server {
+[web2.example.com]            +  listen 8080;
+[web2.example.com]            +  server_name www.example.com;
+[web2.example.com]            +  location / {
+[web2.example.com]            +    return 200 "production\n";
+[web2.example.com]            +  }
+[web2.example.com]            +}
+[web2.example.com] changed    service[nginx]
+[web2.example.com]            state: stopped -> running
+[web2.example.com] notified   service[nginx]: reload (delayed, from file[/etc/nginx/conf.d/demo-app.conf])
+[web2.example.com]
+[web2.example.com] Summary
+[web2.example.com]   changed      6  file[/etc/motd]
+[web2.example.com]                   package[nginx]
+[web2.example.com]                   directory[/etc/demo-app]
+[web2.example.com]                   file[/etc/demo-app/web.conf]
+[web2.example.com]                   file[/etc/nginx/conf.d/demo-app.conf]
+[web2.example.com]                   service[nginx]
+[web2.example.com]   unchanged    0
+[web2.example.com]   failed       0
+[web2.example.com]   skipped      0
+[web2.example.com]   notified     1  service[nginx]: reload
+[web2.example.com]
+[web2.example.com] Finished in 10.81s.
+[db1.example.com] changed    package[sqlite3]
+[db1.example.com]            state: absent -> installed
+[db1.example.com] changed    package[cron]
+[db1.example.com]            state: absent -> installed
+[db1.example.com] changed    user[demo-db]
+[db1.example.com]            state: absent -> present
+[db1.example.com]            home: /var/lib/demo-db
+[db1.example.com]            shell: /usr/sbin/nologin
+[db1.example.com] changed    directory[/var/lib/demo-db]
+[db1.example.com]            state: absent -> present
+[db1.example.com]            mode: 0750
+[db1.example.com]            owner: demo-db
+[db1.example.com]            group: demo-db
+[db1.example.com] changed    file[/etc/cron.d/demo-db-backup]
+[db1.example.com]            state: absent -> present
+[db1.example.com]            mode: 0644
+[db1.example.com]            --- /dev/null
+[db1.example.com]            +++ /etc/cron.d/demo-db-backup (desired)
+[db1.example.com]            @@ -0,0 +1 @@
+[db1.example.com]            +0 3 * * * demo-db sqlite3 /var/lib/demo-db/app.db .dump > /var/lib/demo-db/backup.sql
+[db1.example.com]
+[db1.example.com] Summary
+[db1.example.com]   changed      6  file[/etc/motd]
+[db1.example.com]                   package[sqlite3]
+[db1.example.com]                   package[cron]
+[db1.example.com]                   user[demo-db]
+[db1.example.com]                   directory[/var/lib/demo-db]
+[db1.example.com]                   file[/etc/cron.d/demo-db-backup]
+[db1.example.com]   unchanged    0
+[db1.example.com]   failed       0
+[db1.example.com]   skipped      0
+[db1.example.com]   notified     0
+[db1.example.com]
+[db1.example.com] Finished in 17.37s.
+
+Hosts
+  web1.example.com  ok
+  web2.example.com  ok
+  db1.example.com   ok
+
+apply on 3 hosts: 3 ok. Finished in 17.60s.

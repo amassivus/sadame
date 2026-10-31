@@ -1,0 +1,41 @@
+$ sadame hosts
+sadame 0.1.0.dev hosts: 3 hosts from hosts.rb
+
+web1.example.com
+  address   web1.example.com
+  user      deploy
+  port      (ssh default)
+  sudo      yes
+  ssh_opts  (none)
+  groups    web, all
+  vars
+    env          "production"       group all
+    workers      4                  group web
+    server_name  "www.example.com"  group web
+    backup_hour  1                  vars.rb
+
+web2.example.com
+  address   web2.example.com
+  user      deploy
+  port      (ssh default)
+  sudo      yes
+  ssh_opts  (none)
+  groups    web, all
+  vars
+    env          "production"       group all
+    workers      8                  host
+    server_name  "www.example.com"  group web
+    backup_hour  1                  vars.rb
+
+db1.example.com
+  address   db1.example.com
+  user      deploy
+  port      2222
+  sudo      yes
+  ssh_opts  (none)
+  groups    db, all
+  vars
+    env          "production"  group all
+    workers      2             vars.rb
+    server_name  "localhost"   vars.rb
+    backup_hour  3             group db

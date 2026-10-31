@@ -33,12 +33,43 @@ module Transcripts
 
   def main(names)
     scenarios = names.empty? ? SCENARIOS : SCENARIOS.select { |scenario| names.include?(scenario[:name]) }
-    abort "unknown scenario: #{names.join(", ")}" if scenarios.empty?
+    lab_scenarios = names.empty? ? LAB_SCENARIOS : LAB_SCENARIOS.select { |scenario| names.include?(scenario[:name]) }
+    abort "unknown scenario: #{names.join(", ")}" if scenarios.empty? && lab_scenarios.empty?
     missing = BINARIES.reject { |binary| File.exist?(File.join(ROOT, "dist", binary)) }
     abort "missing dist/#{missing.join(", dist/")}; run rake build:linux-amd64 build:linux-arm64" unless missing.empty?
 
     scenarios.map { |scenario| scenario[:image] }.uniq.each { |image| build_image(image) }
     scenarios.each { |scenario| capture(scenario) }
+    capture_lab(lab_scenarios) unless lab_scenarios.empty?
+  end
+
+  def capture_lab(scenarios)
+    require_relative "../../test/integration/push/lab"
+    lab = Lab::Environment.new
+    puts "starting the SSH lab"
+    lab.up
+    scenarios.each do |scenario|
+      puts "scenario #{scenario[:name]}"
+      scenario[:steps].each do |step|
+        if step[:target]
+          step[:commands].each { |command| lab.target(step[:target], command) }
+          next
+        end
+        if step[:controller]
+          step[:commands].each { |command| lab.controller(command, dir: "/") }
+          next
+        end
+        output = lab.controller_session(step[:commands], dir: step[:dir])
+        write(step[:save], output) if step[:save]
+      end
+    end
+  ensure
+    lab&.down
+  end
+
+  def write(name, output)
+    File.write(File.join(OUTPUT_DIR, "#{name}.txt"), output)
+    puts "  docs/transcripts/#{name}.txt"
   end
 
   def tag(image)
@@ -88,10 +119,7 @@ module Transcripts
     script = "#{step[:commands].join("\n")}\n"
     output, = Open3.capture2e("docker", "exec", "--interactive", "--workdir", step[:dir] || "/sadame", container,
                               "sh", "/sadame/script/transcripts/session.sh", stdin_data: script)
-    return unless step[:save]
-
-    File.write(File.join(OUTPUT_DIR, "#{step[:save]}.txt"), output)
-    puts "  docs/transcripts/#{step[:save]}.txt"
+    write(step[:save], output) if step[:save]
   end
 
   def remove(container)

@@ -1,0 +1,15 @@
+$ sadame hosts --limit web2.example.com --var workers=16
+sadame 0.1.0.dev hosts: 1 host from hosts.rb
+
+web2.example.com
+  address   web2.example.com
+  user      deploy
+  port      (ssh default)
+  sudo      yes
+  ssh_opts  (none)
+  groups    web, all
+  vars
+    env          "production"       group all
+    workers      16                 --var
+    server_name  "www.example.com"  group web
+    backup_hour  1                  vars.rb

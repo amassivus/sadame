@@ -1,0 +1,25 @@
+$ sadame drift site.rb --limit 'web*'
+[web1.example.com] sadame 0.1.0.dev drift on web1.example.com (Debian GNU/Linux 12 (bookworm))
+[web1.example.com]
+[web2.example.com] sadame 0.1.0.dev drift on web2.example.com (Debian GNU/Linux 12 (bookworm))
+[web2.example.com]
+[web2.example.com] ~ file[/etc/demo-app/web.conf]
+[web2.example.com]     --- /etc/demo-app/web.conf
+[web2.example.com]     +++ /etc/demo-app/web.conf (desired)
+[web2.example.com]     @@ -1,3 +1,3 @@
+[web2.example.com]      # Managed by sadame.
+[web2.example.com]      environment = production
+[web2.example.com]     -workers     = 12
+[web2.example.com]     +workers     = 8
+[web2.example.com]
+[web2.example.com] Drift: 1 of 6 resources differs from the recipe.
+[web1.example.com] No drift: 6 resources match the recipe.
+
+Hosts
+  web1.example.com  ok
+  web2.example.com  drift
+
+drift on 2 hosts: 1 ok, 1 drift. Finished in 0.22s.
+
+$ echo $?
+1
