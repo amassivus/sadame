@@ -12,7 +12,12 @@ work=$(mktemp -d)
 
 python3 -m http.server "$port" --bind 127.0.0.1 --directory "$work" > /dev/null 2>&1 &
 server=$!
-trap 'kill "$server" 2> /dev/null; wait "$server" 2> /dev/null; rm -rf "$work"' EXIT
+stop_server() {
+  kill "$server" 2> /dev/null || true
+  wait "$server" 2> /dev/null || true
+  rm -rf "$work"
+}
+trap stop_server EXIT
 
 mkdir -p "$work/good" "$work/bad"
 cp "$root"/dist/sadame-* "$root/dist/SHA256SUMS" "$work/good/"
