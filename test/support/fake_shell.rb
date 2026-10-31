@@ -26,6 +26,12 @@ class FakeShell < Sadame::Shell
                                        exit_status: response[:exit_status])
   end
 
+  def stream(command)
+    result = run(command)
+    Sadame::Diff.split_lines(result.stdout + result.stderr).each { |line| yield line }
+    result.exit_status
+  end
+
   def read_file(path)
     @files[path]
   end

@@ -46,6 +46,17 @@ module Sadame
       CommandResult.new(command, stdout: stdout, stderr: take_file(stderr_path), exit_status: exit_status)
     end
 
+    # Runs a command and yields each line of its output (stdout and stderr
+    # together) as it arrives. Returns the exit status.
+    def stream(command)
+      IO.popen("(\n#{command}\n) </dev/null 2>&1", "r") do |io|
+        while (line = io.gets)
+          yield line
+        end
+      end
+      exit_status_from($?)
+    end
+
     # Like run, but raises CommandFailed when the command exits non-zero.
     def run!(command)
       result = run(command)

@@ -16,12 +16,23 @@ module Sadame
 
     INDENT = "  "
 
+    # JSON text inserted as it is, such as a report sadame produced on
+    # another machine. It is re-indented to fit where it is placed.
+    class Raw
+      attr_reader :text
+
+      def initialize(text)
+        @text = text.strip
+      end
+    end
+
     def self.generate(value)
       "#{write(value, 0)}\n"
     end
 
     def self.write(value, depth)
       case value
+      when Raw then indent_raw(value.text, depth)
       when Hash then write_object(value, depth)
       when Array then write_array(value, depth)
       when String then write_string(value)
@@ -48,6 +59,13 @@ module Sadame
       inner = INDENT * (depth + 1)
       items = array.map { |item| "#{inner}#{write(item, depth + 1)}" }
       "[\n#{items.join(",\n")}\n#{INDENT * depth}]"
+    end
+
+    def self.indent_raw(text, depth)
+      lines = text.split("\n")
+      return text if lines.size < 2
+
+      ([lines.first] + lines[1..].map { |line| "#{INDENT * depth}#{line}" }).join("\n")
     end
 
     def self.write_string(string)
