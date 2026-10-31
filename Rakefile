@@ -15,10 +15,11 @@ DIST_DIR = File.join(ROOT, "dist")
 LINUX_PLATFORMS = { "amd64" => "linux/amd64", "arm64" => "linux/arm64" }.freeze
 
 # Images every static Linux binary must run in, unmodified. archlinux has no
-# official arm64 image.
+# official arm64 image; menci/archlinuxarm is a community image of Arch
+# Linux ARM, the arm64 port of Arch.
 VERIFY_IMAGES = {
   "amd64" => ["ubuntu:24.04", "debian:12", "rockylinux/rockylinux:9", "alpine:3.20", "archlinux:latest"],
-  "arm64" => ["ubuntu:24.04", "debian:12", "rockylinux/rockylinux:9", "alpine:3.20"]
+  "arm64" => ["ubuntu:24.04", "debian:12", "rockylinux/rockylinux:9", "alpine:3.20", "menci/archlinuxarm:latest"]
 }.freeze
 
 file MRUBY_DIR do

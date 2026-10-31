@@ -77,6 +77,7 @@ each of these images with the binary mounted, and run
 | `rockylinux/rockylinux:9` | yes | yes |
 | `alpine:3.20` | yes | yes |
 | `archlinux:latest` | yes | no arm64 image exists |
+| `menci/archlinuxarm:latest` | no | yes (community image of Arch Linux ARM) |
 
 The smoke test runs `--version`, then `plan`, `apply` and `drift` on
 `examples/01-hello`, edits the managed file, and checks that `drift` now

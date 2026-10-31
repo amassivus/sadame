@@ -34,8 +34,8 @@ project uses [Semantic Versioning](https://semver.org/).
 - Release binaries: static Linux builds for amd64 and arm64 (built with
   musl in Docker) and macOS builds for Apple silicon and Intel, each about
   1 MB. CI runs the Linux binaries unmodified in Ubuntu, Debian, Rocky,
-  Alpine and Arch images, the arm64 ones under QEMU, before they can be
-  published.
+  Alpine and Arch images (Arch Linux ARM, a community image, for arm64),
+  the arm64 ones under QEMU, before they can be published.
 - `install.sh`: installs the right binary for the system after checking its
   SHA-256 checksum.
 - Release workflow: a `v*` tag publishes the binaries, `SHA256SUMS` and the
