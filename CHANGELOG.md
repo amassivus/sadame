@@ -22,6 +22,19 @@ project uses [Semantic Versioning](https://semver.org/).
   of `apply`) by default or `:immediately`; `exec` with `action: :nothing`
   for commands that only run when notified.
 - A summary table and the run time at the end of `apply`.
+- Inventories: `hosts.rb` with `group`, `host` (`address`, `user`,
+  `port`, `sudo`, `ssh_opts`, `vars`), `include:` and group `vars`;
+  `command_output` for dynamic inventories. Vars precedence: `--var`, host,
+  group (including over included), `vars.rb`.
+- Push mode: `-h [user@]host[:port]`, `-g`, `--limit`, `--inventory`,
+  `--sudo`. Sadame copies itself (cached by checksum under `~/.sadame/bin/`)
+  and the recipe with the system's `scp`, runs over `ssh`, all hosts in
+  parallel with prefixed output, and ends with a per-host summary or one
+  JSON document.
+- `sadame hosts`: the selected hosts with their connection options and
+  vars, and where each var came from.
+- `host_name` and `host_groups` in recipes; `--host-name`, `--host-groups`
+  and `--vars-file` for local runs.
 - JSON report fields `drift`, `exit_status`, `duration_seconds`, and the
   notifications each resource triggers; documented in the JSON output
   reference.
