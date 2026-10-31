@@ -147,5 +147,7 @@ is described in the [JSON output reference](reference/json-output.md):
 - [Plan, apply, drift](concepts/plan-apply-drift.md): the three commands
   and their exit statuses.
 - [Recipe basics](recipes/basics.md): vars, `include_recipe` and templates.
+- [Remote hosts](guides/remote-hosts.md): run the same recipe on other
+  machines over SSH, with an [inventory](recipes/inventory.md).
 - [Resources](resources/package.md): every resource and its options.
 - `sadame --help` for the full command line.

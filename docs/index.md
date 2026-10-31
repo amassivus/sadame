@@ -23,9 +23,9 @@ the difference as a diff, and `sadame apply` makes the machine match.
 ```
 
 !!! note "Status"
-    Sadame is under development towards 0.1.0. Today it runs recipes on the
-    local machine with `plan`, `apply` and `drift`. Inventories, pushing to
-    remote hosts over SSH, and release binaries are being built next.
+    Sadame is under development towards 0.1.0. It runs recipes with `plan`,
+    `apply` and `drift`, on the local machine or on remote hosts over SSH
+    with a `hosts.rb` inventory. The first release is being prepared.
 
 ## Where to start
 

@@ -74,10 +74,12 @@ nav:
       - Install: install.md
       - Getting started: getting-started.md
       - "Concepts: plan, apply, drift": concepts/plan-apply-drift.md
+      - "Guide: remote hosts": guides/remote-hosts.md
       - "Guide: drift in CI": guides/drift-in-ci.md
       - "Reference: JSON output": reference/json-output.md
   - Recipe authors:
       - Recipe basics: recipes/basics.md
+      - Inventory: recipes/inventory.md
       - Notifications: recipes/notifications.md
       - Resources:
           - package: resources/package.md

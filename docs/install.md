@@ -120,7 +120,10 @@ rake build:macos         # on a Mac: dist/sadame-darwin-arm64 and -amd64
 sudo rm /usr/local/bin/sadame
 ```
 
-Sadame keeps no other files on the machine it is installed on.
+Sadame keeps no other files on the machine it is installed on, except
+`~/.sadame/dist/`, where it keeps binaries it downloaded for pushing to
+other systems. On machines it was pushed to, it keeps `~/.sadame/` (see
+[Remote hosts](guides/remote-hosts.md#what-is-copied-where)).
 
 ## Common mistakes
 

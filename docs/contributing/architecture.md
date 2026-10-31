@@ -13,7 +13,17 @@ order; the mruby build compiles the same list.
 
 | File | Responsibility |
 |---|---|
-| `cli.rb` | Parses arguments, loads vars and the recipe, runs a command, returns the exit status. `Sadame.main` is the entry point of the binary. |
+| `cli.rb` | Parses arguments, loads vars, the inventory and the recipe, runs a command locally or through push mode, returns the exit status. `Sadame.main` is the entry point of the binary. |
+| `inventory.rb` | The `hosts.rb` language, groups and includes, and selecting targets with `-h`, `-g` and `--limit`, including each target's merged vars. |
+| `target.rb` | A host to push to, and parsing `[user@]host[:port]`. |
+| `glob.rb` | `*` and `?` matching for `--limit`. |
+| `hosts_listing.rb` | The output of `sadame hosts`. |
+| `push/run.rb` | Push mode: bundles the recipe, detects each target's system, finds binaries, runs every target, prints the summary or the combined JSON. |
+| `push/session.rb` | One target: copies the binary (once per checksum) and the recipe, runs sadame there. |
+| `push/ssh.rb` | The `ssh` and `scp` command lines for a target. |
+| `push/binary_store.rb` | Finds the binary for a target's system on the machine running sadame, downloading and checking it if needed. |
+| `push/parallel.rb` | Runs one child process per target and prints their output as it arrives. |
+| `ruby_literal.rb` | Writes values as Ruby source, to send vars to targets and results between processes. |
 | `vars.rb` | Loads `vars.rb`, parses `--var`, merges layers. |
 | `recipe.rb` | The recipe DSL: `package`, `file`, ..., `include_recipe`, `vars`, `platform`. Evaluates recipe files with `instance_eval`. |
 | `resource_collection.rb` | The ordered resources of a run, duplicate detection, and the notification index. |
@@ -61,6 +71,13 @@ flowchart TD
 5. Each result goes to a `Report` and to the `Output`, which prints text as
    the run progresses or JSON at the end. `Report#exit_status` becomes the
    process exit status.
+
+In push mode, steps 2 to 5 happen on each target: `CLI` loads the
+inventory, `Inventory#select` turns the flags into `Target`s with their
+vars, and `Push::Run` copies the binary and the recipe to each target and
+runs `sadame COMMAND` there with `--vars-file`, `--host-name` and
+`--host-groups`, in one child process per target. The targets' own reports
+are streamed back (text) or collected into one document (JSON).
 
 ## Code that must run on mruby
 

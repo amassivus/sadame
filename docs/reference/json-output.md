@@ -100,6 +100,33 @@ File content changes carry a diff instead of the full text:
 | | `failed` | Changing it failed; see `error`. |
 | | `skipped` | Not looked at, because an earlier resource or immediate notification failed. |
 
+## Push mode
+
+When sadame runs on remote hosts (`-h`, `-g`, `--limit`), `--json` prints
+one document for the whole run. Each host's report, as described above, is
+nested under `hosts`:
+
+| Field | Type | Description |
+|---|---|---|
+| `format_version` | integer | As above. |
+| `sadame_version` | string | Version of sadame on the machine that ran the push. |
+| `command` | string | `"plan"`, `"apply"` or `"drift"`. |
+| `hosts` | array | One object per host, in the order they were selected. |
+| `hosts[].name` | string | The host's name from the inventory or `-h`. |
+| `hosts[].status` | string | `"ok"`, `"drift"`, `"failed"`, `"error"` or `"unreachable"`; see [Remote hosts](../guides/remote-hosts.md#many-hosts-at-once). |
+| `hosts[].exit_status` | integer | That host's exit status; `2` when it could not be reached or prepared. |
+| `hosts[].error` | string or null | Why the host could not be reached or prepared, or sadame's error message. |
+| `hosts[].report` | object or null | The host's report; `null` when sadame did not run there. |
+| `exit_status` | integer | The highest exit status of all hosts: the run's exit status. |
+| `duration_seconds` | number | Wall-clock time of the whole run. |
+
+For example, a drift check on one web server after its configuration was
+edited by hand:
+
+```text
+--8<-- "docs/transcripts/remote-drift-json.txt"
+```
+
 ## Using it with jq
 
 Resources that differ, from a saved drift report:
