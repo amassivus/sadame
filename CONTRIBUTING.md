@@ -29,9 +29,10 @@ bundle exec rake test:mruby   # builds mruby with sadame into build/, then runs 
 bundle exec rake test         # both
 ```
 
-`rake build:native` builds the binary alone, into `build/host/bin/sadame`.
-The first build clones mruby into `vendor/` and its gems into
-`build/repos/`; both are ignored by git.
+`rake build:native` builds a development binary into
+`build/host/bin/sadame`. Release binaries, static Linux builds through
+Docker and the macOS builds, are described in
+[Building sadame](https://enderkus.github.io/sadame/contributing/building/).
 
 Tests never need root: resources are tested against `FakeShell`
 (`test/support/fake_shell.rb`), which records commands and returns stubbed
@@ -40,25 +41,19 @@ results.
 ## Writing code for mruby
 
 Release builds are a single mruby binary, so everything under `lib/` must
-run on mruby with only the gems listed in `build_config.rb`. In practice:
+run on mruby with only the gems listed in `build_config.rb`:
 
 - Never call `require` in `lib/`. To add a file, list it with
   `require_relative` in `lib/sadame.rb`; the mruby build reads that list to
   compile the same files in the same order.
-- No standard library: no JSON, YAML, Open3, FileUtils, ERB, Shellwords,
-  OptionParser or Net::*. Sadame has small replacements
-  (`Sadame::JsonWriter`, `Sadame::Template`, `Sadame::Shell.escape`).
-- Run commands only through `Sadame::Shell`.
-- Avoid methods mruby lacks without extra gems, for example `Integer#zero?`,
-  `#even?` and `#odd?` (use `== 0`), enumerators without a block
-  (`map.with_index`, `each_slice(2).to_a`), `catch`/`throw`,
-  `File.basename(path, ext)` with two arguments, `String#unpack`, and
-  backticks.
-- In a `rescue` clause, re-raise with `raise e`, not a bare `raise`: mruby
-  3.4 raises a new `RuntimeError` for a bare `raise`.
-- Do not rely on `inspect` output in messages users see; its format differs
-  between runtimes.
+- No standard library (JSON, YAML, ERB, Open3, FileUtils, ...). Sadame has
+  small replacements: `Sadame::JsonWriter`, `Sadame::Template`,
+  `Sadame::Shell.escape`.
+- Run commands and read files only through `Sadame::Shell`.
+- In a `rescue` clause, re-raise with `raise e`, not a bare `raise`.
 
+The full list of pitfalls, with what to use instead, is in
+[Architecture](https://enderkus.github.io/sadame/contributing/architecture/#code-that-must-run-on-mruby).
 If you think a new mruby gem is needed, explain why in the commit that adds
 it to `build_config.rb`.
 
