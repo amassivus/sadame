@@ -1,0 +1,15 @@
+# Test-scoped SSH configuration, passed with -F through ssh_opts in
+# recipe/hosts.rb. app1.internal sits on a network only the bastion can
+# reach, so the connection must jump through it.
+Host bastion.example.com
+  User deploy
+
+Host app1.internal
+  User deploy
+  ProxyJump bastion.example.com
+
+Host *
+  IdentityFile /root/.ssh/id_ed25519
+  StrictHostKeyChecking accept-new
+  UserKnownHostsFile /root/.ssh/lab_known_hosts
+  BatchMode yes

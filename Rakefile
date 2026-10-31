@@ -162,6 +162,13 @@ namespace :docs do
   end
 end
 
+namespace :test do
+  desc "Test push mode against SSH servers in Docker (needs dist/sadame-linux-ARCH)"
+  task :push do
+    sh "ruby", File.join(ROOT, "test", "integration", "push", "run.rb")
+  end
+end
+
 desc "Run the test suite on CRuby and on mruby"
 task test: ["test:cruby", "test:mruby"]
 
