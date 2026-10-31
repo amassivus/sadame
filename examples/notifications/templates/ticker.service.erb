@@ -1,0 +1,10 @@
+# Managed by sadame. Local changes will be overwritten.
+[Unit]
+Description=<%= vars[:description] %>
+
+[Service]
+EnvironmentFile=/etc/default/ticker
+ExecStart=/bin/sh -c 'while true; do date >> /var/log/ticker.log; sleep ${INTERVAL}; done'
+
+[Install]
+WantedBy=multi-user.target
