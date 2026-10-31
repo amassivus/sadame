@@ -41,7 +41,16 @@ class ExamplesTest < SadameTest
     "examples/resources/exec/minimal.rb" => ["debian", ["exec[tar -czf /var/backups/etc.tar.gz /etc]"]],
     "examples/resources/user/minimal.rb" => ["debian", ["user[deploy]"]],
     "examples/resources/user/docker_group.rb" => ["debian", ["package[docker.io]", "user[deploy]"]],
-    "examples/resources/user/remove.rb" => ["debian", ["user[olduser]"]]
+    "examples/resources/user/remove.rb" => ["debian", ["user[olduser]"]],
+    "examples/10-drift-demo/recipe.rb" => [
+      "debian",
+      ["package[nginx]", "user[demo-app]", "directory[/etc/demo-app]", "file[/etc/demo-app/app.conf]", "service[nginx]"]
+    ],
+    "examples/notifications/recipe.rb" => [
+      "debian",
+      ["exec[systemctl daemon-reload]", "file[/etc/systemd/system/ticker.service]", "file[/etc/default/ticker]",
+       "service[ticker]"]
+    ]
   }.freeze
 
   # Ruby files that are not entry points: vars, and recipes that are only
@@ -74,6 +83,28 @@ class ExamplesTest < SadameTest
       status, stdout, stderr = run_cli(["apply", path] + FIXED_VARS, shell: fresh_shell(distribution))
       assert_equal 0, status, "apply #{path}: #{stdout}#{stderr}"
     end
+  end
+
+  def test_ci_examples_run_drift_and_keep_the_report
+    github = File.read("examples/ci/github-actions-drift.yml")
+    assert_includes github, "ssh \"$SSH_TARGET\" 'sudo sadame drift sadame-recipe --json' > drift.json"
+    assert_includes github, "if: always()"
+    assert_includes github, "path: drift.json"
+
+    gitlab = File.read("examples/ci/gitlab-ci-drift.yml")
+    assert_includes gitlab, "ssh \"$SSH_TARGET\" 'sudo sadame drift sadame-recipe --json' > drift.json"
+    assert_includes gitlab, "when: always"
+    assert_includes gitlab, "- drift.json"
+  end
+
+  def test_ci_examples_are_valid_yaml
+    skip "mruby has no YAML parser" unless RUBY_ENGINE == "ruby"
+
+    require "yaml"
+    github = YAML.safe_load(File.read("examples/ci/github-actions-drift.yml"))
+    assert_equal ["drift"], github["jobs"].keys
+    gitlab = YAML.safe_load(File.read("examples/ci/gitlab-ci-drift.yml"))
+    assert_equal ["always"], [gitlab["drift"]["artifacts"]["when"]]
   end
 
   def test_paths_mentioned_in_the_docs_exist
