@@ -2,57 +2,57 @@
 
 Servers drift: someone edits a file by hand during an incident, a package
 upgrade rewrites a configuration, a service gets stopped and stays stopped.
-This guide sets up a scheduled CI job that runs `sadame drift --json` on a
-server, fails the pipeline when the server no longer matches its recipe,
-and keeps the JSON report as an artifact, so the failure tells you exactly
-what changed. Examples are given for GitHub Actions and GitLab CI.
+This guide sets up a scheduled CI job that runs `sadame drift --json`
+against every server in the inventory, fails the pipeline when one no longer
+matches its recipe, and keeps the JSON report as an artifact, so the
+failure tells you exactly what changed and where. Examples are given for
+GitHub Actions and GitLab CI.
 
 ## How it works
 
-`sadame drift` compares the machine with the recipe without changing
-anything, and its exit status is the result:
+The CI job installs sadame, loads an SSH key from the CI secrets, and runs:
+
+```sh
+sadame drift site/site.rb -g all --json > drift.json
+```
+
+Sadame connects to every host of the `all` group, copies itself there the
+first time, compares each host with the recipe without changing anything,
+and writes one JSON document with every host's report (see
+[Remote hosts](remote-hosts.md)). Its exit status decides the job:
 
 | Exit status | Meaning | Pipeline |
 |---|---|---|
-| `0` | the server matches the recipe | passes |
-| `1` | the server differs from the recipe | fails |
-| `2` | sadame could not check: bad recipe, or a state it could not read | fails |
+| `0` | every server matches the recipe | passes |
+| `1` | at least one server differs from the recipe | fails |
+| `2` | a server could not be checked: unreachable, a recipe error, or a state sadame could not read | fails |
 
-Sadame does not push itself to remote hosts yet, so the job copies the
-recipe to the server with `scp` and runs sadame there with `ssh`. `ssh`
-exits with the status of the remote command, so the CI step fails exactly
-when `sadame drift` does. The JSON goes to standard output and is saved on
-the CI runner:
+On the console, the same run shows each host's differences prefixed with
+its name, and a summary:
 
-```sh
-ssh deploy@web1.example.com 'sudo sadame drift sadame-recipe --json' > drift.json
+```text
+--8<-- "docs/transcripts/remote-drift-limit.txt"
 ```
 
 ## Before you start
 
-On the server:
+- The recipe and its `hosts.rb` in the repository, here in `site/`.
+- A key pair for CI. Its public half goes in `authorized_keys` of the users
+  named in `hosts.rb`; its private half is the `SSH_PRIVATE_KEY` secret.
+- `SSH_KNOWN_HOSTS`: the output of `ssh-keyscan` for every server, so the
+  job verifies host keys instead of trusting whatever answers.
+- Passwordless sudo for those users, when the recipe needs root (most do;
+  `drift` reads files only root can read).
 
-- sadame installed (see [Install](../install.md));
-- a user the CI job can log in as, here `deploy`, allowed to run sadame
-  with sudo without a password, for example with this line in
-  `/etc/sudoers.d/sadame` (adjust the path to where sadame is installed):
-
-  ```text
-  deploy ALL=(root) NOPASSWD: /usr/local/bin/sadame
-  ```
-
-In the CI settings:
-
-- `SSH_PRIVATE_KEY`: a private key whose public half is in
-  `~deploy/.ssh/authorized_keys`;
-- `SSH_KNOWN_HOSTS`: the output of `ssh-keyscan web1.example.com`, so the
-  job verifies the server's host key instead of trusting whatever answers.
+The CI job installs sadame with `install.sh`, which downloads the latest
+release. Until the first release (0.1.0) is published, there is nothing to
+download; build sadame from source in the job instead (see
+[Install](../install.md#from-source)).
 
 ## GitHub Actions
 
-Copy this to `.github/workflows/drift.yml` in the repository that holds
-the recipe (here in `site/`), and add the two values above as repository
-secrets:
+Copy this to `.github/workflows/drift.yml` and add the two secrets under
+**Settings > Secrets and variables > Actions**:
 
 ```yaml title="examples/ci/github-actions-drift.yml"
 --8<-- "examples/ci/github-actions-drift.yml"
@@ -75,42 +75,42 @@ and create a pipeline schedule under **Build > Pipeline schedules**:
 
 ## Reading the report
 
-The JSON lists every resource with its status and the changes found. For a
-server where someone edited a configuration file and stopped nginx (the
-[drift demo](../concepts/plan-apply-drift.md#the-loop-on-a-real-machine)),
-this prints what drifted:
+The report has one entry per host with its status and full report; the
+format is in the [JSON output reference](../reference/json-output.md#push-mode).
+This lists the resources that drifted, per host:
 
 ```sh
-jq -r '.resources[] | select(.status != "unchanged") | "\(.id): \(.status)"' drift.json
+jq -r '.hosts[] | .name as $host | (.report.resources // [])[]
+       | select(.status != "unchanged") | "\($host): \(.id) \(.status)"' drift.json
 ```
 
-```text
-file[/etc/demo-app/app.conf]: update
-service[nginx]: update
+and this the hosts that could not be checked:
+
+```sh
+jq -r '.hosts[] | select(.status == "error" or .status == "unreachable") | "\(.name): \(.error)"' drift.json
 ```
 
-Each field is described in the [JSON output reference](../reference/json-output.md).
-
-Sadame's own CI runs the same check on its runner on every push: it
-applies `examples/01-hello`, saves `sadame drift --json`, edits the file and
-expects exit status `1`. See `.github/workflows/ci.yml` in the repository.
+Sadame's own CI runs `sadame drift --json` on its runner on every push,
+edits a managed file, and expects exit status `1`; see
+`.github/workflows/ci.yml` in the repository.
 
 ## Common mistakes
 
 - **Unguarded `exec` resources.** They count as drift on every run, so the
   job never passes. Give each one a guard or `action: :nothing`.
-- **Running drift without sudo.** Files only root can read fail to compare,
-  and the job exits `2` instead of telling you about drift.
+- **No sudo.** Without it, files only root can read fail to compare and the
+  job exits `2` instead of telling you about drift.
 - **Losing the report on failure.** Without `if: always()` (GitHub) or
   `when: always` (GitLab), the upload step is skipped exactly when drift is
   found.
-- **Trusting any host key.** `StrictHostKeyChecking=no` lets anyone who
-  can answer for the server's name read your recipe and its vars. Pin the
-  key with `SSH_KNOWN_HOSTS`.
+- **Trusting any host key.** `StrictHostKeyChecking=no` lets anyone who can
+  answer for a server's name read your recipe and its vars. Pin the keys
+  with `SSH_KNOWN_HOSTS`.
 - **Applying from the drift job.** Keep the scheduled job read-only and
   review the drift first; apply on purpose, after looking at `plan`.
 
 ## See also
 
-- [Plan, apply, drift](../concepts/plan-apply-drift.md)
-- [JSON output](../reference/json-output.md)
+- [Remote hosts](remote-hosts.md): SSH, sudo and troubleshooting.
+- [Plan, apply, drift](../concepts/plan-apply-drift.md): the three commands.
+- [JSON output](../reference/json-output.md): the report format.

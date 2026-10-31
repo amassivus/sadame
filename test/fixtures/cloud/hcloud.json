@@ -1,0 +1,6 @@
+[
+  {"id": 4711, "name": "web-1", "status": "running", "labels": {"role": "web"},
+   "public_net": {"ipv4": {"ip": "198.51.100.31", "blocked": false, "dns_ptr": "static.31.100.51.198.clients.your-server.de"}}},
+  {"id": 4712, "name": "db-1", "status": "running", "labels": {"role": "db"},
+   "public_net": {"ipv4": {"ip": "198.51.100.32", "blocked": false, "dns_ptr": "static.32.100.51.198.clients.your-server.de"}}}
+]

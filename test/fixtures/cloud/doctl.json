@@ -1,0 +1,7 @@
+[
+  {"id": 101, "name": "web-01", "tags": ["web", "frontend"],
+   "networks": {"v4": [{"ip_address": "10.110.0.2", "netmask": "255.255.240.0", "gateway": "", "type": "private"},
+                       {"ip_address": "203.0.113.41", "netmask": "255.255.240.0", "gateway": "203.0.113.1", "type": "public"}]}},
+  {"id": 102, "name": "db-01", "tags": ["db"],
+   "networks": {"v4": [{"ip_address": "203.0.113.42", "netmask": "255.255.240.0", "gateway": "203.0.113.1", "type": "public"}]}}
+]

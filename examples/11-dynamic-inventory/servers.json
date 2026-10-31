@@ -1,0 +1,5 @@
+[
+  { "name": "web1.example.com", "address": "203.0.113.11", "role": "web" },
+  { "name": "web2.example.com", "address": "203.0.113.12", "role": "web" },
+  { "name": "db1.example.com", "address": "203.0.113.21", "role": "db", "port": 2222 }
+]

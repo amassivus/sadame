@@ -1,29 +1,26 @@
-# Checks a server for drift in scheduled pipelines and fails the job when it
-# differs from the recipe. The JSON report is kept as an artifact either way.
+# Checks the servers in the inventory for drift in scheduled pipelines and
+# fails the job when one differs from the recipe. The JSON report is kept as
+# an artifact either way.
 #
-# Add this job to .gitlab-ci.yml in the project that holds your recipe and
-# create a pipeline schedule. It needs:
-#   - sadame installed on the server, and passwordless sudo for the SSH user;
-#   - CI/CD variables SSH_PRIVATE_KEY and SSH_KNOWN_HOSTS (masked, protected).
+# Add this job to .gitlab-ci.yml in the project that holds your recipe (here
+# in site/, with site/hosts.rb) and create a pipeline schedule. It needs
+# CI/CD variables SSH_PRIVATE_KEY and SSH_KNOWN_HOSTS (masked, protected),
+# and passwordless sudo on the servers if the recipe needs root.
 drift:
   image: alpine:3.20
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
     - if: $CI_PIPELINE_SOURCE == "web"
-  variables:
-    SSH_TARGET: deploy@web1.example.com
-    RECIPE_DIR: site
   before_script:
     - apk add --no-cache openssh-client
+    - wget -qO- https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | sh
     - install -d -m 0700 ~/.ssh
     - printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
     - chmod 0600 ~/.ssh/id_ed25519
     - printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
   script:
-    - ssh "$SSH_TARGET" 'rm -rf sadame-recipe'
-    - scp -r "$RECIPE_DIR" "$SSH_TARGET:sadame-recipe"
-    # ssh exits with sadame's status: 0 no drift, 1 drift, 2 error.
-    - ssh "$SSH_TARGET" 'sudo sadame drift sadame-recipe --json' > drift.json
+    # Exit status: 0 no drift, 1 drift on a server, 2 a server could not be checked.
+    - sadame drift site/site.rb -g all --json > drift.json
   artifacts:
     when: always
     paths:

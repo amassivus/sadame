@@ -46,6 +46,8 @@ class ExamplesTest < SadameTest
       "debian",
       ["package[nginx]", "user[demo-app]", "directory[/etc/demo-app]", "file[/etc/demo-app/app.conf]", "service[nginx]"]
     ],
+    "examples/08-multi-role-inventory/site.rb" => ["debian", ["file[/etc/motd]"]],
+    "examples/11-dynamic-inventory/recipe.rb" => ["debian", ["file[/etc/motd]"]],
     "examples/notifications/recipe.rb" => [
       "debian",
       ["exec[systemctl daemon-reload]", "file[/etc/systemd/system/ticker.service]", "file[/etc/default/ticker]",
@@ -53,9 +55,33 @@ class ExamplesTest < SadameTest
     ]
   }.freeze
 
-  # Ruby files that are not entry points: vars, and recipes that are only
-  # used through include_recipe.
-  SUPPORT_FILE_NAMES = ["vars.rb", "hosts.rb"].freeze
+  # Inventories, and the cloud CLI output their commands are faked with.
+  INVENTORIES = {
+    "examples/08-multi-role-inventory/hosts.rb" => [
+      nil, { web: ["web1.example.com", "web2.example.com"], db: ["db1.example.com"],
+             all: ["web1.example.com", "web2.example.com", "db1.example.com"] }
+    ],
+    "examples/11-dynamic-inventory/hosts.rb" => [
+      nil, { web: ["web1.example.com", "web2.example.com"], db: ["db1.example.com"],
+             all: ["web1.example.com", "web2.example.com", "db1.example.com"] }
+    ],
+    "examples/11-dynamic-inventory/hosts-hcloud.rb" => [
+      ["hcloud server list -o json", "test/fixtures/cloud/hcloud.json"], { web: ["web-1"], db: ["db-1"] }
+    ],
+    "examples/11-dynamic-inventory/hosts-doctl.rb" => [
+      ["doctl compute droplet list --output json", "test/fixtures/cloud/doctl.json"],
+      { web: ["web-01"], frontend: ["web-01"], db: ["db-01"] }
+    ],
+    "examples/11-dynamic-inventory/hosts-aws.rb" => [
+      ["aws ec2 describe-instances --filters Name=instance-state-name,Values=running --output json",
+       "test/fixtures/cloud/aws.json"],
+      { web: ["web-a"], db: ["i-0a1b2c3d4e5f60003"] }
+    ]
+  }.freeze
+
+  # Ruby files that are not entry points: vars, inventories, and recipes
+  # that are only used through include_recipe.
+  SUPPORT_FILE_NAMES = ["vars.rb"].freeze
   INCLUDED_RECIPE_DIRECTORIES = ["parts", "roles"].freeze
 
   # --var values that make examples independent of the machine running the tests.
@@ -85,14 +111,49 @@ class ExamplesTest < SadameTest
     end
   end
 
+  def test_inventories_build_the_expected_groups
+    INVENTORIES.each do |path, (fake_command, groups)|
+      shell = linux_shell
+      shell.on(fake_command[0], stdout: File.read(fake_command[1])) if fake_command
+      inventory = Sadame::Inventory.load(path, shell: shell)
+      groups.each do |group, hosts|
+        assert_equal hosts, inventory.hosts_in_group(group), "#{path} group #{group}"
+      end
+    end
+  end
+
+  def test_every_inventory_is_covered
+    walk("examples").select { |path| File.basename(path).start_with?("hosts") && path.end_with?(".rb") }.each do |path|
+      assert_includes INVENTORIES.keys, path, "#{path} is not exercised by ExamplesTest"
+    end
+  end
+
+  def test_multi_role_example_includes_roles_by_group
+    path = "examples/08-multi-role-inventory/site.rb"
+    vars = Sadame::Vars.merge(Sadame::Vars.load_file("examples/08-multi-role-inventory/vars.rb"))
+    expectations = {
+      [:web, :all] => ["file[/etc/motd]", "package[nginx]", "directory[/etc/demo-app]", "file[/etc/demo-app/web.conf]",
+                       "file[/etc/nginx/conf.d/demo-app.conf]", "service[nginx]"],
+      [:db, :all] => ["file[/etc/motd]", "package[sqlite3]", "package[cron]", "user[demo-db]",
+                      "directory[/var/lib/demo-db]", "file[/etc/cron.d/demo-db-backup]"]
+    }
+    expectations.each do |groups, ids|
+      host = Sadame::Host.new(fresh_shell("debian"), name: "#{groups.first}1.example.com", groups: groups)
+      resources = Sadame::Recipe.load(path, host: host, vars: vars)
+      assert_equal ids, resources.to_a.map { |resource| resource.id }
+    end
+  end
+
   def test_ci_examples_run_drift_and_keep_the_report
     github = File.read("examples/ci/github-actions-drift.yml")
-    assert_includes github, "ssh \"$SSH_TARGET\" 'sudo sadame drift sadame-recipe --json' > drift.json"
+    assert_includes github, "run: sadame drift site/site.rb -g all --json > drift.json"
+    assert_includes github, "install.sh | sh"
     assert_includes github, "if: always()"
     assert_includes github, "path: drift.json"
 
     gitlab = File.read("examples/ci/gitlab-ci-drift.yml")
-    assert_includes gitlab, "ssh \"$SSH_TARGET\" 'sudo sadame drift sadame-recipe --json' > drift.json"
+    assert_includes gitlab, "- sadame drift site/site.rb -g all --json > drift.json"
+    assert_includes gitlab, "install.sh | sh"
     assert_includes gitlab, "when: always"
     assert_includes gitlab, "- drift.json"
   end
@@ -124,7 +185,8 @@ class ExamplesTest < SadameTest
 
   def recipe_files(directory)
     walk(directory).select do |path|
-      path.end_with?(".rb") && !SUPPORT_FILE_NAMES.include?(File.basename(path)) &&
+      name = File.basename(path)
+      path.end_with?(".rb") && !SUPPORT_FILE_NAMES.include?(name) && !name.start_with?("hosts") &&
         !INCLUDED_RECIPE_DIRECTORIES.include?(File.basename(File.dirname(path)))
     end
   end

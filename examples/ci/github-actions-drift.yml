@@ -1,11 +1,12 @@
-# Checks a server for drift every morning and fails the workflow when it
-# differs from the recipe. The JSON report is kept as an artifact either way.
+# Checks the servers in the inventory for drift every morning and fails the
+# workflow when one differs from the recipe. The JSON report is kept as an
+# artifact either way.
 #
 # Copy to .github/workflows/drift.yml in the repository that holds your
-# recipe. It needs:
-#   - sadame installed on the server, and passwordless sudo for SSH_USER;
-#   - repository secrets SSH_PRIVATE_KEY (a key that can log in as SSH_USER)
-#     and SSH_KNOWN_HOSTS (the output of `ssh-keyscan your.server`).
+# recipe (here in site/, with site/hosts.rb). It needs repository secrets
+# SSH_PRIVATE_KEY (a key the hosts.rb users accept) and SSH_KNOWN_HOSTS (the
+# output of `ssh-keyscan` for every server), and passwordless sudo on the
+# servers if the recipe needs root.
 name: Drift
 
 on:
@@ -16,11 +17,11 @@ on:
 jobs:
   drift:
     runs-on: ubuntu-latest
-    env:
-      SSH_TARGET: deploy@web1.example.com
-      RECIPE_DIR: site
     steps:
       - uses: actions/checkout@v7
+
+      - name: Install sadame
+        run: curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | sh
 
       - name: Set up SSH
         run: |
@@ -29,15 +30,10 @@ jobs:
           chmod 0600 ~/.ssh/id_ed25519
           printf '%s\n' "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
 
-      - name: Copy the recipe to the server
-        run: |
-          ssh "$SSH_TARGET" 'rm -rf sadame-recipe'
-          scp -r "$RECIPE_DIR" "$SSH_TARGET:sadame-recipe"
-
-      # ssh exits with sadame's status: 0 no drift, 1 drift, 2 error.
-      # Any non-zero status fails this step and the workflow.
+      # Exit status: 0 no drift, 1 drift on a server, 2 a server could not be
+      # checked. Anything but 0 fails this step and the workflow.
       - name: Check for drift
-        run: ssh "$SSH_TARGET" 'sudo sadame drift sadame-recipe --json' > drift.json
+        run: sadame drift site/site.rb -g all --json > drift.json
 
       - name: Keep the drift report
         if: always()
