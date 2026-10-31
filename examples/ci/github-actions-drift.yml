@@ -1,0 +1,47 @@
+# Checks a server for drift every morning and fails the workflow when it
+# differs from the recipe. The JSON report is kept as an artifact either way.
+#
+# Copy to .github/workflows/drift.yml in the repository that holds your
+# recipe. It needs:
+#   - sadame installed on the server, and passwordless sudo for SSH_USER;
+#   - repository secrets SSH_PRIVATE_KEY (a key that can log in as SSH_USER)
+#     and SSH_KNOWN_HOSTS (the output of `ssh-keyscan your.server`).
+name: Drift
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    env:
+      SSH_TARGET: deploy@web1.example.com
+      RECIPE_DIR: site
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up SSH
+        run: |
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 0600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Copy the recipe to the server
+        run: |
+          ssh "$SSH_TARGET" 'rm -rf sadame-recipe'
+          scp -r "$RECIPE_DIR" "$SSH_TARGET:sadame-recipe"
+
+      # ssh exits with sadame's status: 0 no drift, 1 drift, 2 error.
+      # Any non-zero status fails this step and the workflow.
+      - name: Check for drift
+        run: ssh "$SSH_TARGET" 'sudo sadame drift sadame-recipe --json' > drift.json
+
+      - name: Keep the drift report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: drift-report
+          path: drift.json
