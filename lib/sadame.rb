@@ -5,6 +5,7 @@
 # code must never call require: the mruby build has no stdlib.
 require_relative "sadame/version"
 require_relative "sadame/errors"
+require_relative "sadame/json_writer"
 require_relative "sadame/shell"
 require_relative "sadame/platform"
 require_relative "sadame/diff"
