@@ -68,8 +68,9 @@ class CLITest < SadameTest
     shell = fresh_debian_shell
     status, stdout, = run_cli(["apply", BASIC], shell: shell)
     assert_equal 0, status, stdout
-    assert_includes stdout, "notified   service[nginx]: reload (from file[/etc/nginx/conf.d/app.conf])"
-    assert_includes stdout, "Apply: 5 changed, 0 unchanged, 0 failed."
+    assert_includes stdout, "notified   service[nginx]: reload (delayed, from file[/etc/nginx/conf.d/app.conf])"
+    assert_includes stdout, "\nSummary\n  changed      5  package[nginx]\n"
+    assert_includes stdout, "  notified     1  service[nginx]: reload\n"
     expected = [
       "DEBIAN_FRONTEND=noninteractive apt-get update",
       "DEBIAN_FRONTEND=noninteractive apt-get install -y nginx",
@@ -86,6 +87,44 @@ class CLITest < SadameTest
     ]
     changes = shell.commands.reject { |command| FreshHostShell::QUERY_PREFIXES.any? { |prefix| command.start_with?(prefix) } }
     assert_equal expected, changes - ["uname -s"]
+  end
+
+  def test_drift_exits_one_when_the_host_differs
+    status, stdout, = run_cli(["drift", BASIC], shell: fresh_debian_shell)
+    assert_equal 1, status
+    assert_includes stdout, "sadame #{Sadame::VERSION} drift on local"
+    assert_includes stdout, "+ package[nginx]\n"
+    assert_includes stdout, "Drift: 5 of 5 resources differ from the recipe.\n"
+  end
+
+  def test_drift_exits_zero_when_the_host_matches
+    shell = linux_shell("debian")
+    status, stdout, = run_cli(["drift", "examples/resources/package/minimal.rb"], shell: shell)
+    assert_equal 1, status, stdout
+
+    shell.on("dpkg-query -W -f='${Status}' htop", stdout: "install ok installed")
+    status, stdout, = run_cli(["drift", "examples/resources/package/minimal.rb"], shell: shell)
+    assert_equal 0, status
+    assert_includes stdout, "No drift: 1 resource matches the recipe.\n"
+  end
+
+  def test_drift_and_plan_exit_two_when_state_cannot_be_read
+    shell = fresh_debian_shell.on("test -d /run/systemd/system", exit_status: 1)
+    status, stdout, = run_cli(["drift", BASIC], shell: shell)
+    assert_equal 2, status
+    assert_includes stdout, "x service[nginx]\n"
+    assert_includes stdout, "Could not check 1 resource; see the errors above.\n"
+
+    status, = run_cli(["plan", BASIC], shell: shell)
+    assert_equal 2, status
+  end
+
+  def test_drift_json
+    status, stdout, = run_cli(["drift", BASIC, "--json"], shell: fresh_debian_shell)
+    assert_equal 1, status
+    assert_includes stdout, "\"command\": \"drift\""
+    assert_includes stdout, "\"drift\": true,\n  \"failed\": false,\n  \"exit_status\": 1,\n"
+    assert_includes stdout, "\"notifications\": [\n        {\n          \"action\": \"reload\",\n"
   end
 
   def test_recipe_errors_exit_with_two

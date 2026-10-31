@@ -4,10 +4,12 @@ module Sadame
   # Command-line interface: parses arguments, loads the recipe and vars,
   # runs the command and returns the process exit status.
   #
-  # Exit status: 0 success, 1 a resource or notification failed,
-  # 2 usage, recipe or configuration error.
+  # Exit status (see Report#exit_status):
+  #   0 success
+  #   1 apply failed, or drift found differences
+  #   2 usage or recipe error, or plan/drift could not read some state
   class CLI
-    COMMANDS = %w[plan apply].freeze
+    COMMANDS = %w[plan apply drift].freeze
     DEFAULT_RECIPE = "recipe.rb"
 
     USAGE = <<~TEXT
@@ -16,6 +18,7 @@ module Sadame
       Commands:
         plan     Show what apply would change, as a diff. Changes nothing.
         apply    Make the host match the recipe.
+        drift    Like plan, but exit 1 when the host differs from the recipe.
 
       RECIPE is a recipe file or a directory containing recipe.rb
       (default: ./recipe.rb). vars.rb next to the recipe is loaded if present.
@@ -26,6 +29,11 @@ module Sadame
         --no-color        Disable colors (also: NO_COLOR environment variable)
         --version         Print the version
         --help            Print this help
+
+      Exit status:
+        0  success; for drift, the host matches the recipe
+        1  apply failed, or drift found differences
+        2  usage or recipe error, or the state of a resource could not be read
     TEXT
 
     def initialize(argv, stdout: $stdout, stderr: $stderr, shell: nil, environment: ENV)
@@ -58,8 +66,12 @@ module Sadame
       host = Host.new(@shell || Shell.new)
       resources = Recipe.load(recipe_path, host: host, vars: vars)
       runner = Runner.new(host: host, output: build_output(options))
-      report = options[:command] == "plan" ? runner.plan(resources) : runner.apply(resources)
-      report.failed? ? 1 : 0
+      report = case options[:command]
+               when "plan" then runner.plan(resources)
+               when "drift" then runner.drift(resources)
+               else runner.apply(resources)
+               end
+      report.exit_status
     end
 
     def parse(argv)
