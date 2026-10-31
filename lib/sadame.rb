@@ -4,3 +4,5 @@
 # compile the same files, in the same order, into the mruby binary. Library
 # code must never call require: the mruby build has no stdlib.
 require_relative "sadame/version"
+require_relative "sadame/errors"
+require_relative "sadame/shell"
