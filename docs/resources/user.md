@@ -21,7 +21,8 @@ account with `getent passwd` and `id -nG`, and changes it with `useradd`,
 | `groups` | Array of Strings | unmanaged | Groups the user must belong to. Other memberships are left alone. The groups must exist. |
 | `system` | `true` or `false` | `false` | Create a system account (`useradd -r`), which gets no home directory. Only used when the user is created. |
 | `state` | `:present` or `:absent` | `:present` | `:absent` deletes the account with `userdel`; the home directory is kept. |
-| `notifies` | `[:action, "type[name]"]` or a list of them | none | Actions to run at the end of `apply` if this resource changed. |
+| `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
+| `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
 
 New users that are not system users get a home directory (`useradd -m`).
 Changing `home` on an existing user updates the account but does not move
@@ -36,37 +37,7 @@ files.
 ### A deploy user and a service account
 
 ```text
-$ sudo sadame plan examples/resources/user
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-+ user[deploy]
-    state: absent -> present
-    shell: /bin/bash
-    groups: adm
-
-+ user[svc-backup]
-    state: absent -> present
-    home: /var/lib/svc-backup
-    shell: /usr/sbin/nologin
-
-Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 0 unchanged.
-
-$ sudo sadame apply examples/resources/user
-sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
-
-changed    user[deploy]
-           state: absent -> present
-           shell: /bin/bash
-           groups: adm
-changed    user[svc-backup]
-           state: absent -> present
-           home: /var/lib/svc-backup
-           shell: /usr/sbin/nologin
-
-Apply: 2 changed, 0 unchanged, 0 failed.
-
-$ id deploy
-uid=1000(deploy) gid=1000(deploy) groups=1000(deploy),4(adm)
+--8<-- "docs/transcripts/user.txt"
 ```
 
 ### Adding a user to the docker group
@@ -78,17 +49,7 @@ uid=1000(deploy) gid=1000(deploy) groups=1000(deploy),4(adm)
 ```
 
 ```text
-$ sudo sadame plan examples/resources/user/docker_group.rb
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-+ package[docker.io]
-    state: absent -> installed
-
-+ user[deploy]
-    state: absent -> present
-    groups: docker
-
-Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 0 unchanged.
+--8<-- "docs/transcripts/user-docker-group.txt"
 ```
 
 ### Removing an account

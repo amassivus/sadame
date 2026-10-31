@@ -39,35 +39,7 @@ examples/basics/
 Planned on a fresh Debian 12 machine:
 
 ```text
-$ sudo sadame plan examples/basics
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-+ package[curl]
-    state: absent -> installed
-
-+ package[less]
-    state: absent -> installed
-
-+ directory[/etc/sadame-demo]
-    state: absent -> present
-    mode: 0755
-
-~ file[/etc/motd]
-    --- /etc/motd
-    +++ /etc/motd (desired)
-    @@ -1,7 +1,3 @@
-    -
-    -The programs included with the Debian GNU/Linux system are free software;
-    -the exact distribution terms for each program are described in the
-    -individual files in /usr/share/doc/*/copyright.
-    -
-    -Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-    -permitted by applicable law.
-    +This machine is managed by sadame. Local changes will be overwritten.
-    +Team:    platform
-    +Contact: ops@example.com
-
-Plan: 3 to create, 1 to update, 0 to remove, 0 to run, 0 unchanged.
+--8<-- "docs/transcripts/basics-plan.txt"
 ```
 
 ## The recipe file
@@ -79,10 +51,10 @@ Plan: 3 to create, 1 to update, 0 to remove, 0 to run, 0 unchanged.
 - An id may appear only once. Declaring `package "git"` twice is an error
   that names the file and line.
 - Options are checked when the recipe loads. A misspelled option fails the
-  whole run before anything is changed:
+  whole run, with exit status 2, before anything is changed:
 
   ```text
-  sadame: recipe.rb:2: file[/etc/motd]: unknown option :contents (valid options: content, group, locals, mode, notifies, owner, sensitive, source, state, template)
+  --8<-- "docs/transcripts/basics-unknown-option.txt"
   ```
 
 - Ruby code in a recipe runs every time the recipe is loaded, for `plan` as
@@ -130,17 +102,7 @@ Values given with `--var` are strings, except:
 Adding a maintenance window for one run changes the template output:
 
 ```text
-$ sudo sadame plan examples/basics --var maintenance='Sundays 02:00-03:00 UTC'
-...
-~ file[/etc/motd]
-    --- /etc/motd
-    +++ /etc/motd (desired)
-    @@ -1,7 +1,4 @@
-    ...
-    +This machine is managed by sadame. Local changes will be overwritten.
-    +Team:    platform
-    +Contact: ops@example.com
-    +Maintenance window: Sundays 02:00-03:00 UTC
+--8<-- "docs/transcripts/basics-plan-maintenance.txt"
 ```
 
 ## include_recipe
@@ -182,31 +144,14 @@ After `apply`, changing a var shows exactly which lines of the rendered file
 change:
 
 ```text
-$ sudo sadame plan examples/basics --var contact=platform@example.com
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-~ file[/etc/motd]
-    --- /etc/motd
-    +++ /etc/motd (desired)
-    @@ -1,3 +1,3 @@
-     This machine is managed by sadame. Local changes will be overwritten.
-     Team:    platform
-    -Contact: ops@example.com
-    +Contact: platform@example.com
-
-Plan: 0 to create, 1 to update, 0 to remove, 0 to run, 3 unchanged.
+--8<-- "docs/transcripts/basics-plan-contact.txt"
 ```
 
-An error in a template fails that resource and names the template and line:
+An error in a template fails that resource and names the template and
+line. Here `templates/app.conf.erb` contains `port = <%= port %>`:
 
 ```text
-$ sadame plan
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-x file[/etc/app.conf]
-    error: templates/app.conf.erb:3: undefined local variable or method `port' for #<Sadame::Template::Scope>
-
-Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 0 unchanged, 1 failed.
+--8<-- "docs/transcripts/basics-template-error.txt"
 ```
 
 Here the template used `port` instead of `locals[:port]`. The wording after

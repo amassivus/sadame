@@ -19,24 +19,13 @@ the difference as a diff, and `sadame apply` makes the machine match.
 ```
 
 ```text
-$ sadame plan examples/01-hello
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-+ file[/tmp/sadame-hello.txt]
-    state: absent -> present
-    --- /dev/null
-    +++ /tmp/sadame-hello.txt (desired)
-    @@ -0,0 +1 @@
-    +Hello from sadame!
-
-Plan: 1 to create, 0 to update, 0 to remove, 0 to run, 0 unchanged.
+--8<-- "docs/transcripts/getting-started-plan.txt"
 ```
 
 !!! note "Status"
     Sadame is under development towards 0.1.0. Today it runs recipes on the
-    local machine with `plan` and `apply`. Drift detection, inventories,
-    pushing to remote hosts over SSH, and release binaries are being built
-    next.
+    local machine with `plan`, `apply` and `drift`. Inventories, pushing to
+    remote hosts over SSH, and release binaries are being built next.
 
 ## Where to start
 

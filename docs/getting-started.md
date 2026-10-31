@@ -51,17 +51,7 @@ It writes to `/tmp`, so it works without root.
 prints what `apply` would change. It changes nothing.
 
 ```text
-$ sadame plan examples/01-hello
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-+ file[/tmp/sadame-hello.txt]
-    state: absent -> present
-    --- /dev/null
-    +++ /tmp/sadame-hello.txt (desired)
-    @@ -0,0 +1 @@
-    +Hello from sadame!
-
-Plan: 1 to create, 0 to update, 0 to remove, 0 to run, 0 unchanged.
+--8<-- "docs/transcripts/getting-started-plan.txt"
 ```
 
 `RECIPE` can be a file or a directory that contains `recipe.rb`. Without it,
@@ -73,17 +63,7 @@ sadame looks for `./recipe.rb`.
 only what differs:
 
 ```text
-$ sadame apply examples/01-hello
-sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
-
-changed    file[/tmp/sadame-hello.txt]
-           state: absent -> present
-           --- /dev/null
-           +++ /tmp/sadame-hello.txt (desired)
-           @@ -0,0 +1 @@
-           +Hello from sadame!
-
-Apply: 1 changed, 0 unchanged, 0 failed.
+--8<-- "docs/transcripts/getting-started-apply.txt"
 ```
 
 Run `plan` again and there is nothing left to do. That is what idempotent
@@ -91,10 +71,7 @@ means here: once the machine matches the recipe, running it again changes
 nothing.
 
 ```text
-$ sadame plan examples/01-hello
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
+--8<-- "docs/transcripts/getting-started-plan-again.txt"
 ```
 
 ## Read the diff
@@ -102,18 +79,7 @@ Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
 Now change the file by hand, the way a colleague or a package upgrade might:
 
 ```text
-$ echo 'Hello from someone else' > /tmp/sadame-hello.txt
-$ sadame plan examples/01-hello
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-~ file[/tmp/sadame-hello.txt]
-    --- /tmp/sadame-hello.txt
-    +++ /tmp/sadame-hello.txt (desired)
-    @@ -1 +1 @@
-    -Hello from someone else
-    +Hello from sadame!
-
-Plan: 0 to create, 1 to update, 0 to remove, 0 to run, 0 unchanged.
+--8<-- "docs/transcripts/getting-started-edited.txt"
 ```
 
 Each resource that would change gets a header line with a symbol and the
@@ -146,58 +112,36 @@ when the `NO_COLOR` environment variable is set.
 The last line counts resources by what would happen to them. Unchanged
 resources are counted but not listed.
 
-## JSON output
+## Check for drift
 
-`--json` prints one JSON document instead, for scripts and CI:
+`sadame drift` reads the same state as `plan`, but its exit status says
+whether the machine still matches the recipe: `0` when it does, `1` when it
+has drifted. That makes it the command for scripts, cron jobs and CI:
 
 ```text
-$ sadame plan examples/01-hello --json
-{
-  "format_version": 1,
-  "sadame_version": "0.1.0.dev",
-  "command": "plan",
-  "host": "local",
-  "platform": {
-    "name": "Debian GNU/Linux 12 (bookworm)",
-    "family": "debian",
-    "package_manager": "apt"
-  },
-  "resources": [
-    {
-      "id": "file[/tmp/sadame-hello.txt]",
-      "type": "file",
-      "name": "/tmp/sadame-hello.txt",
-      "status": "update",
-      "changes": [
-        {
-          "attribute": "content",
-          "sensitive": false,
-          "diff": "--- current\n+++ desired\n@@ -1 +1 @@\n-Hello from someone else\n+Hello from sadame!\n"
-        }
-      ],
-      "error": null
-    }
-  ],
-  "notifications": [],
-  "summary": {
-    "create": 0,
-    "update": 1,
-    "remove": 0,
-    "run": 0,
-    "unchanged": 0,
-    "failed": 0
-  },
-  "failed": false
-}
+--8<-- "docs/transcripts/getting-started-drift.txt"
+```
+
+[Plan, apply, drift](concepts/plan-apply-drift.md) explains when to use
+which, and [Drift in CI](guides/drift-in-ci.md) runs the check on a
+schedule.
+
+## JSON output
+
+`--json` prints one JSON document instead, for scripts and CI. Every field
+is described in the [JSON output reference](reference/json-output.md):
+
+```text
+--8<-- "docs/transcripts/getting-started-json.txt"
 ```
 
 ## Exit status
 
-| Status | Meaning |
-|---|---|
-| `0` | success; for `plan`, also when there are changes |
-| `1` | a resource or notification failed |
-| `2` | usage error, or the recipe, `vars.rb` or a template could not be loaded |
+| Status | `plan` | `apply` | `drift` |
+|---|---|---|---|
+| `0` | the plan was computed, with or without changes | every resource and notification succeeded | the machine matches the recipe |
+| `1` | not used | a resource or notification failed | the machine differs from the recipe |
+| `2` | usage or recipe error, or the state of a resource could not be read | usage or recipe error | usage or recipe error, or the state of a resource could not be read |
 
 ## Common mistakes
 
@@ -214,6 +158,8 @@ $ sadame plan examples/01-hello --json
 
 ## See also
 
+- [Plan, apply, drift](concepts/plan-apply-drift.md): the three commands
+  and their exit statuses.
 - [Recipe basics](recipes/basics.md): vars, `include_recipe` and templates.
 - [Resources](resources/package.md): every resource and its options.
 - `sadame --help` for the full command line.

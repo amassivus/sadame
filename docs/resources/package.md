@@ -19,7 +19,8 @@ or removes when the answer differs from the recipe.
 |---|---|---|---|
 | `state` | `:installed` or `:absent` | `:installed` | Whether the package must be installed. |
 | `options` | String or Array of Strings | none | Extra flags for the install or remove command, placed before the package name. A String is used as is; Array elements are each shell-quoted. |
-| `notifies` | `[:action, "type[name]"]` or a list of them | none | Actions to run at the end of `apply` if this resource changed. |
+| `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
+| `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
 
 ## Commands per package manager
 
@@ -53,32 +54,7 @@ The recipe used below:
 ### Debian 12
 
 ```text
-$ sudo sadame plan examples/resources/package
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-+ package[tree]
-    state: absent -> installed
-
-+ package[htop]
-    state: absent -> installed
-
-Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
-
-$ sudo sadame apply examples/resources/package
-sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
-
-changed    package[tree]
-           state: absent -> installed
-changed    package[htop]
-           state: absent -> installed
-unchanged  package[nano]
-
-Apply: 2 changed, 1 unchanged, 0 failed.
-
-$ sudo sadame plan examples/resources/package
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 3 unchanged.
+--8<-- "docs/transcripts/package-debian.txt"
 ```
 
 ### Arch Linux
@@ -86,31 +62,7 @@ Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 3 unchanged.
 The same recipe, unchanged, on Arch:
 
 ```text
-$ sudo sadame plan examples/resources/package
-sadame 0.1.0.dev plan on local (Arch Linux)
-
-+ package[tree]
-    state: absent -> installed
-
-+ package[htop]
-    state: absent -> installed
-
-Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
-
-$ sudo sadame apply examples/resources/package
-sadame 0.1.0.dev apply on local (Arch Linux)
-
-changed    package[tree]
-           state: absent -> installed
-changed    package[htop]
-           state: absent -> installed
-unchanged  package[nano]
-
-Apply: 2 changed, 1 unchanged, 0 failed.
-
-$ pacman -Q tree htop
-tree 2.3.2-1
-htop 3.5.3-1
+--8<-- "docs/transcripts/package-arch.txt"
 ```
 
 ### Different names on different distributions
@@ -122,13 +74,7 @@ Package names are the distribution's own. Choose with plain Ruby:
 ```
 
 ```text
-$ sudo sadame plan examples/resources/package/by_family.rb
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-+ package[apache2]
-    state: absent -> installed
-
-Plan: 1 to create, 0 to update, 0 to remove, 0 to run, 0 unchanged.
+--8<-- "docs/transcripts/package-by-family.txt"
 ```
 
 ### AUR packages
@@ -152,10 +98,7 @@ commands with standard input closed and cannot answer one. Without `yay`
 installed, `only_if` skips the resource:
 
 ```text
-$ sudo sadame plan examples/resources/package/aur.rb
-sadame 0.1.0.dev plan on local (Arch Linux)
-
-Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
+--8<-- "docs/transcripts/package-aur.txt"
 ```
 
 ## Common mistakes

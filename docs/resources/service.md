@@ -18,7 +18,8 @@ restart when they change, through `notifies:`.
 |---|---|---|---|
 | `enable` | `true` or `false` | unmanaged | Start at boot (`systemctl enable`) or not (`systemctl disable`). Enabled means `systemctl is-enabled` prints `enabled`. |
 | `state` | `:running` or `:stopped` | unmanaged | Running now (`systemctl start`) or not (`systemctl stop`). Running means `systemctl is-active` prints `active`. |
-| `notifies` | `[:action, "type[name]"]` or a list of them | none | Actions to run at the end of `apply` if this resource changed. |
+| `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
+| `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
 
 A service with neither option manages nothing by itself; it is still a valid
 target for notifications.
@@ -36,8 +37,9 @@ Other resources can trigger these with `notifies: [:action, "service[name]"]`:
 | `:enable` | `systemctl enable NAME` |
 | `:disable` | `systemctl disable NAME` |
 
-Notified actions run once each, after all resources, and only when the
-notifying resource changed. See the scenario below.
+Actions run only when the notifying resource changed. By default they run
+once each, after all resources; add `:immediately` to run one right away.
+See the scenario below and [Notifications](../recipes/notifications.md).
 
 ## Scenarios
 
@@ -53,51 +55,13 @@ the time `service[nginx]` is applied, only the running state is left to
 change:
 
 ```text
-$ sudo sadame plan examples/resources/service
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-+ package[nginx]
-    state: absent -> installed
-
-~ service[nginx]
-    enabled: false -> true
-    state: stopped -> running
-
-Plan: 1 to create, 1 to update, 0 to remove, 0 to run, 0 unchanged.
-
-$ sudo sadame apply examples/resources/service
-sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
-
-changed    package[nginx]
-           state: absent -> installed
-changed    service[nginx]
-           state: stopped -> running
-
-Apply: 2 changed, 0 unchanged, 0 failed.
+--8<-- "docs/transcripts/service-install.txt"
 ```
 
 ### Someone stopped and disabled it
 
 ```text
-$ sudo systemctl stop nginx && sudo systemctl disable nginx
-$ sudo sadame plan examples/resources/service
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-~ service[nginx]
-    enabled: false -> true
-    state: stopped -> running
-
-Plan: 0 to create, 1 to update, 0 to remove, 0 to run, 1 unchanged.
-
-$ sudo sadame apply examples/resources/service
-sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
-
-unchanged  package[nginx]
-changed    service[nginx]
-           enabled: false -> true
-           state: stopped -> running
-
-Apply: 1 changed, 1 unchanged, 0 failed.
+--8<-- "docs/transcripts/service-repair.txt"
 ```
 
 ### Reloading after a configuration change
@@ -107,26 +71,7 @@ Apply: 1 changed, 1 unchanged, 0 failed.
 ```
 
 ```text
-$ sudo sadame apply examples/resources/service/reload_on_change.rb
-sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
-
-changed    package[nginx]
-           state: absent -> installed
-changed    file[/etc/nginx/conf.d/status.conf]
-           state: absent -> present
-           mode: 0644
-           --- /dev/null
-           +++ /etc/nginx/conf.d/status.conf (desired)
-           @@ -0,0 +1,4 @@
-           +server {
-           +  listen 127.0.0.1:8080;
-           +  location = /status { stub_status; }
-           +}
-changed    service[nginx]
-           state: stopped -> running
-notified   service[nginx]: reload (from file[/etc/nginx/conf.d/status.conf])
-
-Apply: 3 changed, 0 unchanged, 0 failed.
+--8<-- "docs/transcripts/service-reload.txt"
 ```
 
 On the next run nothing changes, so nothing is reloaded.
@@ -144,6 +89,8 @@ On the next run nothing changes, so nothing is reloaded.
   `enable: true` on them shows a change on every plan. Leave `enable` out.
 - **Expecting a reload when only the service changed.** `reload` and
   `restart` happen only through notifications from other resources.
+- **Reloading a service that cannot reload.** `systemctl reload` fails for
+  units without `ExecReload=`. Notify `:restart` for those.
 
 ## See also
 

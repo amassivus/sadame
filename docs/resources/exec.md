@@ -23,7 +23,9 @@ only runs during `apply`.
 | `only_if` | String | none | Skip unless this command exits 0. |
 | `cwd` | String | inherited | Working directory for the command and its guards. |
 | `env` | Hash of String to String | none | Environment variables for the command and its guards. |
-| `notifies` | `[:action, "type[name]"]` or a list of them | none | Actions to run at the end of `apply` if the command ran. |
+| `action` | `:run` or `:nothing` | `:run` | `:nothing` never runs the command on its own, only when another resource notifies it. |
+| `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this command runs. See [Notifications](../recipes/notifications.md). |
+| `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
 
 The command runs when every guard you gave agrees: the `creates` path is
 missing, `not_if` exits non-zero, and `only_if` exits 0. Guards are checked
@@ -36,7 +38,10 @@ the command's error output, marks the resource `failed`, and skips the
 resources after it.
 
 Other resources can trigger the command with
-`notifies: [:run, "exec[NAME]"]`.
+`notifies: [:run, "exec[NAME]"]`. Combined with `action: :nothing`, that
+gives a command that runs only when something else changed, such as
+`systemctl daemon-reload` after a unit file changed; see
+[Notifications](../recipes/notifications.md).
 
 ## Scenarios
 
@@ -47,25 +52,7 @@ Other resources can trigger the command with
 ### Plan explains why each command will run
 
 ```text
-$ sudo sadame plan examples/resources/exec
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-+ directory[/opt/demo]
-    state: absent -> present
-
-! exec[tar -czf /opt/demo/etc-backup.tar.gz -C /etc hostname hosts]
-    command: tar -czf /opt/demo/etc-backup.tar.gz -C /etc hostname hosts
-    (/opt/demo/etc-backup.tar.gz does not exist)
-
-! exec[echo 'EDITOR=vim' >> /etc/environment]
-    command: echo 'EDITOR=vim' >> /etc/environment
-    (not_if exited non-zero)
-
-! exec[echo "built by $BUILDER" > build-info.txt]
-    command: echo "built by $BUILDER" > build-info.txt
-    (/opt/demo/build-info.txt does not exist)
-
-Plan: 1 to create, 0 to update, 0 to remove, 3 to run, 1 unchanged.
+--8<-- "docs/transcripts/exec-plan.txt"
 ```
 
 The `git config` command is not listed: this machine has no `git`, so its
@@ -74,38 +61,15 @@ The `git config` command is not listed: this machine has no `git`, so its
 ### After apply, the guards hold
 
 ```text
-$ sudo sadame apply examples/resources/exec
-sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
-
-changed    directory[/opt/demo]
-           state: absent -> present
-changed    exec[tar -czf /opt/demo/etc-backup.tar.gz -C /etc hostname hosts]
-           command: tar -czf /opt/demo/etc-backup.tar.gz -C /etc hostname hosts
-           (/opt/demo/etc-backup.tar.gz does not exist)
-changed    exec[echo 'EDITOR=vim' >> /etc/environment]
-           command: echo 'EDITOR=vim' >> /etc/environment
-           (not_if exited non-zero)
-unchanged  exec[git config --system init.defaultBranch main]
-changed    exec[echo "built by $BUILDER" > build-info.txt]
-           command: echo "built by $BUILDER" > build-info.txt
-           (/opt/demo/build-info.txt does not exist)
-
-Apply: 4 changed, 1 unchanged, 0 failed.
-
-$ sudo sadame plan examples/resources/exec
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 5 unchanged.
-
-$ cat /opt/demo/build-info.txt
-built by sadame
+--8<-- "docs/transcripts/exec-apply.txt"
 ```
 
 ## Common mistakes
 
 - **No guard.** An `exec` without `creates`, `not_if` or `only_if` runs on
-  every apply, and plan always lists it with "(no guard, runs on every
-  apply)". That is rarely what you want.
+  every apply, plan always lists it with "(no guard, runs on every
+  apply)", and `drift` always reports it. Add a guard, or use
+  `action: :nothing` if it should only run when notified.
 - **Guards with side effects.** Guards run during `plan`. A guard such as
   `not_if: "mkdir /x"` changes the machine when you only asked to look.
 - **Interactive commands.** Standard input is closed, so a command that

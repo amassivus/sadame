@@ -27,7 +27,8 @@ written.
 | `group` | String | unmanaged | Group name of the file. |
 | `state` | `:present` or `:absent` | `:present` | `:absent` deletes the file. |
 | `sensitive` | `true` or `false` | `false` | Hide content diffs in output and JSON, for files holding secrets. |
-| `notifies` | `[:action, "type[name]"]` or a list of them | none | Actions to run at the end of `apply` if this resource changed. |
+| `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
+| `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
 
 Use at most one of `content`, `template` and `source`. With none of them,
 sadame manages only the attributes you give and creates an empty file if it
@@ -53,41 +54,7 @@ The recipe used below:
 ### First apply
 
 ```text
-$ sudo sadame apply examples/resources/file
-sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
-
-changed    file[/etc/issue.net]
-           --- /etc/issue.net
-           +++ /etc/issue.net (desired)
-           @@ -1 +1 @@
-           -Debian GNU/Linux 12
-           +Authorized access only.
-changed    directory[/etc/hello]
-           state: absent -> present
-changed    file[/etc/hello/hello.conf]
-           state: absent -> present
-           mode: 0640
-           owner: root
-           group: root
-           --- /dev/null
-           +++ /etc/hello/hello.conf (desired)
-           @@ -0,0 +1,5 @@
-           +# Managed by sadame. Local changes will be overwritten.
-           +listen = 8080
-           +environment = staging
-           +upstream = 10.0.0.11:9000
-           +upstream = 10.0.0.12:9000
-changed    file[/usr/local/bin/hello]
-           state: absent -> present
-           mode: 0755
-           --- /dev/null
-           +++ /usr/local/bin/hello (desired)
-           @@ -0,0 +1,2 @@
-           +#!/bin/sh
-           +echo "hello from $(hostname)"
-unchanged  file[/etc/hello/old.conf]
-
-Apply: 4 changed, 1 unchanged, 0 failed.
+--8<-- "docs/transcripts/file-apply.txt"
 ```
 
 ### Changing a template variable
@@ -95,21 +62,7 @@ Apply: 4 changed, 1 unchanged, 0 failed.
 Rendering with a different var shows exactly which lines change:
 
 ```text
-$ sudo sadame plan examples/resources/file --var environment=production
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-~ file[/etc/hello/hello.conf]
-    --- /etc/hello/hello.conf
-    +++ /etc/hello/hello.conf (desired)
-    @@ -1,5 +1,5 @@
-     # Managed by sadame. Local changes will be overwritten.
-     listen = 8080
-    -environment = staging
-    +environment = production
-     upstream = 10.0.0.11:9000
-     upstream = 10.0.0.12:9000
-
-Plan: 0 to create, 1 to update, 0 to remove, 0 to run, 4 unchanged.
+--8<-- "docs/transcripts/file-var.txt"
 ```
 
 In a terminal the diff is colored:
@@ -131,14 +84,7 @@ In a terminal the diff is colored:
 Only the attribute that differs is reported, and `apply` only runs `chmod`:
 
 ```text
-$ sudo chmod 0644 /etc/hello/hello.conf
-$ sudo sadame plan examples/resources/file
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-~ file[/etc/hello/hello.conf]
-    mode: 0644 -> 0640
-
-Plan: 0 to create, 1 to update, 0 to remove, 0 to run, 4 unchanged.
+--8<-- "docs/transcripts/file-chmod.txt"
 ```
 
 ## Common mistakes

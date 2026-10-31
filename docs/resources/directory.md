@@ -20,7 +20,8 @@ directory, and to keep application directories owned by the right user.
 | `group` | String | unmanaged | Group name of the directory. |
 | `state` | `:present` or `:absent` | `:present` | `:absent` removes the directory. |
 | `recursive` | `true` or `false` | `false` | With `state: :absent`, remove the directory and everything in it (`rm -rf`). Without it, only an empty directory can be removed (`rmdir`). |
-| `notifies` | `[:action, "type[name]"]` or a list of them | none | Actions to run at the end of `apply` if this resource changed. |
+| `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
+| `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
 
 Creating runs `mkdir -p`, then `chmod` and `chown` for the attributes you
 gave. Parents created by `mkdir -p` get default permissions; declare them as
@@ -35,40 +36,7 @@ their own resources if they matter.
 ### Application directories on a new server
 
 ```text
-$ sudo sadame plan examples/resources/directory
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-+ directory[/srv/app]
-    state: absent -> present
-    mode: 0755
-
-+ directory[/srv/app/shared]
-    state: absent -> present
-    mode: 0750
-    owner: www-data
-    group: www-data
-
-Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
-
-$ sudo sadame apply examples/resources/directory
-sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
-
-changed    directory[/srv/app]
-           state: absent -> present
-           mode: 0755
-changed    directory[/srv/app/shared]
-           state: absent -> present
-           mode: 0750
-           owner: www-data
-           group: www-data
-unchanged  directory[/srv/app/tmp]
-
-Apply: 2 changed, 1 unchanged, 0 failed.
-
-$ sudo sadame plan examples/resources/directory
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
-
-Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 3 unchanged.
+--8<-- "docs/transcripts/directory.txt"
 ```
 
 `directory[/srv/app/tmp]` is unchanged because it does not exist, which is
