@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  cruby:
+    name: Tests on CRuby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ["3.2", "3.3", "3.4"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: bundle exec rake test:cruby
+
+  mruby:
+    name: Tests on mruby
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - name: Install build tools
+        run: sudo apt-get update && sudo apt-get install -y bison
+      - name: Cache mruby and gem sources
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor
+            build/repos
+          key: mruby-sources-${{ runner.os }}-${{ hashFiles('Rakefile', 'build_config.rb.lock') }}
+      - run: bundle exec rake test:mruby
+      - name: Smoke test the binary
+        run: |
+          build/host/bin/sadame --version
+          build/host/bin/sadame plan examples/01-hello
+          build/host/bin/sadame apply examples/01-hello
+          build/host/bin/sadame plan examples/01-hello --json
