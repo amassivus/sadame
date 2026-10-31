@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Runs sadame from a source checkout with CRuby. Release builds are a single
+# mruby binary and do not use this file.
+require_relative "../lib/sadame"
+
+exit Sadame.main(ARGV)
