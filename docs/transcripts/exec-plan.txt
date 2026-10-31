@@ -1,0 +1,19 @@
+$ sudo sadame plan examples/resources/exec
+sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+
++ directory[/opt/demo]
+    state: absent -> present
+
+! exec[tar -czf /opt/demo/etc-backup.tar.gz -C /etc hostname hosts]
+    command: tar -czf /opt/demo/etc-backup.tar.gz -C /etc hostname hosts
+    (/opt/demo/etc-backup.tar.gz does not exist)
+
+! exec[echo 'EDITOR=vim' >> /etc/environment]
+    command: echo 'EDITOR=vim' >> /etc/environment
+    (not_if exited non-zero)
+
+! exec[echo "built by $BUILDER" > build-info.txt]
+    command: echo "built by $BUILDER" > build-info.txt
+    (/opt/demo/build-info.txt does not exist)
+
+Plan: 1 to create, 0 to update, 0 to remove, 3 to run, 1 unchanged.

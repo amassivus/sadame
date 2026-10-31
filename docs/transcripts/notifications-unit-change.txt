@@ -1,0 +1,29 @@
+$ sudo sadame apply examples/notifications --var interval=30 --var description='Ticker demo'
+sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
+
+unchanged  exec[systemctl daemon-reload]
+changed    file[/etc/systemd/system/ticker.service]
+           --- /etc/systemd/system/ticker.service
+           +++ /etc/systemd/system/ticker.service (desired)
+           @@ -1,6 +1,6 @@
+            # Managed by sadame. Local changes will be overwritten.
+            [Unit]
+           -Description=Writes the date to /var/log/ticker.log
+           +Description=Ticker demo
+            
+            [Service]
+            EnvironmentFile=/etc/default/ticker
+notified   exec[systemctl daemon-reload]: run (immediately, from file[/etc/systemd/system/ticker.service])
+unchanged  file[/etc/default/ticker]
+unchanged  service[ticker]
+notified   service[ticker]: restart (delayed, from file[/etc/systemd/system/ticker.service])
+
+Summary
+  changed      1  file[/etc/systemd/system/ticker.service]
+  unchanged    3
+  failed       0
+  skipped      0
+  notified     2  exec[systemctl daemon-reload]: run
+                  service[ticker]: restart
+
+Finished in 0.04s.

@@ -1,0 +1,36 @@
+$ sudo sadame apply examples/10-drift-demo
+sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
+
+unchanged  package[nginx]
+unchanged  user[demo-app]
+unchanged  directory[/etc/demo-app]
+changed    file[/etc/demo-app/app.conf]
+           mode: 0644 -> 0640
+           --- /etc/demo-app/app.conf
+           +++ /etc/demo-app/app.conf (desired)
+           @@ -1,4 +1,4 @@
+            # Managed by sadame. Local changes will be overwritten.
+            listen    = 127.0.0.1:9000
+           -workers   = 16
+           +workers   = 4
+            log_level = info
+changed    service[nginx]
+           state: stopped -> running
+
+Summary
+  changed      2  file[/etc/demo-app/app.conf]
+                  service[nginx]
+  unchanged    3
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 0.02s.
+
+$ sudo sadame drift examples/10-drift-demo
+sadame 0.1.0.dev drift on local (Debian GNU/Linux 12 (bookworm))
+
+No drift: 5 resources match the recipe.
+
+$ echo $?
+0

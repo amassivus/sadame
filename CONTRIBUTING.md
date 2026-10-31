@@ -82,7 +82,13 @@ Documentation is part of every change:
   with `--8<-- "examples/..."`. `test/unit/examples_test.rb` loads, plans
   and applies every example against a fake machine and checks that every
   `examples/` path mentioned in the docs exists.
-- Output shown in the docs is copied from real runs, trimmed if needed.
+- Terminal sessions in the docs are captured, not typed. Each one is
+  defined in `script/transcripts/scenarios.rb`, run in a fresh Docker
+  container by `rake docs:transcripts` (or `SCENARIO=name rake
+  docs:transcripts` for one), written to `docs/transcripts/`, and embedded
+  with `--8<-- "docs/transcripts/NAME.txt"`. Short excerpts, such as a diff
+  shown on its own, are copied from those files. When a change alters
+  output, regenerate the transcripts and commit them with the change.
 
 Build the site locally with:
 

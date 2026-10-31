@@ -1,0 +1,39 @@
+$ sudo sadame apply examples/10-drift-demo
+sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
+
+changed    package[nginx]
+           state: absent -> installed
+changed    user[demo-app]
+           state: absent -> present
+           home: /var/lib/demo-app
+           shell: /usr/sbin/nologin
+changed    directory[/etc/demo-app]
+           state: absent -> present
+           mode: 0755
+changed    file[/etc/demo-app/app.conf]
+           state: absent -> present
+           mode: 0640
+           owner: root
+           group: demo-app
+           --- /dev/null
+           +++ /etc/demo-app/app.conf (desired)
+           @@ -0,0 +1,4 @@
+           +# Managed by sadame. Local changes will be overwritten.
+           +listen    = 127.0.0.1:9000
+           +workers   = 4
+           +log_level = info
+changed    service[nginx]
+           state: stopped -> running
+
+Summary
+  changed      5  package[nginx]
+                  user[demo-app]
+                  directory[/etc/demo-app]
+                  file[/etc/demo-app/app.conf]
+                  service[nginx]
+  unchanged    0
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 6.77s.

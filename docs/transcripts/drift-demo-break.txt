@@ -1,0 +1,2 @@
+$ sudo sh examples/10-drift-demo/break-things.sh
+break-things: edited app.conf, changed its mode, stopped nginx

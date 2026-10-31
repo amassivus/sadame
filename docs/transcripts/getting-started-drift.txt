@@ -1,0 +1,14 @@
+$ sadame drift examples/01-hello
+sadame 0.1.0.dev drift on local (Debian GNU/Linux 12 (bookworm))
+
+~ file[/tmp/sadame-hello.txt]
+    --- /tmp/sadame-hello.txt
+    +++ /tmp/sadame-hello.txt (desired)
+    @@ -1 +1 @@
+    -Hello from someone else
+    +Hello from sadame!
+
+Drift: 1 of 1 resource differs from the recipe.
+
+$ echo $?
+1

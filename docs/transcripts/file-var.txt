@@ -1,0 +1,15 @@
+$ sudo sadame plan examples/resources/file --var environment=production
+sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+
+~ file[/etc/hello/hello.conf]
+    --- /etc/hello/hello.conf
+    +++ /etc/hello/hello.conf (desired)
+    @@ -1,5 +1,5 @@
+     # Managed by sadame. Local changes will be overwritten.
+     listen = 8080
+    -environment = staging
+    +environment = production
+     upstream = 10.0.0.11:9000
+     upstream = 10.0.0.12:9000
+
+Plan: 0 to create, 1 to update, 0 to remove, 0 to run, 4 unchanged.

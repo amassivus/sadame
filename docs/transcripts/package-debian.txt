@@ -1,0 +1,34 @@
+$ sudo sadame plan examples/resources/package
+sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+
++ package[tree]
+    state: absent -> installed
+
++ package[htop]
+    state: absent -> installed
+
+Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
+
+$ sudo sadame apply examples/resources/package
+sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
+
+changed    package[tree]
+           state: absent -> installed
+changed    package[htop]
+           state: absent -> installed
+unchanged  package[nano]
+
+Summary
+  changed      2  package[tree]
+                  package[htop]
+  unchanged    1
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 6.11s.
+
+$ sudo sadame plan examples/resources/package
+sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+
+Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 3 unchanged.

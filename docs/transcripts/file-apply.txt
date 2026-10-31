@@ -1,0 +1,45 @@
+$ sudo sadame apply examples/resources/file
+sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
+
+changed    file[/etc/issue.net]
+           --- /etc/issue.net
+           +++ /etc/issue.net (desired)
+           @@ -1 +1 @@
+           -Debian GNU/Linux 12
+           +Authorized access only.
+changed    directory[/etc/hello]
+           state: absent -> present
+changed    file[/etc/hello/hello.conf]
+           state: absent -> present
+           mode: 0640
+           owner: root
+           group: root
+           --- /dev/null
+           +++ /etc/hello/hello.conf (desired)
+           @@ -0,0 +1,5 @@
+           +# Managed by sadame. Local changes will be overwritten.
+           +listen = 8080
+           +environment = staging
+           +upstream = 10.0.0.11:9000
+           +upstream = 10.0.0.12:9000
+changed    file[/usr/local/bin/hello]
+           state: absent -> present
+           mode: 0755
+           --- /dev/null
+           +++ /usr/local/bin/hello (desired)
+           @@ -0,0 +1,2 @@
+           +#!/bin/sh
+           +echo "hello from $(hostname)"
+unchanged  file[/etc/hello/old.conf]
+
+Summary
+  changed      4  file[/etc/issue.net]
+                  directory[/etc/hello]
+                  file[/etc/hello/hello.conf]
+                  file[/usr/local/bin/hello]
+  unchanged    1
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 0.40s.

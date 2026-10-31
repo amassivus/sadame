@@ -1,0 +1,22 @@
+$ sudo sadame apply examples/notifications --var interval=30
+sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
+
+unchanged  exec[systemctl daemon-reload]
+unchanged  file[/etc/systemd/system/ticker.service]
+changed    file[/etc/default/ticker]
+           --- /etc/default/ticker
+           +++ /etc/default/ticker (desired)
+           @@ -1 +1 @@
+           -INTERVAL=60
+           +INTERVAL=30
+unchanged  service[ticker]
+notified   service[ticker]: restart (delayed, from file[/etc/default/ticker])
+
+Summary
+  changed      1  file[/etc/default/ticker]
+  unchanged    3
+  failed       0
+  skipped      0
+  notified     1  service[ticker]: restart
+
+Finished in 0.01s.

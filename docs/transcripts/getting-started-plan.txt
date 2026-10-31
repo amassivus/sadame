@@ -1,0 +1,11 @@
+$ sadame plan examples/01-hello
+sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+
++ file[/tmp/sadame-hello.txt]
+    state: absent -> present
+    --- /dev/null
+    +++ /tmp/sadame-hello.txt (desired)
+    @@ -0,0 +1 @@
+    +Hello from sadame!
+
+Plan: 1 to create, 0 to update, 0 to remove, 0 to run, 0 unchanged.

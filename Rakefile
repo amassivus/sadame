@@ -65,6 +65,14 @@ namespace :test do
   end
 end
 
+namespace :docs do
+  desc "Capture the terminal sessions shown in the docs (needs Docker); SCENARIO=name for one"
+  task :transcripts do
+    scenarios = ENV.fetch("SCENARIO", "").split(",")
+    sh "ruby", File.join(ROOT, "script", "transcripts", "capture.rb"), *scenarios
+  end
+end
+
 desc "Run the test suite on CRuby and on mruby"
 task test: ["test:cruby", "test:mruby"]
 

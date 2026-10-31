@@ -1,0 +1,42 @@
+$ sudo sadame plan examples/resources/directory
+sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+
++ directory[/srv/app]
+    state: absent -> present
+    mode: 0755
+
++ directory[/srv/app/shared]
+    state: absent -> present
+    mode: 0750
+    owner: www-data
+    group: www-data
+
+Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
+
+$ sudo sadame apply examples/resources/directory
+sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
+
+changed    directory[/srv/app]
+           state: absent -> present
+           mode: 0755
+changed    directory[/srv/app/shared]
+           state: absent -> present
+           mode: 0750
+           owner: www-data
+           group: www-data
+unchanged  directory[/srv/app/tmp]
+
+Summary
+  changed      2  directory[/srv/app]
+                  directory[/srv/app/shared]
+  unchanged    1
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 0.18s.
+
+$ sudo sadame plan examples/resources/directory
+sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+
+Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 3 unchanged.

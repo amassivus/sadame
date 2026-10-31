@@ -1,0 +1,89 @@
+$ sudo sadame drift examples/10-drift-demo --json
+{
+  "format_version": 1,
+  "sadame_version": "0.1.0.dev",
+  "command": "drift",
+  "host": "local",
+  "platform": {
+    "name": "Debian GNU/Linux 12 (bookworm)",
+    "family": "debian",
+    "package_manager": "apt"
+  },
+  "resources": [
+    {
+      "id": "package[nginx]",
+      "type": "package",
+      "name": "nginx",
+      "status": "unchanged",
+      "changes": [],
+      "notifications": [],
+      "error": null
+    },
+    {
+      "id": "user[demo-app]",
+      "type": "user",
+      "name": "demo-app",
+      "status": "unchanged",
+      "changes": [],
+      "notifications": [],
+      "error": null
+    },
+    {
+      "id": "directory[/etc/demo-app]",
+      "type": "directory",
+      "name": "/etc/demo-app",
+      "status": "unchanged",
+      "changes": [],
+      "notifications": [],
+      "error": null
+    },
+    {
+      "id": "file[/etc/demo-app/app.conf]",
+      "type": "file",
+      "name": "/etc/demo-app/app.conf",
+      "status": "update",
+      "changes": [
+        {
+          "attribute": "mode",
+          "from": "0644",
+          "to": "0640"
+        },
+        {
+          "attribute": "content",
+          "sensitive": false,
+          "diff": "--- current\n+++ desired\n@@ -1,4 +1,4 @@\n # Managed by sadame. Local changes will be overwritten.\n listen    = 127.0.0.1:9000\n-workers   = 16\n+workers   = 4\n log_level = info\n"
+        }
+      ],
+      "notifications": [],
+      "error": null
+    },
+    {
+      "id": "service[nginx]",
+      "type": "service",
+      "name": "nginx",
+      "status": "update",
+      "changes": [
+        {
+          "attribute": "state",
+          "from": "stopped",
+          "to": "running"
+        }
+      ],
+      "notifications": [],
+      "error": null
+    }
+  ],
+  "notifications": [],
+  "summary": {
+    "create": 0,
+    "update": 2,
+    "remove": 0,
+    "run": 0,
+    "unchanged": 3,
+    "failed": 0
+  },
+  "drift": true,
+  "failed": false,
+  "exit_status": 1,
+  "duration_seconds": 0.01
+}

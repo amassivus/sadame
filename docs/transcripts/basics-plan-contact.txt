@@ -1,0 +1,13 @@
+$ sudo sadame plan examples/basics --var contact=platform@example.com
+sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+
+~ file[/etc/motd]
+    --- /etc/motd
+    +++ /etc/motd (desired)
+    @@ -1,3 +1,3 @@
+     This machine is managed by sadame. Local changes will be overwritten.
+     Team:    platform
+    -Contact: ops@example.com
+    +Contact: platform@example.com
+
+Plan: 0 to create, 1 to update, 0 to remove, 0 to run, 3 unchanged.

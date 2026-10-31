@@ -1,0 +1,11 @@
+$ sudo sadame plan examples/resources/user/docker_group.rb
+sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+
++ package[docker.io]
+    state: absent -> installed
+
++ user[deploy]
+    state: absent -> present
+    groups: docker
+
+Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 0 unchanged.

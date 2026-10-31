@@ -1,0 +1,42 @@
+$ sadame plan examples/01-hello --json
+{
+  "format_version": 1,
+  "sadame_version": "0.1.0.dev",
+  "command": "plan",
+  "host": "local",
+  "platform": {
+    "name": "Debian GNU/Linux 12 (bookworm)",
+    "family": "debian",
+    "package_manager": "apt"
+  },
+  "resources": [
+    {
+      "id": "file[/tmp/sadame-hello.txt]",
+      "type": "file",
+      "name": "/tmp/sadame-hello.txt",
+      "status": "update",
+      "changes": [
+        {
+          "attribute": "content",
+          "sensitive": false,
+          "diff": "--- current\n+++ desired\n@@ -1 +1 @@\n-Hello from someone else\n+Hello from sadame!\n"
+        }
+      ],
+      "notifications": [],
+      "error": null
+    }
+  ],
+  "notifications": [],
+  "summary": {
+    "create": 0,
+    "update": 1,
+    "remove": 0,
+    "run": 0,
+    "unchanged": 0,
+    "failed": 0
+  },
+  "drift": true,
+  "failed": false,
+  "exit_status": 0,
+  "duration_seconds": 0.05
+}

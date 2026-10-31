@@ -1,0 +1,12 @@
+$ sudo sadame plan examples/notifications --var interval=30
+sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+
+~ file[/etc/default/ticker]
+    --- /etc/default/ticker
+    +++ /etc/default/ticker (desired)
+    @@ -1 +1 @@
+    -INTERVAL=60
+    +INTERVAL=30
+    notifies: restart service[ticker] (delayed)
+
+Plan: 0 to create, 1 to update, 0 to remove, 0 to run, 3 unchanged.

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Runs sadame from the checkout mounted at /sadame.
+exec ruby /sadame/bin/sadame "$@"

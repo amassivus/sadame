@@ -1,0 +1,35 @@
+$ sudo sadame apply examples/resources/exec
+sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
+
+changed    directory[/opt/demo]
+           state: absent -> present
+changed    exec[tar -czf /opt/demo/etc-backup.tar.gz -C /etc hostname hosts]
+           command: tar -czf /opt/demo/etc-backup.tar.gz -C /etc hostname hosts
+           (/opt/demo/etc-backup.tar.gz does not exist)
+changed    exec[echo 'EDITOR=vim' >> /etc/environment]
+           command: echo 'EDITOR=vim' >> /etc/environment
+           (not_if exited non-zero)
+unchanged  exec[git config --system init.defaultBranch main]
+changed    exec[echo "built by $BUILDER" > build-info.txt]
+           command: echo "built by $BUILDER" > build-info.txt
+           (/opt/demo/build-info.txt does not exist)
+
+Summary
+  changed      4  directory[/opt/demo]
+                  exec[tar -czf /opt/demo/etc-backup.tar.gz -C /etc hostname hosts]
+                  exec[echo 'EDITOR=vim' >> /etc/environment]
+                  exec[echo "built by $BUILDER" > build-info.txt]
+  unchanged    1
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 0.22s.
+
+$ sudo sadame plan examples/resources/exec
+sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+
+Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 5 unchanged.
+
+$ cat /opt/demo/build-info.txt
+built by sadame

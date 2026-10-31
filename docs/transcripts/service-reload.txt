@@ -1,0 +1,29 @@
+$ sudo sadame apply examples/resources/service/reload_on_change.rb
+sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
+
+changed    package[nginx]
+           state: absent -> installed
+changed    file[/etc/nginx/conf.d/status.conf]
+           state: absent -> present
+           mode: 0644
+           --- /dev/null
+           +++ /etc/nginx/conf.d/status.conf (desired)
+           @@ -0,0 +1,4 @@
+           +server {
+           +  listen 127.0.0.1:8080;
+           +  location = /status { stub_status; }
+           +}
+changed    service[nginx]
+           state: stopped -> running
+notified   service[nginx]: reload (delayed, from file[/etc/nginx/conf.d/status.conf])
+
+Summary
+  changed      3  package[nginx]
+                  file[/etc/nginx/conf.d/status.conf]
+                  service[nginx]
+  unchanged    0
+  failed       0
+  skipped      0
+  notified     1  service[nginx]: reload
+
+Finished in 5.81s.
