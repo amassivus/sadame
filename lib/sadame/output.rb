@@ -10,13 +10,15 @@ module Sadame
 
       PLAN_SYMBOLS = { create: "+", update: "~", remove: "-", run: "!", failed: "x" }.freeze
       PLAN_COLORS = { create: :green, update: :yellow, remove: :red, run: :cyan, failed: :red }.freeze
-      APPLY_COLORS = { changed: :yellow, unchanged: :dim, failed: :red, skipped: :dim }.freeze
+      APPLY_COLORS = { changed: :yellow, unchanged: :dim, failed: :red, skipped: :dim, notified: :cyan }.freeze
 
       PLAN_LABELS = { create: "to create", update: "to update", remove: "to remove", run: "to run",
                       unchanged: "unchanged", failed: "failed" }.freeze
 
       PLAN_INDENT = "    "
       APPLY_INDENT = "           "
+      SUMMARY_LABEL_WIDTH = 11
+      SUMMARY_COUNT_WIDTH = 3
 
       def initialize(io, color: false)
         @io = io
@@ -28,13 +30,17 @@ module Sadame
         line
       end
 
+      # Used by plan and drift.
       def planned(entry)
         return if entry.unchanged?
 
         symbol = PLAN_SYMBOLS[entry.status]
         line(paint("#{symbol} #{entry.resource.id}", PLAN_COLORS[entry.status]))
         details(entry, PLAN_INDENT)
-        notifications(entry, PLAN_INDENT)
+        entry.notifications.each do |notification|
+          text = "notifies: #{notification.action} #{notification.target_id} (#{notification.timing})"
+          line("#{PLAN_INDENT}#{paint(text, :cyan)}")
+        end
         line
       end
 
@@ -46,14 +52,19 @@ module Sadame
 
       def notified(run)
         notification = run.notification
-        label = run.failed? ? paint("failed".ljust(APPLY_INDENT.size), :red) : paint("notified".ljust(APPLY_INDENT.size), :cyan)
-        line("#{label}#{notification.target_id}: #{notification.action} (from #{notification.source.id})")
-        indented(run.error, APPLY_INDENT, :red) if run.failed?
+        label = run.failed? ? "failed" : "notified"
+        color = run.failed? ? :red : :cyan
+        line("#{paint(label.ljust(APPLY_INDENT.size), color)}#{notification.target_id}: #{notification.action} " \
+             "(#{notification.timing}, from #{notification.source_id})")
+        indented("error: #{run.error}", APPLY_INDENT, :red) if run.failed?
       end
 
       def finish(report)
-        line if report.command == :apply
-        line(paint(summary(report), :bold))
+        case report.command
+        when :plan then line(paint(plan_summary(report), :bold))
+        when :drift then drift_summary(report)
+        else apply_summary(report)
+        end
       end
 
       private
@@ -61,12 +72,6 @@ module Sadame
       def details(entry, indent)
         entry.changes.each { |change| change_lines(entry.resource, change, indent) }
         indented("error: #{entry.error}", indent, :red) if entry.error
-      end
-
-      def notifications(entry, indent)
-        entry.resource.notifications.each do |notification|
-          line("#{indent}#{paint("notifies: #{notification.action} #{notification.target_id}", :cyan)}")
-        end
       end
 
       def change_lines(resource, change, indent)
@@ -112,15 +117,70 @@ module Sadame
         end
       end
 
-      def summary(report)
-        counts = report.counts
-        if report.command == :plan
-          parts = counts.map { |status, count| "#{count} #{PLAN_LABELS[status]}" unless status == :failed && count == 0 }
-          "Plan: #{parts.compact.join(", ")}."
-        else
-          parts = counts.map { |status, count| "#{count} #{status}" unless status == :skipped && count == 0 }
-          "Apply: #{parts.compact.join(", ")}."
+      def plan_summary(report)
+        parts = report.counts.map do |status, count|
+          "#{count} #{PLAN_LABELS[status]}" unless status == :failed && count == 0
         end
+        "Plan: #{parts.compact.join(", ")}."
+      end
+
+      def drift_summary(report)
+        total = report.entries.size
+        drifted = report.entries.count { |entry| entry.pending? }
+        if drifted > 0
+          verb = drifted == 1 ? "differs" : "differ"
+          line(paint("Drift: #{drifted} of #{plural(total, "resource")} #{verb} from the recipe.", :yellow))
+        elsif !report.failed?
+          verb = total == 1 ? "matches" : "match"
+          line(paint("No drift: #{plural(total, "resource")} #{verb} the recipe.", :green))
+        end
+        failed = report.entries_with(:failed).size
+        return if failed == 0
+
+        line(paint("Could not check #{plural(failed, "resource")}; see the errors above.", :red))
+      end
+
+      # A table of results by status, then the run time:
+      #
+      #   Summary
+      #     changed      2  package[nginx]
+      #                     file[/etc/nginx/nginx.conf]
+      #     unchanged    5
+      #     failed       0
+      #     skipped      0
+      #     notified     1  service[nginx]: reload
+      def apply_summary(report)
+        line
+        line(paint("Summary", :bold))
+        report.counts.each do |status, count|
+          ids = status == :unchanged ? [] : report.entries_with(status).map { |entry| entry.resource.id }
+          summary_row(status, count, ids)
+        end
+        runs = report.notification_runs.map do |run|
+          text = "#{run.notification.target_id}: #{run.notification.action}"
+          run.failed? ? "#{text} (failed)" : text
+        end
+        summary_row(:notified, runs.size, runs)
+        line
+        line(paint(format("Finished in %.2fs.", report.duration.to_f), :bold))
+      end
+
+      def summary_row(status, count, items)
+        label = status.to_s.ljust(SUMMARY_LABEL_WIDTH)
+        label = paint(label, APPLY_COLORS[status]) if count > 0
+        prefix = "  #{label}#{count.to_s.rjust(SUMMARY_COUNT_WIDTH)}"
+        if items.empty?
+          line(prefix)
+          return
+        end
+
+        continuation = " " * (2 + SUMMARY_LABEL_WIDTH + SUMMARY_COUNT_WIDTH + 2)
+        line("#{prefix}  #{items.first}")
+        items[1..].each { |item| line("#{continuation}#{item}") }
+      end
+
+      def plural(count, noun)
+        count == 1 ? "1 #{noun}" : "#{count} #{noun}s"
       end
 
       def indented(text, indent, color)

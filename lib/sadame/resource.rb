@@ -14,7 +14,7 @@ module Sadame
   # diff compares desired and current. Nothing is applied when it is empty,
   # which is what makes every resource idempotent.
   class Resource
-    COMMON_OPTIONS = [:notifies].freeze
+    COMMON_OPTIONS = [:notifies, :subscribes].freeze
 
     attr_reader :name, :options, :host, :source_dir, :vars, :notifications
 
@@ -42,7 +42,8 @@ module Sadame
       raise ResourceError, "#{id}: options must be a Hash, got #{options.class}" unless options.is_a?(Hash)
 
       validate_option_names
-      @notifications = Notification.parse(options[:notifies], self)
+      @notifications = Notification.from_notifies(options[:notifies], self) +
+                       Notification.from_subscribes(options[:subscribes], self)
       validate
     end
 

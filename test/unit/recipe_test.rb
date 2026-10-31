@@ -49,8 +49,8 @@ class RecipeTest < SadameTest
     collection.add(Sadame::ExecResource.new("make", {}, host: host, source_dir: ".", vars: {}))
     collection.add(Sadame::FileResource.new("/etc/x", { content: "x", notifies: [:reload, "exec[make]"] },
                                             host: host, source_dir: ".", vars: {}))
-    error = assert_raises(Sadame::ResourceError) { collection.validate_notifications }
-    assert_includes error.message, "to reload, but exec supports: run"
+    error = assert_raises(Sadame::ResourceError) { collection.link_notifications }
+    assert_includes error.message, "file[/etc/x] asks exec[make] to reload, but exec supports: run"
   end
 
   def test_syntax_errors_name_the_file
@@ -70,6 +70,49 @@ class RecipeTest < SadameTest
     assert_includes error.message, "include_recipe cannot find test/fixtures/recipes/missing_include/roles/missing.rb"
   end
 
+  def test_subscriptions_must_watch_declared_resources
+    host = host_for(linux_shell)
+    collection = Sadame::ResourceCollection.new
+    collection.add(Sadame::ServiceResource.new("app", { subscribes: [:restart, "file[/etc/app.conf]"] },
+                                               host: host, source_dir: ".", vars: {}))
+    error = assert_raises(Sadame::ResourceError) { collection.link_notifications }
+    assert_includes error.message, "service[app] subscribes to file[/etc/app.conf], which is not declared"
+  end
+
+  def test_subscriptions_must_use_actions_the_subscriber_supports
+    host = host_for(linux_shell)
+    collection = Sadame::ResourceCollection.new
+    collection.add(Sadame::ExecResource.new("make", {}, host: host, source_dir: ".", vars: {}))
+    collection.add(Sadame::FileResource.new("/etc/x", { content: "x", subscribes: [:restart, "exec[make]"] },
+                                            host: host, source_dir: ".", vars: {}))
+    error = assert_raises(Sadame::ResourceError) { collection.link_notifications }
+    assert_includes error.message, "file[/etc/x] asks file[/etc/x] to restart, but file supports: none"
+  end
+
+  def test_notifications_from_combines_notifies_and_subscribes
+    host = host_for(linux_shell)
+    collection = Sadame::ResourceCollection.new
+    config = Sadame::FileResource.new("/etc/app.conf", { content: "x", notifies: [:run, "exec[check]", :immediately] },
+                                      host: host, source_dir: ".", vars: {})
+    collection.add(config)
+    collection.add(Sadame::ExecResource.new("check", { action: :nothing }, host: host, source_dir: ".", vars: {}))
+    collection.add(Sadame::ServiceResource.new("app", { subscribes: [:restart, "file[/etc/app.conf]"] },
+                                               host: host, source_dir: ".", vars: {}))
+    notifications = collection.notifications_from(config)
+    assert_equal ["run exec[check]", "restart service[app]"], notifications.map { |notification| notification.key }
+    assert_equal [:immediately, :delayed], notifications.map { |notification| notification.timing }
+    assert_equal ["file[/etc/app.conf]", "file[/etc/app.conf]"], notifications.map { |notification| notification.source_id }
+  end
+
+  def test_notification_timing_must_be_known
+    host = host_for(linux_shell)
+    error = assert_raises(Sadame::ResourceError) do
+      Sadame::FileResource.new("/etc/x", { content: "x", notifies: [:reload, "service[a]", :later] },
+                               host: host, source_dir: ".", vars: {})
+    end
+    assert_includes error.message, "notifies timing must be :delayed or :immediately, got :later"
+  end
+
   def test_notifies_accepts_a_list
     host = host_for(linux_shell)
     resource = Sadame::FileResource.new("/etc/x", { content: "x", notifies: [[:reload, "service[a]"], [:run, "exec[b]"]] },
@@ -82,6 +125,6 @@ class RecipeTest < SadameTest
     error = assert_raises(Sadame::ResourceError) do
       Sadame::FileResource.new("/etc/x", { content: "x", notifies: "service[nginx]" }, host: host, source_dir: ".", vars: {})
     end
-    assert_includes error.message, "notifies expects [:action, \"type[name]\"]"
+    assert_includes error.message, "notifies expects [:action, \"type[name]\"] or [:action, \"type[name]\", :immediately]"
   end
 end

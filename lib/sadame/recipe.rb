@@ -20,7 +20,7 @@ module Sadame
     def self.load(path, host:, vars:)
       collection = ResourceCollection.new
       new(path, host: host, vars: vars, collection: collection, loaded: []).evaluate
-      collection.validate_notifications
+      collection.link_notifications
       collection
     end
 

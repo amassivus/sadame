@@ -1,88 +1,119 @@
 # frozen_string_literal: true
 
 module Sadame
-  # Runs plan or apply over a loaded recipe on one host.
+  # Runs plan, drift or apply over a loaded recipe on one host.
   #
-  # plan only reads state. apply walks the resources in order, reads each
-  # resource's current state right before acting (earlier resources may
-  # have changed it), applies only when there is a difference, stops at the
-  # first failure, and runs queued notifications at the end.
+  # plan and drift only read state; they differ in what the exit status
+  # means (see Report#exit_status). apply walks the resources in order,
+  # reads each resource's current state right before acting (earlier
+  # resources may have changed it), applies only when there is a
+  # difference, and stops at the first failure. Notifications marked
+  # :immediately run right after the resource that triggered them; the
+  # others run once each at the end.
   class Runner
-    def initialize(host:, output:)
+    def initialize(host:, output:, clock: nil)
       @host = host
       @output = output
+      @clock = clock || -> { Time.now }
     end
 
     def plan(resources)
-      report = Report.new(:plan, @host)
-      @output.start(:plan, @host)
-      resources.each do |resource|
-        entry = plan_entry(resource)
-        report.add(entry)
-        @output.planned(entry)
-      end
-      @output.finish(report)
-      report
+      check(:plan, resources)
+    end
+
+    def drift(resources)
+      check(:drift, resources)
     end
 
     def apply(resources)
       report = Report.new(:apply, @host)
+      started = @clock.call
       @output.start(:apply, @host)
-      queue = []
+      delayed = []
       stopped = false
 
       resources.each do |resource|
-        entry = stopped ? Report::Entry.new(resource, status: :skipped) : apply_entry(resource)
-        stopped ||= entry.failed?
-        queue_notifications(queue, resource) if entry.status == :changed
+        entry = stopped ? Report::Entry.new(resource, status: :skipped) : apply_entry(resource, resources)
         report.add(entry)
         @output.applied(entry)
+        stopped ||= entry.failed?
+        next if stopped || entry.status != :changed
+
+        stopped = !notify(entry.notifications, resources, report, delayed)
       end
 
-      run_notifications(queue, resources, report) unless stopped
-      @output.finish(report)
-      report
+      run_delayed(delayed, resources, report) unless stopped
+      finish(report, started)
     end
 
     private
 
-    def plan_entry(resource)
+    def check(command, resources)
+      report = Report.new(command, @host)
+      started = @clock.call
+      @output.start(command, @host)
+      resources.each do |resource|
+        entry = check_entry(resource, resources)
+        report.add(entry)
+        @output.planned(entry)
+      end
+      finish(report, started)
+    end
+
+    def finish(report, started)
+      report.duration = @clock.call - started
+      @output.finish(report)
+      report
+    end
+
+    def check_entry(resource, resources)
       changes = resource.diff
-      Report::Entry.new(resource, status: resource.plan_action(changes), changes: changes)
+      notifications = changes.empty? ? [] : resources.notifications_from(resource)
+      Report::Entry.new(resource, status: resource.plan_action(changes), changes: changes,
+                                  notifications: notifications)
     rescue StandardError => e
       Report::Entry.new(resource, status: :failed, error: error_message(e))
     end
 
-    def apply_entry(resource)
+    def apply_entry(resource, resources)
       changes = resource.diff
       return Report::Entry.new(resource, status: :unchanged) if changes.empty?
 
       resource.apply(changes)
-      Report::Entry.new(resource, status: :changed, changes: changes)
+      Report::Entry.new(resource, status: :changed, changes: changes,
+                                  notifications: resources.notifications_from(resource))
     rescue StandardError => e
       Report::Entry.new(resource, status: :failed, changes: changes || [], error: error_message(e))
     end
 
-    # Notifications run once each, in the order they were first queued.
-    def queue_notifications(queue, resource)
-      resource.notifications.each do |notification|
-        queue << notification unless queue.any? { |queued| queued.key == notification.key }
+    # Runs immediate notifications now and queues delayed ones. Returns
+    # false when an immediate notification failed, which stops the run.
+    def notify(notifications, resources, report, delayed)
+      notifications.each do |notification|
+        if notification.immediately?
+          return false unless run_notification(notification, resources, report)
+        elsif delayed.none? { |queued| queued.key == notification.key }
+          delayed << notification
+        end
       end
+      true
     end
 
-    def run_notifications(queue, resources, report)
-      queue.each do |notification|
-        run = run_notification(notification, resources)
-        report.add_notification_run(run)
-        @output.notified(run)
-      end
+    def run_delayed(delayed, resources, report)
+      delayed.each { |notification| run_notification(notification, resources, report) }
     end
 
-    def run_notification(notification, resources)
+    def run_notification(notification, resources, report)
       resources.find(notification.target_id).run_action(notification.action)
-      Report::NotificationRun.new(notification)
+      record(report, Report::NotificationRun.new(notification))
     rescue StandardError => e
-      Report::NotificationRun.new(notification, error: error_message(e))
+      record(report, Report::NotificationRun.new(notification, error: error_message(e)))
+    end
+
+    def record(report, run)
+      report.add_notification_run(run)
+      @output.notified(run)
+      !run.failed?
     end
 
     # Our own errors carry a message meant for users; anything else is a
