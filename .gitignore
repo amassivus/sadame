@@ -1,0 +1,17 @@
+# mruby sources and build output
+/vendor/
+/build/
+
+# MkDocs
+/site/
+/.venv/
+__pycache__/
+
+# Editors and OS
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Local-only test configuration (never commit host details)
+/test/integration/vm/hosts.local.rb
