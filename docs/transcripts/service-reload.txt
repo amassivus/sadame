@@ -26,4 +26,4 @@ Summary
   skipped      0
   notified     1  service[nginx]: reload
 
-Finished in 5.81s.
+Finished in 3.56s.

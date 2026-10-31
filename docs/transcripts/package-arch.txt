@@ -26,7 +26,7 @@ Summary
   skipped      0
   notified     0
 
-Finished in 2.77s.
+Finished in 2.59s.
 
 $ pacman -Q tree htop
 tree 2.3.2-1

@@ -25,7 +25,7 @@ Summary
   skipped      0
   notified     0
 
-Finished in 0.02s.
+Finished in 0.01s.
 
 $ sudo sadame drift examples/10-drift-demo
 sadame 0.1.0.dev drift on local (Debian GNU/Linux 12 (bookworm))

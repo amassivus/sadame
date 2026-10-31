@@ -33,7 +33,7 @@ Summary
   skipped      0
   notified     0
 
-Finished in 0.20s.
+Finished in 0.19s.
 
 $ id deploy
 uid=1000(deploy) gid=1000(deploy) groups=1000(deploy),4(adm)

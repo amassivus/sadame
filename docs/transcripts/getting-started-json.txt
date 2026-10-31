@@ -38,5 +38,5 @@ $ sadame plan examples/01-hello --json
   "drift": true,
   "failed": false,
   "exit_status": 0,
-  "duration_seconds": 0.05
+  "duration_seconds": 0.04
 }

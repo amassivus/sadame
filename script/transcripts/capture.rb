@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
-# Captures real terminal output for the documentation (needs Docker).
-# Each scenario in scenarios.rb runs in a fresh container with this checkout
-# mounted read-only at /sadame. Saved steps are written to
-# docs/transcripts/NAME.txt, which the docs embed with --8<--.
+# Captures real terminal output for the documentation (needs Docker and the
+# static binaries: rake build:linux-amd64 build:linux-arm64). Each scenario
+# in scenarios.rb runs in a fresh container with this checkout mounted
+# read-only at /sadame and the release binary for the container's
+# architecture installed as /usr/local/bin/sadame. Saved steps are written
+# to docs/transcripts/NAME.txt, which the docs embed with --8<--.
 #
 #   ruby script/transcripts/capture.rb                 # every scenario
 #   ruby script/transcripts/capture.rb notifications   # one scenario
@@ -27,9 +29,13 @@ module Transcripts
 
   module_function
 
+  BINARIES = %w[sadame-linux-amd64 sadame-linux-arm64].freeze
+
   def main(names)
     scenarios = names.empty? ? SCENARIOS : SCENARIOS.select { |scenario| names.include?(scenario[:name]) }
     abort "unknown scenario: #{names.join(", ")}" if scenarios.empty?
+    missing = BINARIES.reject { |binary| File.exist?(File.join(ROOT, "dist", binary)) }
+    abort "missing dist/#{missing.join(", dist/")}; run rake build:linux-amd64 build:linux-arm64" unless missing.empty?
 
     scenarios.map { |scenario| scenario[:image] }.uniq.each { |image| build_image(image) }
     scenarios.each { |scenario| capture(scenario) }
@@ -66,9 +72,16 @@ module Transcripts
       command += [tag(image), "sleep", "infinity"]
     end
     system(*command, out: File::NULL, exception: true)
+    install_binary(container)
     return unless settings[:systemd]
 
     system("docker", "exec", container, "systemctl", "is-system-running", "--wait", out: File::NULL, err: File::NULL)
+  end
+
+  def install_binary(container)
+    script = 'case "$(uname -m)" in x86_64) arch=amd64 ;; aarch64) arch=arm64 ;; esac; ' \
+             'ln -s "/sadame/dist/sadame-linux-$arch" /usr/local/bin/sadame'
+    system("docker", "exec", container, "sh", "-c", script, exception: true)
   end
 
   def run_step(container, step)

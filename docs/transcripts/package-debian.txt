@@ -26,7 +26,7 @@ Summary
   skipped      0
   notified     0
 
-Finished in 6.11s.
+Finished in 5.43s.
 
 $ sudo sadame plan examples/resources/package
 sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
