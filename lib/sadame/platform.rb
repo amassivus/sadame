@@ -24,7 +24,7 @@ module Sadame
 
     OS_RELEASE_PATHS = ["/etc/os-release", "/usr/lib/os-release"].freeze
 
-    attr_reader :id, :name, :version, :family, :kernel
+    attr_reader :id, :name, :version, :codename, :family, :kernel
 
     def self.detect(shell)
       kernel = shell.run("uname -s").stdout.strip
@@ -40,6 +40,7 @@ module Sadame
         id_like: fields["ID_LIKE"],
         name: fields["PRETTY_NAME"] || fields["NAME"],
         version: fields["VERSION_ID"],
+        codename: fields["VERSION_CODENAME"] || fields["UBUNTU_CODENAME"],
         kernel: kernel
       )
     end
@@ -64,10 +65,11 @@ module Sadame
       end
     end
 
-    def initialize(id:, id_like: nil, name: nil, version: nil, kernel: "Linux")
+    def initialize(id:, id_like: nil, name: nil, version: nil, codename: nil, kernel: "Linux")
       @id = id
       @name = name
       @version = version
+      @codename = codename
       @kernel = kernel
       @family = detect_family([id] + id_like.to_s.split(" "))
     end

@@ -68,7 +68,8 @@ Besides the resources, a recipe can use:
 | `vars` | Hash of variables with symbol keys (see below) |
 | `platform.family` | `"debian"`, `"rhel"`, `"alpine"`, `"arch"` or `nil` |
 | `platform.package_manager` | `"apt"`, `"dnf"`, `"apk"`, `"pacman"` or `nil` |
-| `platform.id`, `platform.version`, `platform.name` | `ID`, `VERSION_ID` and `PRETTY_NAME` from `/etc/os-release` |
+| `platform.id`, `platform.version`, `platform.codename`, `platform.name` | `ID`, `VERSION_ID`, `VERSION_CODENAME` and `PRETTY_NAME` from `/etc/os-release` |
+| `host_name`, `host_groups` | the host's name and groups from the inventory; see [Inventory](inventory.md#using-groups-in-recipes) |
 | `include_recipe "path"` | evaluate another recipe file |
 
 For example, a package whose name differs between distributions:

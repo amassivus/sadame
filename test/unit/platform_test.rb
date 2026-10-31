@@ -15,6 +15,9 @@ class PlatformTest < SadameTest
     assert_equal "debian", platform("debian").family
     assert_equal "apt", platform("debian").package_manager
     assert_equal "12", platform("debian").version
+    assert_equal "bookworm", platform("debian").codename
+    assert_equal "noble", platform("ubuntu").codename
+    assert_nil platform("rocky").codename
   end
 
   def test_rocky
