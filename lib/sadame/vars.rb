@@ -52,6 +52,21 @@ module Sadame
       result
     end
 
+    # Merges [label, hash] layers given from lowest to highest precedence.
+    # Returns the vars and, for each key, the label of the layer it came
+    # from, which `sadame hosts` shows.
+    def self.layered(layers)
+      vars = {}
+      sources = {}
+      layers.each do |label, values|
+        symbolize_keys(values).each do |key, value|
+          vars[key] = value
+          sources[key] = label
+        end
+      end
+      [vars, sources]
+    end
+
     def self.symbolize_keys(hash)
       result = {}
       hash.each { |key, value| result[key.to_sym] = value }
