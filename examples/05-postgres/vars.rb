@@ -8,5 +8,5 @@
   # The PostgreSQL version Debian and Ubuntu install, which names the
   # configuration directory. Override with --var postgres_version=N.
   postgres_version: nil,
-  debian_postgres_versions: { "debian 12" => 15, "ubuntu 24.04" => 16, "ubuntu 22.04" => 14 }
+  debian_postgres_versions: { "debian 13" => 17, "debian 12" => 15, "ubuntu 24.04" => 16, "ubuntu 22.04" => 14 }
 }
