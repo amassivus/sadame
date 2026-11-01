@@ -12,6 +12,7 @@ module Sadame
   #   user "deploy", shell: "/bin/bash", groups: ["docker"]
   #   group "app", gid: 1500
   #   link "/etc/nginx/sites-enabled/app", to: "/etc/nginx/sites-available/app"
+  #   line "PermitRootLogin no", path: "/etc/ssh/sshd_config", match: /^#?\s*PermitRootLogin\s/
   #   include_recipe "roles/web"
   #
   # `vars`, `platform`, `host_name` and `host_groups` are available for
@@ -75,6 +76,10 @@ module Sadame
 
     def link(path, options = {})
       declare(LinkResource, path, options)
+    end
+
+    def line(name, options = {})
+      declare(LineResource, name, options)
     end
 
     # Evaluates another recipe, relative to this recipe's directory. The
