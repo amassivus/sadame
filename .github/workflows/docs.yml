@@ -21,6 +21,12 @@ jobs:
           cache-dependency-path: docs/requirements.txt
       - run: pip install -r docs/requirements.txt
       - run: mkdocs build --strict
+      - name: No icon shortcode left unrendered
+        run: |
+          if grep -rlE ':(octicons|material|fontawesome|simple)-[a-z0-9-]+:' site --include='*.html'; then
+            echo "icon shortcodes above were not rendered; is pymdownx.emoji configured?"
+            exit 1
+          fi
       # GitHub Pages serves the site under /sadame/, which some pages link
       # to absolutely; check it laid out the same way.
       - name: Lay out the site as GitHub Pages serves it
