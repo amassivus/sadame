@@ -7,8 +7,8 @@
 #
 # Covers: -h user@host:2222, port: 2222 in hosts.rb, a ProxyJump host from
 # a test-scoped ssh config passed with -F, vars precedence on the target,
-# parallel runs with prefixed output, --forks and --serial, the binary
-# cache, sudo and --sudo, drift with --json, and an unreachable host.
+# parallel runs with prefixed output, --forks and --serial, facts, the
+# binary cache, sudo and --sudo, drift with --json, and an unreachable host.
 
 require_relative "lab"
 
@@ -46,6 +46,7 @@ class PushTest
       drift_json_after_a_hand_edit
       forks_limit_runs_hosts_one_at_a_time
       serial_stops_after_a_failed_batch
+      facts_of_every_host
       unreachable_host
     ]
   end
@@ -154,6 +155,21 @@ class PushTest
     @lab.target("web2", "rm -f /etc/demo-app")
     status, output = sadame("apply site.rb -g all --serial 1", dir: EXAMPLE)
     expect_status(0, status, output)
+  end
+
+  # facts runs no recipe; each target reads its own facts.
+  def facts_of_every_host
+    status, output = sadame("facts -g all", dir: EXAMPLE)
+    expect_status(0, status, output)
+    %w[web1.example.com web2.example.com db1.example.com].each do |host|
+      expect_includes(output, "[#{host}] hostname           #{host.split(".").first}")
+      expect_includes(output, "[#{host}] service_manager    systemd")
+    end
+    expect_includes(output, "facts on 3 hosts: 3 ok.")
+    status, output = sadame("facts -h db1.example.com:2222 --json", dir: EXAMPLE)
+    expect_status(0, status, output)
+    expect_includes(output, "\"command\": \"facts\",")
+    expect_includes(output, "\"container\": true,")
   end
 
   def unreachable_host
