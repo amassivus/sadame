@@ -2,71 +2,74 @@
 
 <p align="center">
   <a href="https://github.com/enderkus/sadame/actions/workflows/ci.yml"><img src="https://github.com/enderkus/sadame/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/enderkus/sadame/actions/workflows/docs.yml"><img src="https://github.com/enderkus/sadame/actions/workflows/docs.yml/badge.svg" alt="Docs"></a>
+  <a href="https://enderkus.github.io/sadame/"><img src="https://github.com/enderkus/sadame/actions/workflows/docs.yml/badge.svg" alt="Docs"></a>
+  <a href="https://github.com/enderkus/sadame/releases/latest"><img src="https://img.shields.io/github/v/release/enderkus/sadame" alt="Latest release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
 </p>
 
-**Sadame describes a machine's desired state in plain Ruby, shows the
-difference as a diff, and applies it, from a single binary.**
+**Sadame describes the desired state of Linux machines in plain Ruby, shows
+every change as a diff before it happens, and applies it over SSH from a
+single binary.**
 
-> Status: in development towards 0.1.0: `plan`, `apply` and `drift`, locally
-> or on remote hosts over SSH, with a `hosts.rb` inventory. The first
-> release with binaries is being prepared.
+<p align="center"><img src="docs/assets/demo.gif" alt="sadame plan, apply and drift against a server over SSH" width="820"></p>
 
 ## Install (30 seconds)
-
-From the first release (0.1.0) on, one command installs the static binary
-after checking its SHA-256 checksum:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | sh
 ```
 
-Until then, run it from a checkout with Ruby 3.2+, or build the binary:
-
-```sh
-git clone https://github.com/enderkus/sadame.git && cd sadame
-bin/sadame --version                     # run with Ruby
-rake build:native                        # or build build/host/bin/sadame
-```
+The script picks the binary for your system (Linux x86_64 or ARM64,
+macOS), checks its SHA-256 checksum and installs it to `/usr/local/bin`.
+The binary is about 1 MB; the machines you manage need nothing installed.
 
 ## Quickstart (60 seconds)
 
+A recipe is plain Ruby (`examples/quickstart/recipe.rb`):
+
 ```ruby
-# examples/quickstart/recipe.rb
 package "nginx"
 file "/var/www/html/index.html", content: "Hello from sadame\n", mode: "0644"
 service "nginx", enable: true, state: :running
 ```
 
-```text
-$ sudo bin/sadame plan examples/quickstart    # what would change, as a diff
-$ sudo bin/sadame apply examples/quickstart   # change only what differs
-$ sudo bin/sadame plan examples/quickstart
-...
-Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 3 unchanged.
+```sh
+sudo sadame plan recipe.rb     # what would change, as a diff; changes nothing
+sudo sadame apply recipe.rb    # change only what differs
+sudo sadame drift recipe.rb    # exit 0: the machine matches; 1: it does not
 ```
 
-A walkthrough with real output: [Getting started](https://enderkus.github.io/sadame/getting-started/).
+The same recipe on a server, over SSH, with nothing to install there:
+
+```sh
+sadame apply recipe.rb -h admin@203.0.113.10 --sudo
+```
+
+For a fleet, list the servers in a `hosts.rb` and run on a group:
+`sadame apply site.rb -g web`.
 
 ## Documentation
 
-<https://enderkus.github.io/sadame/>: getting started, guides (a new VPS,
-an Omarchy workstation, drift in CI, migrating from Ansible or Itamae), and
-every resource, with [twelve runnable examples](https://enderkus.github.io/sadame/examples/)
-that are tested on five distributions.
+**<https://enderkus.github.io/sadame/>**: getting started, the inventory,
+every resource, guides (a new VPS, an Omarchy workstation, drift in CI,
+migrating from Ansible or Itamae), and twelve examples tested on Ubuntu,
+Debian, Rocky Linux, Alpine and Arch.
 
 ## Compared with similar tools
 
 | | Sadame | Ansible | Itamae | mitamae |
 |---|---|---|---|---|
-| Recipes written in | Ruby | YAML + Jinja2 | Ruby | Ruby (Itamae-compatible) |
-| Distributed as | single static binary (Linux amd64/arm64, macOS; first release: 0.1.0) | Python package | Ruby gem | single mruby binary |
-| Runs on remote hosts | yes: copies itself over `scp`, runs over `ssh`; target needs a POSIX shell and tar | yes, over SSH; target needs Python | yes, commands sent over SSH | no; you copy the binary and run it on the host |
-| Inventory | `hosts.rb` in Ruby: groups, includes, per-host vars, dynamic by code | INI or YAML files, inventory plugins | none built in | none built in |
-| Dry run | `sadame plan`, unified diff | `--check --diff` | `--dry-run` | `--dry-run` |
-| Drift check for CI | `sadame drift`: exit 1 on difference, `--json` report | no dedicated command | no dedicated command; `--detailed-exitcode` exits 2 when resources changed | no |
-| Machine-readable output | `--json` | callback plugins (e.g. `json`) | no | no |
+| Recipes in | Ruby | YAML and Jinja2 | Ruby | Ruby |
+| Targets need | SSH, a shell, `tar` | SSH and Python | SSH and a shell | the binary, copied by you |
+| Inventory | `hosts.rb`, in Ruby | INI or YAML, plugins | none | none |
+| Dry run | `plan`, with diffs | `--check --diff` | `--dry-run` | `--dry-run` |
+| Drift check for CI | `drift`, exit status 1 | no dedicated command | `--detailed-exitcode` | no |
+| JSON output | `--json` | callback plugins | no | no |
+| Distributed as | one static binary | Python package | Ruby gem | one binary |
+| Maturity | 0.1.0, six resource types | since 2012, thousands of modules | since 2013 | since 2016 |
+
+The [full comparison](https://enderkus.github.io/sadame/comparison/) adds
+Chef and Puppet, and lists what sadame does not do yet.
 
 ## License
 
