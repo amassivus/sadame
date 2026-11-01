@@ -109,6 +109,11 @@ namespace :verify do
   end
 end
 
+desc "Write the Homebrew formula and the AUR package for a published release: packaging[0.1.0]"
+task :packaging, [:version] do |_task, args|
+  sh "ruby", File.join(ROOT, "script", "build", "packaging.rb"), args[:version].to_s
+end
+
 desc "Write dist/SHA256SUMS for the binaries in dist/"
 task :checksums do
   binaries = Dir.glob(File.join(DIST_DIR, "sadame-*")).sort

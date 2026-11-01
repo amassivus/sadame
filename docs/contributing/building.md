@@ -108,7 +108,13 @@ To publish a release:
 1. Set `VERSION` in `lib/sadame/version.rb` and move the `Unreleased`
    entries of `CHANGELOG.md` under a heading such as
    `## [0.1.0] - 2026-11-15`.
-2. Commit, then tag and push: `git tag v0.1.0 && git push origin v0.1.0`.
+2. Regenerate the docs' terminal sessions and the README recording, which
+   show the version: `rake docs:transcripts docs:recording`.
+3. Commit, then tag and push: `git tag v0.1.0 && git push origin v0.1.0`.
+4. When the release is published, write the packages with its checksums,
+   `rake "packaging[0.1.0]"`, and commit them: the Homebrew formula in
+   `homebrew/sadame.rb` and the AUR package (`PKGBUILD` and `.SRCINFO`)
+   in `packaging/aur/`.
 
 ## Building a release locally
 
