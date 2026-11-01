@@ -133,9 +133,11 @@ module VMTests
       end
     end
 
+    # Retried when ssh itself fails (exit status 255), as on a flaky home
+    # network; reverting and adding forwards can safely run twice.
     def virsh(*arguments)
       uri = @hypervisor.vars.fetch(:libvirt_uri, "qemu:///system")
-      run!(ssh(@hypervisor, Shellwords.join(["virsh", "-c", uri] + arguments)))
+      run!(ssh(@hypervisor, Shellwords.join(["virsh", "-c", uri] + arguments)), retries: 3)
     end
 
     def drift_demo(path)
@@ -200,8 +202,12 @@ module VMTests
       end
     end
 
-    def run!(command)
+    def run!(command, retries: 0)
       output, status = Open3.capture2e(command)
+      if status.exitstatus == 255 && retries.positive?
+        sleep 5
+        return run!(command, retries: retries - 1)
+      end
       raise "#{command} failed:\n#{output}" unless status.success?
 
       output
