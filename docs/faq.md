@@ -38,6 +38,13 @@ Yes: `facts[:memory_mb]`, `facts[:cpus]`, the machine's addresses and more,
 read on the machine when the recipe asks. `sadame facts -g web` shows them
 for each host. See [Facts](recipes/facts.md).
 
+### Can CI check recipes without access to the servers?
+
+Yes: `sadame validate site.rb -g all` evaluates the recipe for every host in
+the inventory, renders its templates and connects to nothing. It finds
+typos and template errors in pull requests that cannot read SSH secrets.
+See [Command line](reference/cli.md#validate).
+
 ### How is this different from Ansible?
 
 Recipes are Ruby rather than YAML, targets need no Python, `plan` shows

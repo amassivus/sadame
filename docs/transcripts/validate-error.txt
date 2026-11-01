@@ -1,0 +1,9 @@
+$ sadame validate
+sadame 0.4.0 validate recipe.rb, as on Debian GNU/Linux 12 (bookworm)
+
+  local  error  templates/app.conf.erb:3: undefined method 'port' for Sadame::Template::Scope
+
+validate on 1 host: 0 ok, 1 error.
+
+$ echo $?
+2

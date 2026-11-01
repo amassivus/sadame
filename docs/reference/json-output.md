@@ -27,7 +27,8 @@ load) go to standard error, and standard output stays empty.
 | `command` | string | `"plan"`, `"apply"` or `"drift"`. |
 | `host` | string | The machine the report is about; `"local"` for the machine sadame runs on. |
 | `platform` | object | See [platform](#platform). |
-| `resources` | array | One [resource](#resource) object per declared resource, in recipe order. |
+| `tags`, `skip_tags` | array of strings | The `--tags` and `--skip-tags` of the run; empty without them. |
+| `resources` | array | One [resource](#resource) object per declared resource, in recipe order; with `--tags` or `--skip-tags`, per selected resource. |
 | `notifications` | array | [Notification runs](#notification-run) during `apply`, in the order they ran. Always empty for `plan` and `drift`. |
 | `summary` | object | Number of resources per status; see [statuses](#statuses). Every status of the command is present, including those with `0`. |
 | `drift` | boolean or null | `plan` and `drift`: `true` when at least one resource differs from the recipe. `apply`: `null`. |
@@ -126,6 +127,13 @@ edited by hand:
 ```text
 --8<-- "docs/transcripts/remote-drift-json.txt"
 ```
+
+## validate
+
+`sadame validate --json` prints `format_version`, `sadame_version`,
+`command` (`"validate"`), `recipe`, `platform`, `exit_status`, and `hosts`:
+one object per host with `name`, `status` (`"ok"` or `"error"`),
+`resources` (how many the recipe declared; `null` on error) and `error`.
 
 ## facts
 

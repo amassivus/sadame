@@ -1,8 +1,9 @@
 # Command line
 
-`sadame` has five commands: `plan`, `apply` and `drift` run a recipe,
-`hosts` shows which machines a selection reaches, and `facts` shows what
-recipes see on them. Each takes the same
+`sadame` has eight commands: `plan`, `apply` and `drift` run a recipe,
+`validate` checks one without any machine, `hosts` shows which machines a
+selection reaches and `facts` what recipes see on them, `init` starts a
+project and `report` turns JSON reports into Markdown or JUnit. Each takes the same
 target and output options, so a command line that plans a change also
 applies it after replacing `plan` with `apply`. This page lists every
 command, option, environment variable and file; the
@@ -36,8 +37,11 @@ Options may come before or after the command and the recipe.
 | `plan` | no | Reads the current state of every resource and prints what `apply` would change, as a diff. |
 | `apply` | yes | Changes what differs from the recipe, in order, then runs notifications. |
 | `drift` | no | Same comparison as `plan`; exits `1` when anything differs. For scripts and CI. |
+| `validate` | no | Evaluates the recipe for each selected host, with its vars, against a stand-in machine, and renders the templates: finds what would make `plan` fail, without connecting to anything. Exits `2` when a host's recipe has an error. |
 | `hosts` | no | Prints the selected hosts, their connection options and vars, and where each var came from. Connects to nothing. |
 | `facts` | no | Prints the [facts](../recipes/facts.md) recipes see: of this machine, or with `-h`, `-g` or `--limit`, of each selected host over SSH. Runs no recipe. |
+| `init` | no | Writes `recipe.rb`, `vars.rb`, `hosts.rb` and `templates/motd.erb` into a directory (`.` by default); with `--ci`, also a daily drift check. Writes nothing if one of its files exists. |
+| `report` | no | Reads the `--json` output of `plan`, `apply` or `drift` from a file and prints it as Markdown or JUnit XML; see [Drift in CI](../guides/drift-in-ci.md#reading-the-report). |
 
 `plan`, `apply` and `drift` are explained together in
 [plan, apply, drift](../concepts/plan-apply-drift.md).
@@ -80,6 +84,11 @@ and the recipe there first (see [Remote hosts](../guides/remote-hosts.md)).
 
 | Option | Effect |
 |---|---|
+| `--tags T,...` | `plan`, `apply`, `drift`: only resources with one of these [tags](../recipes/tags.md). |
+| `--skip-tags T,...` | `plan`, `apply`, `drift`: leave out resources with one of these tags. |
+| `--platform NAME` | `validate`: evaluate as on `debian` (the default), `ubuntu`, `rocky`, `alpine` or `arch`. |
+| `--format FORMAT` | `report`: `markdown` (the default) or `junit`. |
+| `--ci SYSTEM` | `init`: also write a daily drift check for `github` (`.github/workflows/sadame-drift.yml`) or `gitlab` (`.gitlab/sadame-drift.yml`), in the current directory. |
 | `--var KEY=VALUE` | Sets `vars[:KEY]`. Repeatable. Wins over every other source of vars. Whole numbers become Integers, `true` and `false` booleans; everything else stays a String. |
 | `--vars-file PATH` | Loads more vars from a Ruby file that returns a Hash. Local runs only. |
 | `--json` | Prints one JSON document instead of text; see [JSON output](json-output.md). |
@@ -93,6 +102,30 @@ and the recipe there first (see [Remote hosts](../guides/remote-hosts.md)).
 ```text
 --8<-- "docs/transcripts/cli-version.txt"
 ```
+
+## validate
+
+`validate` evaluates the recipe the way `plan` does, but against a machine
+that is not there: the platform given with `--platform`, made-up
+[facts](../recipes/facts.md) (2 CPUs, 2048 MB, `192.0.2.10`), and a shell
+that refuses to run anything. It finds Ruby errors, misspelled resources and
+options, notifications to resources that are not declared, missing
+templates and files, and template errors, for every selected host with its
+own name, groups and vars:
+
+```text
+--8<-- "docs/transcripts/validate.txt"
+```
+
+An error names the file and line:
+
+```text
+--8<-- "docs/transcripts/validate-error.txt"
+```
+
+What it cannot find is what depends on the machine: a package name that
+does not exist there, a service that is not installed, a file a `line`
+resource expects. `plan` finds those.
 
 ## Environment variables
 

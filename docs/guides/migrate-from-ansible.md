@@ -20,6 +20,8 @@ and its translation, which the test suite applies on Debian and Ubuntu.
 | `ansible_facts`: `ansible_processor_vcpus`, `ansible_memtotal_mb`, `ansible_default_ipv4.address` | `facts[:cpus]`, `facts[:memory_mb]`, `facts[:ipv4]`; read when used, no `gather_facts` |
 | `loop:` | Ruby `each` |
 | `--check --diff` | `sadame plan` |
+| `--syntax-check` | `sadame validate`, which also renders templates for each host |
+| `tags:`, `--tags`, `--skip-tags` | `tags:` and `include_recipe ..., tags:`, `--tags`, `--skip-tags` |
 | `forks` | `--forks` |
 | `serial:` | `--serial` |
 | no built-in drift command | `sadame drift` |

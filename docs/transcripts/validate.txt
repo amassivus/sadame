@@ -1,0 +1,8 @@
+$ sadame validate examples/08-multi-role-inventory/site.rb -g all --platform ubuntu
+sadame 0.4.0 validate examples/08-multi-role-inventory/site.rb, as on Ubuntu 24.04 LTS
+
+  web1.example.com  ok     6 resources
+  web2.example.com  ok     6 resources
+  db1.example.com   ok     6 resources
+
+validate on 3 hosts: 3 ok.
