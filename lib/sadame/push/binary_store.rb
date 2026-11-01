@@ -25,9 +25,10 @@ module Sadame
 
       RELEASE_URL = "https://github.com/enderkus/sadame/releases/download"
 
-      def initialize(shell, environment: ENV, engine: RUBY_ENGINE, pid: Process.pid)
+      def initialize(shell, environment: ENV, engine: RUBY_ENGINE, pid: Process.pid, version: VERSION)
         @shell = shell
         @environment = environment
+        @version = version
         @engine = engine
         @pid = pid
         @found = {}
@@ -82,17 +83,17 @@ module Sadame
       end
 
       def cache_dir
-        File.join(@environment["HOME"].to_s, ".sadame", "dist", VERSION)
+        File.join(@environment["HOME"].to_s, ".sadame", "dist", @version)
       end
 
       def download(name, destination)
-        if VERSION.include?(".dev") && (@environment["SADAME_DOWNLOAD_URL"].nil? || @environment["SADAME_DOWNLOAD_URL"].empty?)
+        if @version.include?(".dev") && (@environment["SADAME_DOWNLOAD_URL"].nil? || @environment["SADAME_DOWNLOAD_URL"].empty?)
           raise Error, "no #{name} for this development version of sadame; build it " \
                        "(rake build:linux-amd64 build:linux-arm64) and set SADAME_BINARY_DIR=dist"
         end
 
         base = @environment["SADAME_DOWNLOAD_URL"]
-        base = "#{RELEASE_URL}/v#{VERSION}" if base.nil? || base.empty?
+        base = "#{RELEASE_URL}/v#{@version}" if base.nil? || base.empty?
         @shell.run!("mkdir -p #{Shell.escape(File.dirname(destination))}")
         partial = "#{destination}.download"
         fetch("#{base}/#{name}", partial)

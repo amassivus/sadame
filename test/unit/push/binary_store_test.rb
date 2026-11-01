@@ -49,9 +49,9 @@ class PushBinaryStoreTest < SadameTest
   end
 
   def test_development_versions_are_not_downloaded
-    skip "release builds download" unless Sadame::VERSION.include?(".dev")
-
-    error = assert_raises(Sadame::Error) { store("HOME" => @dir).find("linux", "amd64") }
+    development = Sadame::Push::BinaryStore.new(@shell, environment: { "HOME" => @dir }, engine: "ruby",
+                                                        version: "0.2.0.dev")
+    error = assert_raises(Sadame::Error) { development.find("linux", "amd64") }
     assert_includes error.message, "set SADAME_BINARY_DIR=dist"
   end
 
