@@ -1,0 +1,36 @@
+$ sed -i 's/rebase = true/rebase = false/' ~/.gitconfig
+
+$ rm ~/.local/bin/update-system
+
+$ sudo sadame drift examples/12-omarchy-workstation
+sadame 0.1.0.dev drift on local (Arch Linux ARM)
+
+~ file[/home/alice/.gitconfig]
+    --- /home/alice/.gitconfig
+    +++ /home/alice/.gitconfig (desired)
+    @@ -5,4 +5,4 @@
+     [init]
+     	defaultBranch = main
+     [pull]
+    -	rebase = false
+    +	rebase = true
+
++ file[/home/alice/.local/bin/update-system]
+    state: absent -> present
+    mode: 0755
+    owner: alice
+    --- /dev/null
+    +++ /home/alice/.local/bin/update-system (desired)
+    @@ -0,0 +1,7 @@
+    +#!/bin/sh
+    +# Updates the system packages, then the AUR packages if yay is installed.
+    +set -e
+    +sudo pacman -Syu
+    +if command -v yay >/dev/null 2>&1; then
+    +  yay -Sua
+    +fi
+
+Drift: 2 of 21 resources differ from the recipe.
+
+$ echo $?
+1

@@ -1,0 +1,55 @@
+$ sudo sadame apply examples/12-omarchy-workstation
+sadame 0.1.0.dev apply on local (Arch Linux ARM)
+
+unchanged  package[git]
+unchanged  package[htop]
+unchanged  package[ripgrep]
+unchanged  package[fd]
+unchanged  package[bat]
+unchanged  package[starship]
+unchanged  directory[/home/alice/.config]
+unchanged  directory[/home/alice/.config/systemd]
+unchanged  directory[/home/alice/.config/systemd/user]
+unchanged  directory[/home/alice/.local]
+unchanged  directory[/home/alice/.local/bin]
+changed    file[/home/alice/.gitconfig]
+           --- /home/alice/.gitconfig
+           +++ /home/alice/.gitconfig (desired)
+           @@ -5,4 +5,4 @@
+            [init]
+            	defaultBranch = main
+            [pull]
+           -	rebase = false
+           +	rebase = true
+unchanged  file[/home/alice/.config/starship.toml]
+changed    file[/home/alice/.local/bin/update-system]
+           state: absent -> present
+           mode: 0755
+           owner: alice
+           --- /dev/null
+           +++ /home/alice/.local/bin/update-system (desired)
+           @@ -0,0 +1,7 @@
+           +#!/bin/sh
+           +# Updates the system packages, then the AUR packages if yay is installed.
+           +set -e
+           +sudo pacman -Syu
+           +if command -v yay >/dev/null 2>&1; then
+           +  yay -Sua
+           +fi
+unchanged  exec[enable lingering for alice]
+unchanged  exec[start alice's systemd instance]
+unchanged  exec[reload alice's systemd units]
+unchanged  file[/home/alice/.config/systemd/user/clean-downloads.service]
+unchanged  file[/home/alice/.config/systemd/user/clean-downloads.timer]
+unchanged  service[clean-downloads.timer]
+unchanged  exec[install visual-studio-code-bin from the AUR]
+
+Summary
+  changed      2  file[/home/alice/.gitconfig]
+                  file[/home/alice/.local/bin/update-system]
+  unchanged   19
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 0.09s.

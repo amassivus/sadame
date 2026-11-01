@@ -19,8 +19,12 @@ module Lab
   NETWORK = "#{PREFIX}"
   PRIVATE_NETWORK = "#{PREFIX}-private"
 
+  # A fresh cloud server for the provisioning guide: only root, with a key.
+  FRESH_SERVERS = ["vps1"].freeze
+
   # name => [network aliases, sshd port, networks]
   TARGETS = {
+    "vps1" => [["vps1.example.com"], 22, [NETWORK]],
     "web1" => [["web1.example.com"], 22, [NETWORK]],
     "web2" => [["web2.example.com"], 22, [NETWORK]],
     "db1" => [["db1.example.com"], 2222, [NETWORK]],
@@ -93,7 +97,7 @@ module Lab
     end
 
     def build_images
-      %w[target controller].each do |image|
+      %w[target fresh controller].each do |image|
         sh("docker", "build", "--quiet", "--tag", "#{PREFIX}-#{image}", "--file", File.join(__dir__, "#{image}.Dockerfile"),
            __dir__)
       end
@@ -105,7 +109,7 @@ module Lab
                    "--privileged", "--cgroupns=host", "--volume", "/sys/fs/cgroup:/sys/fs/cgroup:rw",
                    "--network", networks.first]
       aliases.each { |name_alias| arguments += ["--network-alias", name_alias] }
-      sh(*arguments, "#{PREFIX}-target")
+      sh(*arguments, FRESH_SERVERS.include?(name) ? "#{PREFIX}-fresh" : "#{PREFIX}-target")
       networks.drop(1).each do |network|
         sh("docker", "network", "connect", *aliases.flat_map { |name_alias| ["--alias", name_alias] }, network,
            "#{PREFIX}-#{name}")
@@ -129,11 +133,17 @@ module Lab
     def install_keys
       _status, key = controller("cat /root/.ssh/id_ed25519.pub", dir: "/")
       TARGETS.each do |name, (_aliases, port, _networks)|
-        script = %w[deploy ops].map do |user|
-          "install -d -m 0700 -o #{user} -g #{user} /home/#{user}/.ssh && " \
-            "echo '#{key.strip}' > /home/#{user}/.ssh/authorized_keys && " \
-            "chown #{user}:#{user} /home/#{user}/.ssh/authorized_keys && chmod 0600 /home/#{user}/.ssh/authorized_keys"
-        end.join(" && ")
+        script = if FRESH_SERVERS.include?(name)
+                   "install -d -m 0700 /root/.ssh && echo '#{key.strip}' > /root/.ssh/authorized_keys && " \
+                     "chmod 0600 /root/.ssh/authorized_keys"
+                 else
+                   %w[deploy ops].map do |user|
+                     "install -d -m 0700 -o #{user} -g #{user} /home/#{user}/.ssh && " \
+                       "echo '#{key.strip}' > /home/#{user}/.ssh/authorized_keys && " \
+                       "chown #{user}:#{user} /home/#{user}/.ssh/authorized_keys && " \
+                       "chmod 0600 /home/#{user}/.ssh/authorized_keys"
+                   end.join(" && ")
+                 end
         script += " && echo 'Port #{port}' > /etc/ssh/sshd_config.d/port.conf && systemctl restart ssh" if port != 22
         wait_until("systemd on #{name}") { target(name, "systemctl is-system-running --wait").match?(/running|degraded/) }
         target(name, script)
@@ -142,6 +152,7 @@ module Lab
 
     def wait_for_sshd
       checks = {
+        "vps1.example.com" => "ssh root@vps1.example.com true",
         "web1.example.com" => "ssh deploy@web1.example.com true",
         "web2.example.com" => "ssh deploy@web2.example.com true",
         "db1.example.com" => "ssh -p 2222 deploy@db1.example.com true",

@@ -1,0 +1,18 @@
+$ sadame drift examples/07-hardening-baseline -h deploy@vps1.example.com:2222 --sudo --var open_ports=80,443
+[vps1.example.com] sadame 0.1.0.dev drift on vps1.example.com (Debian GNU/Linux 12 (bookworm))
+[vps1.example.com]
+[vps1.example.com] No drift: 15 resources match the recipe.
+
+Hosts
+  vps1.example.com  ok
+
+drift on 1 host: 1 ok. Finished in 0.31s.
+
+$ echo $?
+0
+
+$ ssh -p 2222 root@vps1.example.com true
+root@vps1.example.com: Permission denied (publickey).
+
+$ ssh -p 22 deploy@vps1.example.com true
+ssh: connect to host vps1.example.com port 22: Connection timed out

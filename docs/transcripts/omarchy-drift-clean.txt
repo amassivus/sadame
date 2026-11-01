@@ -1,0 +1,7 @@
+$ sudo sadame drift examples/12-omarchy-workstation
+sadame 0.1.0.dev drift on local (Arch Linux ARM)
+
+No drift: 21 resources match the recipe.
+
+$ echo $?
+0

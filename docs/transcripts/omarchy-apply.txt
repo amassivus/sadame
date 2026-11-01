@@ -1,0 +1,146 @@
+$ sudo sadame apply examples/12-omarchy-workstation
+sadame 0.1.0.dev apply on local (Arch Linux ARM)
+
+changed    package[git]
+           state: absent -> installed
+changed    package[htop]
+           state: absent -> installed
+changed    package[ripgrep]
+           state: absent -> installed
+changed    package[fd]
+           state: absent -> installed
+changed    package[bat]
+           state: absent -> installed
+changed    package[starship]
+           state: absent -> installed
+changed    directory[/home/alice/.config]
+           state: absent -> present
+           mode: 0755
+           owner: alice
+changed    directory[/home/alice/.config/systemd]
+           state: absent -> present
+           mode: 0755
+           owner: alice
+changed    directory[/home/alice/.config/systemd/user]
+           state: absent -> present
+           mode: 0755
+           owner: alice
+changed    directory[/home/alice/.local]
+           state: absent -> present
+           mode: 0755
+           owner: alice
+changed    directory[/home/alice/.local/bin]
+           state: absent -> present
+           mode: 0755
+           owner: alice
+changed    file[/home/alice/.gitconfig]
+           state: absent -> present
+           mode: 0644
+           owner: alice
+           --- /dev/null
+           +++ /home/alice/.gitconfig (desired)
+           @@ -0,0 +1,8 @@
+           +# Managed by sadame. Local changes will be overwritten.
+           +[user]
+           +	name = Your Name
+           +	email = you@example.com
+           +[init]
+           +	defaultBranch = main
+           +[pull]
+           +	rebase = true
+changed    file[/home/alice/.config/starship.toml]
+           state: absent -> present
+           mode: 0644
+           owner: alice
+           --- /dev/null
+           +++ /home/alice/.config/starship.toml (desired)
+           @@ -0,0 +1,5 @@
+           +# Managed by sadame.
+           +add_newline = false
+           +
+           +[directory]
+           +truncation_length = 3
+changed    file[/home/alice/.local/bin/update-system]
+           state: absent -> present
+           mode: 0755
+           owner: alice
+           --- /dev/null
+           +++ /home/alice/.local/bin/update-system (desired)
+           @@ -0,0 +1,7 @@
+           +#!/bin/sh
+           +# Updates the system packages, then the AUR packages if yay is installed.
+           +set -e
+           +sudo pacman -Syu
+           +if command -v yay >/dev/null 2>&1; then
+           +  yay -Sua
+           +fi
+changed    exec[enable lingering for alice]
+           command: loginctl enable-linger alice
+           (/var/lib/systemd/linger/alice does not exist)
+changed    exec[start alice's systemd instance]
+           command: systemctl start user@$(id -u alice).service
+           (not_if exited non-zero)
+unchanged  exec[reload alice's systemd units]
+changed    file[/home/alice/.config/systemd/user/clean-downloads.service]
+           state: absent -> present
+           mode: 0644
+           owner: alice
+           --- /dev/null
+           +++ /home/alice/.config/systemd/user/clean-downloads.service (desired)
+           @@ -0,0 +1,6 @@
+           +[Unit]
+           +Description=Remove files older than 30 days from ~/Downloads
+           +
+           +[Service]
+           +Type=oneshot
+           +ExecStart=/usr/bin/find %h/Downloads -type f -mtime +30 -delete
+notified   exec[reload alice's systemd units]: run (immediately, from file[/home/alice/.config/systemd/user/clean-downloads.service])
+changed    file[/home/alice/.config/systemd/user/clean-downloads.timer]
+           state: absent -> present
+           mode: 0644
+           owner: alice
+           --- /dev/null
+           +++ /home/alice/.config/systemd/user/clean-downloads.timer (desired)
+           @@ -0,0 +1,9 @@
+           +[Unit]
+           +Description=Clean ~/Downloads weekly
+           +
+           +[Timer]
+           +OnCalendar=weekly
+           +Persistent=true
+           +
+           +[Install]
+           +WantedBy=timers.target
+notified   exec[reload alice's systemd units]: run (immediately, from file[/home/alice/.config/systemd/user/clean-downloads.timer])
+changed    service[clean-downloads.timer]
+           enabled: false -> true
+           state: stopped -> running
+unchanged  exec[install visual-studio-code-bin from the AUR]
+
+Summary
+  changed     19  package[git]
+                  package[htop]
+                  package[ripgrep]
+                  package[fd]
+                  package[bat]
+                  package[starship]
+                  directory[/home/alice/.config]
+                  directory[/home/alice/.config/systemd]
+                  directory[/home/alice/.config/systemd/user]
+                  directory[/home/alice/.local]
+                  directory[/home/alice/.local/bin]
+                  file[/home/alice/.gitconfig]
+                  file[/home/alice/.config/starship.toml]
+                  file[/home/alice/.local/bin/update-system]
+                  exec[enable lingering for alice]
+                  exec[start alice's systemd instance]
+                  file[/home/alice/.config/systemd/user/clean-downloads.service]
+                  file[/home/alice/.config/systemd/user/clean-downloads.timer]
+                  service[clean-downloads.timer]
+  unchanged    2
+  failed       0
+  skipped      0
+  notified     2  exec[reload alice's systemd units]: run
+                  exec[reload alice's systemd units]: run
+
+Finished in 25.02s.

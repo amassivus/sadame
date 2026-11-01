@@ -1,0 +1,155 @@
+$ sadame apply examples/02-nginx-static-site -h deploy@vps1.example.com:2222 --sudo --var server_name=vps1.example.com
+[vps1.example.com] sadame 0.1.0.dev apply on vps1.example.com (Debian GNU/Linux 12 (bookworm))
+[vps1.example.com]
+[vps1.example.com] changed    package[nginx]
+[vps1.example.com]            state: absent -> installed
+[vps1.example.com] changed    service[nginx]
+[vps1.example.com]            state: stopped -> running
+[vps1.example.com] changed    file[/etc/nginx/nginx.conf]
+[vps1.example.com]            --- /etc/nginx/nginx.conf
+[vps1.example.com]            +++ /etc/nginx/nginx.conf (desired)
+[vps1.example.com]            @@ -1,83 +1,17 @@
+[vps1.example.com]            +# Managed by sadame. Local changes will be overwritten.
+[vps1.example.com]             user www-data;
+[vps1.example.com]             worker_processes auto;
+[vps1.example.com]             pid /run/nginx.pid;
+[vps1.example.com]             error_log /var/log/nginx/error.log;
+[vps1.example.com]            -include /etc/nginx/modules-enabled/*.conf;
+[vps1.example.com]             
+[vps1.example.com]             events {
+[vps1.example.com]            -	worker_connections 768;
+[vps1.example.com]            -	# multi_accept on;
+[vps1.example.com]            +  worker_connections 1024;
+[vps1.example.com]             }
+[vps1.example.com]             
+[vps1.example.com]             http {
+[vps1.example.com]            -
+[vps1.example.com]            -	##
+[vps1.example.com]            -	# Basic Settings
+[vps1.example.com]            -	##
+[vps1.example.com]            -
+[vps1.example.com]            -	sendfile on;
+[vps1.example.com]            -	tcp_nopush on;
+[vps1.example.com]            -	types_hash_max_size 2048;
+[vps1.example.com]            -	# server_tokens off;
+[vps1.example.com]            -
+[vps1.example.com]            -	# server_names_hash_bucket_size 64;
+[vps1.example.com]            -	# server_name_in_redirect off;
+[vps1.example.com]            -
+[vps1.example.com]            -	include /etc/nginx/mime.types;
+[vps1.example.com]            -	default_type application/octet-stream;
+[vps1.example.com]            -
+[vps1.example.com]            -	##
+[vps1.example.com]            -	# SSL Settings
+[vps1.example.com]            -	##
+[vps1.example.com]            -
+[vps1.example.com]            -	ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3; # Dropping SSLv3, ref: POODLE
+[vps1.example.com]            -	ssl_prefer_server_ciphers on;
+[vps1.example.com]            -
+[vps1.example.com]            -	##
+[vps1.example.com]            -	# Logging Settings
+[vps1.example.com]            -	##
+[vps1.example.com]            -
+[vps1.example.com]            -	access_log /var/log/nginx/access.log;
+[vps1.example.com]            -
+[vps1.example.com]            -	##
+[vps1.example.com]            -	# Gzip Settings
+[vps1.example.com]            -	##
+[vps1.example.com]            -
+[vps1.example.com]            -	gzip on;
+[vps1.example.com]            -
+[vps1.example.com]            -	# gzip_vary on;
+[vps1.example.com]            -	# gzip_proxied any;
+[vps1.example.com]            -	# gzip_comp_level 6;
+[vps1.example.com]            -	# gzip_buffers 16 8k;
+[vps1.example.com]            -	# gzip_http_version 1.1;
+[vps1.example.com]            -	# gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+[vps1.example.com]            -
+[vps1.example.com]            -	##
+[vps1.example.com]            -	# Virtual Host Configs
+[vps1.example.com]            -	##
+[vps1.example.com]            -
+[vps1.example.com]            -	include /etc/nginx/conf.d/*.conf;
+[vps1.example.com]            -	include /etc/nginx/sites-enabled/*;
+[vps1.example.com]            +  include /etc/nginx/mime.types;
+[vps1.example.com]            +  default_type application/octet-stream;
+[vps1.example.com]            +  sendfile on;
+[vps1.example.com]            +  access_log /var/log/nginx/access.log;
+[vps1.example.com]            +  include /etc/nginx/conf.d/*.conf;
+[vps1.example.com]             }
+[vps1.example.com]            -
+[vps1.example.com]            -
+[vps1.example.com]            -#mail {
+[vps1.example.com]            -#	# See sample authentication script at:
+[vps1.example.com]            -#	# http://wiki.nginx.org/ImapAuthenticateWithApachePhpScript
+[vps1.example.com]            -#
+[vps1.example.com]            -#	# auth_http localhost/auth.php;
+[vps1.example.com]            -#	# pop3_capabilities "TOP" "USER";
+[vps1.example.com]            -#	# imap_capabilities "IMAP4rev1" "UIDPLUS";
+[vps1.example.com]            -#
+[vps1.example.com]            -#	server {
+[vps1.example.com]            -#		listen     localhost:110;
+[vps1.example.com]            -#		protocol   pop3;
+[vps1.example.com]            -#		proxy      on;
+[vps1.example.com]            -#	}
+[vps1.example.com]            -#
+[vps1.example.com]            -#	server {
+[vps1.example.com]            -#		listen     localhost:143;
+[vps1.example.com]            -#		protocol   imap;
+[vps1.example.com]            -#		proxy      on;
+[vps1.example.com]            -#	}
+[vps1.example.com]            -#}
+[vps1.example.com] unchanged  directory[/etc/nginx/conf.d]
+[vps1.example.com] changed    file[/etc/nginx/conf.d/static-site.conf]
+[vps1.example.com]            state: absent -> present
+[vps1.example.com]            mode: 0644
+[vps1.example.com]            --- /dev/null
+[vps1.example.com]            +++ /etc/nginx/conf.d/static-site.conf (desired)
+[vps1.example.com]            @@ -0,0 +1,7 @@
+[vps1.example.com]            +# Managed by sadame.
+[vps1.example.com]            +server {
+[vps1.example.com]            +  listen 80 default_server;
+[vps1.example.com]            +  server_name vps1.example.com;
+[vps1.example.com]            +  root /var/www/static-site;
+[vps1.example.com]            +  index index.html;
+[vps1.example.com]            +}
+[vps1.example.com] changed    directory[/var/www/static-site]
+[vps1.example.com]            state: absent -> present
+[vps1.example.com]            mode: 0755
+[vps1.example.com] changed    file[/var/www/static-site/index.html]
+[vps1.example.com]            state: absent -> present
+[vps1.example.com]            mode: 0644
+[vps1.example.com]            --- /dev/null
+[vps1.example.com]            +++ /var/www/static-site/index.html (desired)
+[vps1.example.com]            @@ -0,0 +1,11 @@
+[vps1.example.com]            +<!doctype html>
+[vps1.example.com]            +<html lang="en">
+[vps1.example.com]            +  <head>
+[vps1.example.com]            +    <meta charset="utf-8">
+[vps1.example.com]            +    <title>It works</title>
+[vps1.example.com]            +  </head>
+[vps1.example.com]            +  <body>
+[vps1.example.com]            +    <h1>It works</h1>
+[vps1.example.com]            +    <p>Served by nginx, configured by sadame.</p>
+[vps1.example.com]            +  </body>
+[vps1.example.com]            +</html>
+[vps1.example.com] notified   service[nginx]: reload (delayed, from file[/etc/nginx/nginx.conf])
+[vps1.example.com]
+[vps1.example.com] Summary
+[vps1.example.com]   changed      6  package[nginx]
+[vps1.example.com]                   service[nginx]
+[vps1.example.com]                   file[/etc/nginx/nginx.conf]
+[vps1.example.com]                   file[/etc/nginx/conf.d/static-site.conf]
+[vps1.example.com]                   directory[/var/www/static-site]
+[vps1.example.com]                   file[/var/www/static-site/index.html]
+[vps1.example.com]   unchanged    1
+[vps1.example.com]   failed       0
+[vps1.example.com]   skipped      0
+[vps1.example.com]   notified     1  service[nginx]: reload
+[vps1.example.com]
+[vps1.example.com] Finished in 1.99s.
+
+Hosts
+  vps1.example.com  ok
+
+apply on 1 host: 1 ok. Finished in 2.20s.

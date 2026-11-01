@@ -24,7 +24,9 @@ module Transcripts
   IMAGES = {
     "debian" => { platform: "linux/amd64", systemd: false },
     "debian-systemd" => { platform: nil, systemd: true },
-    "arch" => { platform: "linux/amd64", systemd: false }
+    "arch" => { platform: "linux/amd64", systemd: false },
+    "arch-systemd" => { platform: nil, systemd: true,
+                        base: { "amd64" => "archlinux:latest", "arm64" => "menci/archlinuxarm:latest" } }
   }.freeze
 
   module_function
@@ -79,8 +81,15 @@ module Transcripts
   def build_image(image)
     puts "building #{tag(image)}"
     command = ["docker", "build", "--quiet", "-t", tag(image), "-f", File.join(__dir__, "#{image}.Dockerfile")]
-    command += ["--platform", IMAGES.fetch(image)[:platform]] if IMAGES.fetch(image)[:platform]
+    settings = IMAGES.fetch(image)
+    command += ["--platform", settings[:platform]] if settings[:platform]
+    command += ["--build-arg", "BASE=#{settings[:base].fetch(native_arch)}"] if settings[:base]
     system(*command, __dir__, out: File::NULL, exception: true)
+  end
+
+  def native_arch
+    machine, = Open3.capture2("docker", "info", "--format", "{{.Architecture}}")
+    %w[aarch64 arm64].include?(machine.strip) ? "arm64" : "amd64"
   end
 
   def capture(scenario)
@@ -117,7 +126,8 @@ module Transcripts
 
   def run_step(container, step)
     script = "#{step[:commands].join("\n")}\n"
-    output, = Open3.capture2e("docker", "exec", "--interactive", "--workdir", step[:dir] || "/sadame", container,
+    user = step[:user] ? ["--user", step[:user]] : []
+    output, = Open3.capture2e("docker", "exec", "--interactive", *user, "--workdir", step[:dir] || "/sadame", container,
                               "sh", "/sadame/script/transcripts/session.sh", stdin_data: script)
     write(step[:save], output) if step[:save]
   end

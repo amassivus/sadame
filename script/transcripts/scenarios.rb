@@ -133,6 +133,22 @@ module Transcripts
       ]
     },
     {
+      name: "omarchy",
+      image: "arch-systemd",
+      steps: [
+        { commands: ["useradd -m alice", "echo 'alice ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/alice",
+                     "chmod 0440 /etc/sudoers.d/alice"] },
+        { save: "omarchy-plan", user: "alice", commands: ["sudo sadame plan examples/12-omarchy-workstation"] },
+        { save: "omarchy-apply", user: "alice", commands: ["sudo sadame apply examples/12-omarchy-workstation"] },
+        { save: "omarchy-drift-clean", user: "alice",
+          commands: ["sudo sadame drift examples/12-omarchy-workstation", "echo $?"] },
+        { save: "omarchy-drift-broken", user: "alice",
+          commands: ["sed -i 's/rebase = true/rebase = false/' ~/.gitconfig", "rm ~/.local/bin/update-system",
+                     "sudo sadame drift examples/12-omarchy-workstation", "echo $?"] },
+        { save: "omarchy-repair", user: "alice", commands: ["sudo sadame apply examples/12-omarchy-workstation"] }
+      ]
+    },
+    {
       name: "drift-demo",
       image: "debian-systemd",
       steps: [
@@ -169,6 +185,23 @@ module Transcripts
         { save: "remote-unreachable", dir: EXAMPLE_08,
           commands: ["sadame plan site.rb -g db -h deploy@db2.example.com", "echo $?"] },
         { save: "inventory-dynamic", dir: "/sadame/examples/11-dynamic-inventory", commands: ["sadame hosts -g db"] }
+      ]
+    },
+    {
+      name: "provision",
+      steps: [
+        { save: "vps-admin-user", dir: "/sadame",
+          commands: ["sadame apply examples/06-app-deploy-user -h root@vps1.example.com " \
+                     "--var \"ssh_keys=$(cat ~/.ssh/id_ed25519.pub)\" --var sudo_commands=ALL"] },
+        { save: "vps-hardening", dir: "/sadame",
+          commands: ["sadame apply examples/07-hardening-baseline -h deploy@vps1.example.com --sudo --var open_ports=80,443"] },
+        { save: "vps-web", dir: "/sadame",
+          commands: ["sadame apply examples/02-nginx-static-site -h deploy@vps1.example.com:2222 --sudo " \
+                     "--var server_name=vps1.example.com"] },
+        { save: "vps-check", dir: "/sadame",
+          commands: ["sadame drift examples/07-hardening-baseline -h deploy@vps1.example.com:2222 --sudo " \
+                     "--var open_ports=80,443", "echo $?",
+                     "ssh -p 2222 root@vps1.example.com true", "ssh -p 22 deploy@vps1.example.com true"] }
       ]
     },
     {
