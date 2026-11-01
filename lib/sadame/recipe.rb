@@ -13,6 +13,7 @@ module Sadame
   #   group "app", gid: 1500
   #   link "/etc/nginx/sites-enabled/app", to: "/etc/nginx/sites-available/app"
   #   line "PermitRootLogin no", path: "/etc/ssh/sshd_config", match: /^#?\s*PermitRootLogin\s/
+  #   git "/srv/app", repository: "https://github.com/example/app.git", revision: "v1.4.2"
   #   include_recipe "roles/web"
   #
   # `vars`, `platform`, `host_name` and `host_groups` are available for
@@ -80,6 +81,10 @@ module Sadame
 
     def line(name, options = {})
       declare(LineResource, name, options)
+    end
+
+    def git(path, options = {})
+      declare(GitResource, path, options)
     end
 
     # Evaluates another recipe, relative to this recipe's directory. The
