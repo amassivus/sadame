@@ -1,0 +1,48 @@
+name: New resource
+description: Propose a resource type, such as cron, group or link.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A resource reads the current state, compares it with the recipe, and
+        changes only what differs. Answering the questions below in that
+        order makes the proposal easy to review. The steps to build one are
+        in docs/contributing/architecture.md.
+  - type: input
+    id: name
+    attributes:
+      label: Resource name
+      placeholder: cron
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Example
+      description: How a recipe would use it, with its main options.
+      render: ruby
+      placeholder: |
+        cron "nightly backup", user: "app", minute: 0, hour: 3,
+             command: "/usr/local/bin/backup"
+    validations:
+      required: true
+  - type: textarea
+    id: state
+    attributes:
+      label: Current state
+      description: Which commands or files tell what is on the machine now, on each distribution (Debian/Ubuntu, Rocky, Alpine, Arch).
+    validations:
+      required: true
+  - type: textarea
+    id: changes
+    attributes:
+      label: Changes
+      description: The commands that create, update and remove it, and how drift shows up.
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: What you do today
+      description: The guarded `exec` or `file` the resource would replace.

@@ -1,0 +1,55 @@
+name: Bug report
+description: sadame did something wrong, or failed where it should have worked.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. A small recipe that shows the problem, and the
+        output with `--no-color`, make most bugs quick to fix.
+  - type: input
+    id: version
+    attributes:
+      label: sadame version
+      description: The output of `sadame --version`.
+      placeholder: sadame 0.1.0
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Command
+      description: The full command line you ran.
+      placeholder: sadame apply site.rb -g web --sudo
+    validations:
+      required: true
+  - type: input
+    id: systems
+    attributes:
+      label: Systems
+      description: Where sadame ran, and the target's distribution and architecture for remote runs.
+      placeholder: macOS 15 on Apple silicon, targets Debian 12 x86_64
+    validations:
+      required: true
+  - type: textarea
+    id: recipe
+    attributes:
+      label: Recipe
+      description: The smallest recipe (and hosts.rb, if relevant) that shows the problem. Remove secrets.
+      render: ruby
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      description: What sadame printed, run with `--no-color`.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true

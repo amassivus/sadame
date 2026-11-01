@@ -38,6 +38,19 @@ Tests never need root: resources are tested against `FakeShell`
 (`test/support/fake_shell.rb`), which records commands and returns stubbed
 results.
 
+Two more layers run sadame for real, with Docker:
+
+```sh
+rake build:linux-arm64                  # or linux-amd64: the binary under test
+rake "test:docker[debian,arm64]"        # every example in fresh containers booting systemd
+rake test:push                          # push mode against SSH servers in containers
+```
+
+CI runs both on every pull request, for five distributions and two
+architectures. A third layer runs on the maintainer's virtual machines and
+is not part of CI. [Testing](https://enderkus.github.io/sadame/contributing/testing/)
+explains all three.
+
 ## Writing code for mruby
 
 Release builds are a single mruby binary, so everything under `lib/` must
@@ -94,6 +107,14 @@ python3 -m venv .venv
 .venv/bin/mkdocs serve
 ```
 
+## Reporting bugs and proposing features
+
+Use the issue templates: a bug report asks for the version, the command,
+a small recipe and the output with `--no-color`; a new resource proposal
+asks how the resource reads the current state and changes it on each
+distribution. Security problems: please do not open a public issue; write
+to the maintainer through the contact on their GitHub profile.
+
 ## Commits and pull requests
 
 - Small, focused commits using
@@ -103,6 +124,8 @@ python3 -m venv .venv
 - Keep the history as it is; do not rewrite published commits.
 - A pull request passes `rake test` on both runtimes and
   `mkdocs build --strict`, and updates `CHANGELOG.md` under "Unreleased".
+- A new feature or resource comes with its docs page and a tested example
+  under `examples/`; the pull request template lists what that means.
 
 ## License
 

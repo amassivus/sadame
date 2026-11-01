@@ -1,0 +1,32 @@
+name: Feature request
+description: A change to how sadame works, or something it should do.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a new resource type, use the "New resource" template instead.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you are trying to do, and what gets in the way today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: How it could work, from the user's side. A recipe or command line that uses it helps.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you do instead today
+      description: For example a guarded `exec`, or another tool.
+  - type: textarea
+    id: docs
+    attributes:
+      label: Documentation
+      description: Which page would explain it, and what its example would show. Every feature ships with a docs page and a tested example.
