@@ -1,0 +1,4 @@
+<%= facts[:fqdn] %>, <%= facts[:virtualization] || "no virtualization detected" %>
+<%= facts[:cpus] %> CPUs, <%= facts[:memory_mb] %> MB of memory, <%= facts[:root_disk_gb] %> GB on /
+<%= facts[:ipv4] || "no IPv4 address" %> on <%= facts[:default_interface] || "no default route" %>
+Managed by sadame.

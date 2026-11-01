@@ -21,11 +21,14 @@ module TestHelpers
   end
 
   # A fake Linux machine on which nothing from the recipe exists yet, apart
-  # from the existing files (empty), such as files a package would ship.
+  # from the existing files (empty), such as files a package would ship. It
+  # has 2 CPUs and 2 GB of memory, for recipes that read facts.
   def fresh_shell(distribution = "debian", existing: [])
-    files = { "/etc/os-release" => os_release(distribution) }
+    files = { "/etc/os-release" => os_release(distribution),
+              "/proc/meminfo" => "MemTotal:        2030000 kB\nSwapTotal:             0 kB\n" }
     existing.each { |path| files[path] = "" }
-    FreshHostShell.new(files: files).on("uname -s", stdout: "Linux\n")
+    FreshHostShell.new(files: files).on("uname -s", stdout: "Linux\n").on("uname -n", stdout: "fresh\n")
+                  .on("nproc", stdout: "2\n")
   end
 
   def host_for(shell)

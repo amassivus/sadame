@@ -1,7 +1,8 @@
 # 05-postgres
 
-PostgreSQL with `max_connections`, `shared_buffers`, `work_mem` and
-`listen_addresses` set from vars. The settings go into
+PostgreSQL with `max_connections`, `work_mem` and `listen_addresses` set
+from vars, and `shared_buffers` a quarter of the machine's memory
+(`facts[:memory_mb]`) unless vars set it. The settings go into
 `conf.d/tuning.conf`, so the distribution's own `postgresql.conf` is not
 rewritten, and PostgreSQL restarts when they change.
 

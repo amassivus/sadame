@@ -23,11 +23,15 @@ else
   raise "this example supports Debian/Ubuntu, Rocky/RHEL and Arch, not #{platform.description}"
 end
 
+# A quarter of the memory is PostgreSQL's usual starting point.
+shared_buffers = vars[:shared_buffers] || "#{facts[:memory_mb] / 4}MB"
+
 # The settings exist before PostgreSQL starts, so it never sees an
 # include_dir that points nowhere.
 directory conf_dir, owner: "postgres", group: "postgres", mode: "0700"
 file "#{conf_dir}/tuning.conf",
      template: "tuning.conf.erb",
+     locals: { shared_buffers: shared_buffers },
      owner: "postgres",
      group: "postgres",
      mode: "0640",

@@ -77,6 +77,11 @@ class ExamplesTest < SadameTest
       "alpine", ["package[git]", "package[shadow]", "user[deploy]", "directory[/srv/sadame]", "git[/srv/sadame]"]
     ],
     "examples/resources/git/minimal.rb" => ["debian", ["package[git]", "git[/opt/sadame]"]],
+    "examples/facts/recipe.rb" => [
+      "debian",
+      ["file[/etc/motd]", "directory[/etc/demo-app]", "file[/etc/demo-app/app.conf]",
+       "file[/etc/demo-app/nightly.schedule]", "directory[/etc/sysctl.d]", "file[/etc/sysctl.d/90-demo-app.conf]"]
+    ],
     "examples/notifications/recipe.rb" => [
       "debian",
       ["exec[systemctl daemon-reload]", "file[/etc/systemd/system/ticker.service]", "file[/etc/default/ticker]",

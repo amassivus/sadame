@@ -1,8 +1,8 @@
-# Settings for a small server with 2 GB of memory; scale shared_buffers to
-# about a quarter of the memory.
+# Settings for PostgreSQL. shared_buffers is a quarter of the machine's
+# memory unless it is set here or with --var shared_buffers=1GB.
 {
   max_connections: 100,
-  shared_buffers: "512MB",
+  shared_buffers: nil,
   work_mem: "8MB",
   listen_addresses: "localhost",
   # The PostgreSQL version Debian and Ubuntu install, which names the
