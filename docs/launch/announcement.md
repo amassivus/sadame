@@ -56,6 +56,7 @@ curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | s
 
 Documentation: https://enderkus.github.io/sadame/
 Source, MIT licensed: https://github.com/enderkus/sadame
+News: https://x.com/sadame_rb
 
 Bug reports and proposals for new resources are welcome; the issue
 templates ask for what makes them quick to act on.

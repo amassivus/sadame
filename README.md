@@ -5,6 +5,7 @@
   <a href="https://enderkus.github.io/sadame/"><img src="https://github.com/enderkus/sadame/actions/workflows/docs.yml/badge.svg" alt="Docs"></a>
   <a href="https://github.com/enderkus/sadame/releases/latest"><img src="https://img.shields.io/github/v/release/enderkus/sadame" alt="Latest release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+  <a href="https://x.com/sadame_rb"><img src="https://img.shields.io/badge/follow-%40sadame__rb-000000?logo=x" alt="Follow @sadame_rb on X"></a>
 </p>
 
 **Sadame describes the desired state of Linux machines in plain Ruby, shows
@@ -71,6 +72,12 @@ Debian, Rocky Linux, Alpine and Arch.
 
 The [full comparison](https://enderkus.github.io/sadame/comparison/) adds
 Chef and Puppet, and lists what sadame does not do yet.
+
+## Follow the project
+
+Sadame is young, and a star on GitHub helps other people find it. News
+and releases are posted on X as [@sadame_rb](https://x.com/sadame_rb);
+bugs and ideas go to [issues](https://github.com/enderkus/sadame/issues).
 
 ## License
 

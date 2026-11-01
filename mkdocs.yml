@@ -41,6 +41,16 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
+# Icons in the footer of every page.
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/enderkus/sadame
+      name: Sadame on GitHub
+    - icon: fontawesome/brands/x-twitter
+      link: https://x.com/sadame_rb
+      name: "@sadame_rb on X"
+
 # Captured terminal sessions are embedded into pages, not published alone;
 # launch/ holds drafts for posts elsewhere.
 exclude_docs: |
