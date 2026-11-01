@@ -21,6 +21,17 @@ jobs:
           cache-dependency-path: docs/requirements.txt
       - run: pip install -r docs/requirements.txt
       - run: mkdocs build --strict
+      # GitHub Pages serves the site under /sadame/, which some pages link
+      # to absolutely; check it laid out the same way.
+      - name: Lay out the site as GitHub Pages serves it
+        run: mkdir -p /tmp/pages && cp -R site /tmp/pages/sadame
+      - name: Check internal links and anchors
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --offline --include-fragments --index-files index.html --no-progress
+            --root-dir /tmp/pages /tmp/pages/sadame
+          fail: true
 
   deploy:
     name: Deploy to GitHub Pages

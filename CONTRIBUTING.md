@@ -107,6 +107,14 @@ python3 -m venv .venv
 .venv/bin/mkdocs serve
 ```
 
+CI also checks every internal link and anchor of the built site with
+[lychee](https://lychee.cli.rs/). The same check locally, with Docker:
+
+```sh
+docker run --rm -v "$PWD/site:/web/sadame:ro" lycheeverse/lychee --offline \
+  --include-fragments --index-files index.html --root-dir /web /web/sadame
+```
+
 ## Reporting bugs and proposing features
 
 Use the issue templates: a bug report asks for the version, the command,
