@@ -160,6 +160,11 @@ namespace :test do
 end
 
 namespace :docs do
+  desc "Record docs/assets/demo.gif from script/recording/demo.tape with vhs (needs Docker)"
+  task :recording do
+    sh "ruby", File.join(ROOT, "script", "recording", "record.rb")
+  end
+
   desc "Capture the terminal sessions shown in the docs (needs Docker); SCENARIO=name for one"
   task :transcripts do
     scenarios = ENV.fetch("SCENARIO", "").split(",")
