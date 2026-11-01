@@ -11,12 +11,13 @@ module Sadame
   #   2 usage or recipe error, a state that could not be read, or a target
   #     that could not be reached
   class CLI
-    COMMANDS = %w[plan apply drift validate hosts facts].freeze
+    COMMANDS = %w[plan apply drift validate hosts facts report].freeze
     DEFAULT_RECIPE = "recipe.rb"
     DEFAULT_INVENTORY = "hosts.rb"
 
     USAGE = <<~TEXT
       Usage: sadame COMMAND [RECIPE] [options]
+             sadame report FILE [--format markdown|junit]
 
       Commands:
         plan     Show what apply would change, as a diff. Changes nothing.
@@ -25,6 +26,8 @@ module Sadame
         validate Check the recipe for every selected host without connecting.
         hosts    Show the selected hosts with their connection options and vars.
         facts    Show the facts recipes see on each host: CPUs, memory, addresses.
+        report   Turn the --json output of plan, apply or drift into Markdown
+                 (for a CI summary page) or JUnit XML (for test reports).
 
       RECIPE is a recipe file or a directory containing recipe.rb
       (default: ./recipe.rb). vars.rb and hosts.rb next to it are loaded if
@@ -49,6 +52,7 @@ module Sadame
         --var KEY=VALUE     Set vars[:KEY]; repeatable, overrides everything else
         --vars-file PATH    Load more vars from a Ruby file (local runs)
         --json              Print a JSON report instead of text
+        --format FORMAT     report: markdown (default) or junit
         --color             Always use colors
         --no-color          Never use colors (also: NO_COLOR environment variable)
         --host-name NAME    host_name in recipes and reports for local runs (default: local)
@@ -99,6 +103,8 @@ module Sadame
       if options[:platform] && options[:command] != "validate"
         raise UsageError, "--platform only applies to validate"
       end
+      raise UsageError, "--format only applies to report" if options[:format] && options[:command] != "report"
+      return convert_report(options) if options[:command] == "report"
       return list_hosts(options) if options[:command] == "hosts"
       return show_facts(options) if options[:command] == "facts"
       return validate(options) if options[:command] == "validate"
@@ -135,6 +141,28 @@ module Sadame
                else runner.apply(resources)
                end
       report.exit_status
+    end
+
+    # RECIPE is the JSON file here.
+    def convert_report(options)
+      path = options[:recipe]
+      raise UsageError, "report needs the JSON file of a plan, apply or drift" if path.nil?
+      raise UsageError, "report file not found: #{path}" unless File.file?(path)
+
+      format = options[:format] || "markdown"
+      unless ReportFormats::FORMATS.include?(format)
+        raise UsageError, "--format must be one of #{ReportFormats::FORMATS.join(", ")}, got #{format}"
+      end
+
+      document = begin
+        ReportFormats::Document.parse(File.read(path))
+      rescue Error => e
+        raise Error, "#{path}: #{e.message}"
+      rescue StandardError => e
+        raise Error, "#{path} is not a sadame JSON report (#{e.class})"
+      end
+      @stdout.write(ReportFormats.render(format, document))
+      0
     end
 
     def check_remote_options(options)
@@ -251,7 +279,7 @@ module Sadame
     def parse(argv)
       options = { vars: {}, hosts: [], groups: [], limit: nil, inventory: nil, sudo: false, json: false,
                   color: nil, vars_file: nil, host_name: nil, host_groups: [], forks: nil, serial: nil,
-                  tags: [], skip_tags: [], platform: nil,
+                  tags: [], skip_tags: [], platform: nil, format: nil,
                   help: false, version: false }
       positional = []
       arguments = argv.dup
@@ -272,6 +300,7 @@ module Sadame
         when "--limit" then options[:limit] = value(name, inline_value || arguments.shift)
         when "--inventory" then options[:inventory] = value(name, inline_value || arguments.shift)
         when "--platform" then options[:platform] = value(name, inline_value || arguments.shift)
+        when "--format" then options[:format] = value(name, inline_value || arguments.shift)
         when "--tags" then options[:tags].concat(list_value(name, inline_value || arguments.shift))
         when "--skip-tags" then options[:skip_tags].concat(list_value(name, inline_value || arguments.shift))
         when "--forks" then options[:forks] = positive_integer(name, inline_value || arguments.shift)
