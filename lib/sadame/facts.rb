@@ -71,8 +71,27 @@ module Sadame
       @host.platform.darwin?
     end
 
+    # A plain case rather than send: the release binary's mruby has no
+    # Kernel#send (that is mruby-metaprog, which only the test build has).
     def read(name)
-      send("read_#{name}")
+      case name
+      when :hostname then read_hostname
+      when :fqdn then read_fqdn
+      when :arch then read_arch
+      when :kernel then read_kernel
+      when :cpus then read_cpus
+      when :memory_mb then read_memory_mb
+      when :swap_mb then read_swap_mb
+      when :root_disk_gb then read_root_disk_gb
+      when :ipv4 then read_ipv4
+      when :default_interface then read_default_interface
+      when :ipv4_addresses then read_ipv4_addresses
+      when :ipv6_addresses then read_ipv6_addresses
+      when :virtualization then read_virtualization
+      when :container then read_container
+      when :service_manager then read_service_manager
+      when :machine_id then read_machine_id
+      end
     rescue StandardError
       nil
     end
