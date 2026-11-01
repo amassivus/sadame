@@ -82,7 +82,8 @@ class PushRunTest < SadameTest
     push([@web])
     stage = "#{WORK}/recipe"
     assert_includes @shell.commands, "mkdir -p #{stage} && cp -R examples/01-hello/. #{stage}/ && " \
-                                     "rm -rf #{stage}/.git #{stage}/vars.rb #{stage}/hosts.rb"
+                                     "rm -rf #{stage}/.git #{stage}/vars.rb #{stage}/hosts.rb && " \
+                                     "find #{stage} -name .git -prune -exec rm -rf {} +"
     assert_includes @shell.commands, "tar -czf #{WORK}/bundle.tgz -C #{stage} ."
     assert_equal "{ :role => \"web\" }\n", @shell.files["#{WORK}/vars-0.rb"]
     assert_equal "rm -rf #{WORK}", @shell.commands.last

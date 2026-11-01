@@ -220,15 +220,16 @@ module Sadame
       end
 
       # Copies the recipe's directory without the files that are evaluated
-      # here, and packs it with tar options every tar supports. Without a
-      # recipe, the bundle is empty.
+      # here, and without .git anywhere in it (recipes shared as git
+      # submodules have one), and packs it with tar options every tar
+      # supports. Without a recipe, the bundle is empty.
       def build_bundle(work_dir)
         stage = File.join(work_dir, "recipe")
         if @recipe_path
           source = File.dirname(@recipe_path)
           removals = BUNDLE_EXCLUDES.map { |name| Shell.escape(File.join(stage, name)) }.join(" ")
           @shell.run!("mkdir -p #{Shell.escape(stage)} && cp -R #{Shell.escape(source)}/. #{Shell.escape(stage)}/ && " \
-                      "rm -rf #{removals}")
+                      "rm -rf #{removals} && find #{Shell.escape(stage)} -name .git -prune -exec rm -rf {} +")
         else
           @shell.run!("mkdir -p #{Shell.escape(stage)}")
         end
