@@ -61,6 +61,7 @@ instance variables, sadame's `locals:` as a Hash.
 | `git "/srv/app" do repository "URL"; revision "v2" end` | `git "/srv/app", repository: "URL", revision: "v2"` |
 | `action :nothing` | `action: :nothing`, on `exec` only; `service` without `enable:`/`state:` manages nothing |
 | `node[:attr]`, `-j node.json`, `-y node.yml` | `vars[:attr]`, `vars.rb`, `--var`, vars in `hosts.rb` |
+| host inventory in `node`: `node[:cpu][:total]`, `node[:memory][:total]`, `node[:hostname]` | `facts[:cpus]`, `facts[:memory_mb]`, `facts[:hostname]` |
 | `@name` in templates | `locals[:name]`; `vars[:name]` is also available |
 | `notifies :reload, "service[x]"` | `notifies: [:reload, "service[x]"]` |
 | `only_if` / `not_if` on any resource | on `exec` only |

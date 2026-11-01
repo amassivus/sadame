@@ -17,6 +17,7 @@ and its translation, which the test suite applies on Debian and Ubuntu.
 | Jinja2 templates | ERB templates with `vars` and `locals` |
 | `notify:` and handlers | `notifies:` and `subscribes:` |
 | `when:` | Ruby `if` |
+| `ansible_facts`: `ansible_processor_vcpus`, `ansible_memtotal_mb`, `ansible_default_ipv4.address` | `facts[:cpus]`, `facts[:memory_mb]`, `facts[:ipv4]`; read when used, no `gather_facts` |
 | `loop:` | Ruby `each` |
 | `--check --diff` | `sadame plan` |
 | `forks` | `--forks` |
@@ -205,8 +206,9 @@ vars override the groups it includes. Ansible has many more layers
 
 Things Ansible does that sadame does not:
 
-- no facts gathering beyond `platform` (os-release) and `host_name`,
-  `host_groups`;
+- sixteen facts (CPUs, memory, disk, addresses, virtualization) rather
+  than Ansible's hundreds: no package, service or mount facts, no
+  `facts.d`;
 - ten resource types (`package`, `file`, `line`, `directory`, `link`,
   `service`, `exec`, `user`, `group`, `git`) where Ansible has thousands
   of modules: no `apt_repository`, `mount`, `sysctl`, `firewalld` and so

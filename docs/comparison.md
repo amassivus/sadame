@@ -21,7 +21,7 @@ add-ons can do more.
 | **JSON output** | `--json`: one document per run, per host and resource | callback plugins, such as `ansible.posix.json` | no | no | report handlers, such as the built-in JSON file handler | run reports (YAML on the agent, JSON from PuppetDB) |
 | **Single binary** | yes, about 1 MB, static on Linux | no: a Python package | no: a Ruby gem | yes, built with mruby | no: an installer package with an embedded Ruby | no: packages with an embedded Ruby |
 | **Package managers** | apt, dnf, apk, pacman; the AUR through `exec` | modules for most, from apt and dnf to zypper and Homebrew | through Specinfra: apt, yum and dnf, apk, pacman, zypper and others | as Itamae, through Specinfra | built-in resources for Linux, BSD, macOS and Windows | built-in providers for Linux, BSD, macOS and Windows |
-| **Maturity** | 0.2.0, November 2026: ten resource types, one maintainer | since 2012, maintained by Red Hat, thousands of modules | since 2013, community maintained | since 2016, community maintained | since 2009, maintained by Progress | since 2005, maintained by Perforce |
+| **Maturity** | 0.3.0, November 2026: ten resource types, one maintainer | since 2012, maintained by Red Hat, thousands of modules | since 2013, community maintained | since 2016, community maintained | since 2009, maintained by Progress | since 2005, maintained by Perforce |
 
 ## Where Sadame falls short
 
@@ -32,13 +32,14 @@ add-ons can do more.
   devices.
 - **No secrets management.** Nothing like Ansible Vault or Chef's
   encrypted data bags; read secrets from the environment in `vars.rb`.
-- **No facts beyond the basics.** Recipes see `platform` (from
-  `/etc/os-release`), `host_name` and `host_groups`, not the hardware,
-  network or package facts that Ansible, Chef (Ohai) and Puppet (Facter)
-  gather.
+- **Fewer facts.** Recipes see `platform` (from `/etc/os-release`) and
+  sixteen [facts](recipes/facts.md) about CPUs, memory, disk, addresses and
+  virtualization. Ansible, Chef (Ohai) and Puppet (Facter) gather many
+  more, including installed packages and services, and take custom facts
+  from plugins.
 - **No ecosystem.** No Galaxy, Supermarket or Forge; recipes are shared
   as files.
-- **Young.** Two releases, tested on five distributions and in CI, with
+- **Young.** Three releases, tested on five distributions and in CI, with
   none of the years of production use the others have.
 
 ## Where it fits
