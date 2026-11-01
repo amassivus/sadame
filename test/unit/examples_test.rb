@@ -256,6 +256,15 @@ class ExamplesTest < SadameTest
     assert_includes gitlab, "- drift.json"
   end
 
+  # sadame init writes the same jobs; only the comments above them differ.
+  def test_ci_examples_are_the_jobs_init_writes
+    body = lambda do |path|
+      File.read(path).split("\n", -1).drop_while { |line| line.start_with?("#") || line.empty? }.join("\n")
+    end
+    assert_equal Sadame::Scaffold.github_job("site/site.rb"), body.call("examples/ci/github-actions-drift.yml")
+    assert_equal Sadame::Scaffold.gitlab_job("site/site.rb"), body.call("examples/ci/gitlab-ci-drift.yml")
+  end
+
   def test_team_workflow_pipelines
     plan = File.read("examples/ci/github-actions-plan.yml")
     assert_includes plan, "sadame plan site/site.rb -g all --no-color | tee plan.txt"
@@ -276,7 +285,7 @@ class ExamplesTest < SadameTest
     github = YAML.safe_load(File.read("examples/ci/github-actions-drift.yml"))
     assert_equal ["drift"], github["jobs"].keys
     gitlab = YAML.safe_load(File.read("examples/ci/gitlab-ci-drift.yml"))
-    assert_equal ["always"], [gitlab["drift"]["artifacts"]["when"]]
+    assert_equal ["always", "drift.xml"], [gitlab["drift"]["artifacts"]["when"], gitlab["drift"]["artifacts"]["reports"]["junit"]]
   end
 
   def test_paths_mentioned_in_the_docs_exist

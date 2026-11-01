@@ -1,6 +1,6 @@
 # Checks the servers in the inventory for drift every morning and fails the
-# workflow when one differs from the recipe. The JSON report is kept as an
-# artifact either way.
+# workflow when one differs from the recipe. The run's summary page shows
+# what differs, and the JSON report is kept as an artifact either way.
 #
 # Copy to .github/workflows/drift.yml in the repository that holds your
 # recipe (here in site/, with site/hosts.rb). It needs repository secrets
@@ -34,6 +34,10 @@ jobs:
       # checked. Anything but 0 fails this step and the workflow.
       - name: Check for drift
         run: sadame drift site/site.rb -g all --json > drift.json
+
+      - name: Summarize
+        if: always()
+        run: sadame report drift.json >> "$GITHUB_STEP_SUMMARY"
 
       - name: Keep the drift report
         if: always()

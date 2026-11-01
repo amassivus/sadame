@@ -1,6 +1,6 @@
 # Checks the servers in the inventory for drift in scheduled pipelines and
-# fails the job when one differs from the recipe. The JSON report is kept as
-# an artifact either way.
+# fails the job when one differs from the recipe. The pipeline's test report
+# shows what differs, and the JSON report is kept as an artifact either way.
 #
 # Add this job to .gitlab-ci.yml in the project that holds your recipe (here
 # in site/, with site/hosts.rb) and create a pipeline schedule. It needs
@@ -21,8 +21,12 @@ drift:
   script:
     # Exit status: 0 no drift, 1 drift on a server, 2 a server could not be checked.
     - sadame drift site/site.rb -g all --json > drift.json
+  after_script:
+    - sadame report drift.json --format junit > drift.xml
   artifacts:
     when: always
     paths:
       - drift.json
+    reports:
+      junit: drift.xml
     expire_in: 30 days
