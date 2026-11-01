@@ -23,6 +23,14 @@ module Sadame
   class Shell
     SAFE_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_./:=@%+,"
 
+    # Every command runs in the C.UTF-8 locale, whatever the user's: sadame
+    # reads the output of stat and package managers, and guards such as
+    # `ufw status | grep -q active` match English text. ssh passes LANG
+    # from the machine running sadame, and sudo keeps it, so a target can
+    # otherwise answer in Turkish or German. Where C.UTF-8 does not exist,
+    # programs fall back to C, which is English too.
+    LOCALE = "LC_ALL=C.UTF-8; export LC_ALL; unset LANGUAGE"
+
     # Quotes a value for /bin/sh. Plain words are left as they are so that
     # command lines stay readable in output and tests.
     def self.escape(value)
@@ -40,7 +48,7 @@ module Sadame
     # Runs a command with /bin/sh, stdin closed, and captures its output.
     def run(command)
       stderr_path = next_stderr_path
-      wrapped = "(\n#{command}\n) </dev/null 2>#{Shell.escape(stderr_path)}"
+      wrapped = "(\n#{LOCALE}\n#{command}\n) </dev/null 2>#{Shell.escape(stderr_path)}"
       stdout = IO.popen(wrapped, "r") { |io| io.read }
       exit_status = exit_status_from($?)
       CommandResult.new(command, stdout: stdout, stderr: take_file(stderr_path), exit_status: exit_status)
@@ -49,7 +57,7 @@ module Sadame
     # Runs a command and yields each line of its output (stdout and stderr
     # together) as it arrives. Returns the exit status.
     def stream(command)
-      IO.popen("(\n#{command}\n) </dev/null 2>&1", "r") do |io|
+      IO.popen("(\n#{LOCALE}\n#{command}\n) </dev/null 2>&1", "r") do |io|
         while (line = io.gets)
           yield line
         end

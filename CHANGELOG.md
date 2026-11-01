@@ -38,6 +38,9 @@ project uses [Semantic Versioning](https://semver.org/).
 - `file` checks new content with `verify:` (such as `visudo -cf %{path}`)
   before it replaces the target; `service` manages units of a user's
   systemd instance with `user:`; `platform.codename`.
+- Every command runs in the `C.UTF-8` locale, so the output sadame reads
+  and guards that match text do not depend on the language of the target
+  or of the SSH session.
 - Examples 01 to 12, from a one-file hello to a hardened VPS, PostgreSQL,
   Docker, a multi-role inventory and an Omarchy workstation, plus Ansible
   and Itamae migration examples and CI pipelines for plan, apply and drift.

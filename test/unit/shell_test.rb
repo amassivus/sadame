@@ -34,6 +34,21 @@ class ShellTest < SadameTest
     assert_equal "1\n", result.stdout
   end
 
+  # Output sadame parses must not depend on the user's language.
+  def test_commands_run_in_the_c_utf8_locale
+    saved = [ENV["LANG"], ENV["LC_ALL"], ENV["LANGUAGE"]]
+    ENV["LANG"] = "tr_TR.UTF-8"
+    ENV["LC_ALL"] = "tr_TR.UTF-8"
+    ENV["LANGUAGE"] = "tr"
+    shell = Sadame::Shell.new
+    assert_equal "C.UTF-8 tr_TR.UTF-8 none\n", shell.run("echo $LC_ALL $LANG ${LANGUAGE:-none}").stdout
+    lines = []
+    shell.stream("echo $LC_ALL ${LANGUAGE:-none}") { |line| lines << line }
+    assert_equal ["C.UTF-8 none\n"], lines
+  ensure
+    ENV["LANG"], ENV["LC_ALL"], ENV["LANGUAGE"] = saved
+  end
+
   def test_run_bang_raises_with_the_error_output
     error = assert_raises(Sadame::CommandFailed) { Sadame::Shell.new.run!("echo broken >&2; exit 4") }
     assert_equal 4, error.result.exit_status

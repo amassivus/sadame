@@ -37,6 +37,12 @@ that exits non-zero fails the resource: `apply` prints the exit status and
 the command's error output, marks the resource `failed`, and skips the
 resources after it.
 
+Every command sadame runs, including yours, runs in the `C.UTF-8` locale
+(`LC_ALL=C.UTF-8`, `LANGUAGE` unset), so programs answer in English
+whatever the language of the machine or of the SSH session: a guard such as
+`not_if: "ufw status | grep -q 'Status: active'"` matches on every system.
+Set `LC_ALL` inside the command if it needs another locale.
+
 Other resources can trigger the command with
 `notifies: [:run, "exec[NAME]"]`. Combined with `action: :nothing`, that
 gives a command that runs only when something else changed, such as
