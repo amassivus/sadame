@@ -134,7 +134,8 @@ module Sadame
       # placed on the line that declares that resource.
       def locate(error, path, text)
         match = LOCATED.match(error)
-        if match && File.file?(match[1])
+        # The file being edited may not be saved yet.
+        if match && (File.file?(match[1]) || File.expand_path(match[1]) == File.expand_path(path))
           file = File.expand_path(match[1])
           message = match[3].strip
           source = file == File.expand_path(path) ? text : File.read(file)

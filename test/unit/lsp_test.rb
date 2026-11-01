@@ -78,6 +78,21 @@ class LspTest < SadameTest
     assert_equal 1, status
   end
 
+  def test_the_platform_comes_from_initialization_options
+    text = "raise \"not RHEL\" unless platform.family == \"rhel\"\npackage \"httpd\"\n"
+    path = "#{PROJECT}/scratch.rb"
+    first = { jsonrpc: "2.0", id: 0, method: "initialize",
+              params: { rootUri: Sadame::Lsp::Text.uri(PROJECT), capabilities: {},
+                        initializationOptions: { platform: "rocky" } } }
+    input = FakeInput.new(([first, open(path, text)] + done).map { |message| frame(message) }.join)
+    output = FakeIO.new
+    Sadame::Lsp::Server.new(input, output, shell: linux_shell).run
+    assert_equal({ "scratch.rb" => [] }, diagnostics(parse_frames(output.string)))
+
+    _status, messages = session(open(path, text), *done)
+    assert_equal [[0, "not RHEL"]], diagnostics(messages)["scratch.rb"]
+  end
+
   def test_utf8_positions_when_the_client_offers_them
     _status, messages = session(*done, capabilities: { general: { positionEncodings: ["utf-8", "utf-16"] } })
     assert_equal "utf-8", response(messages, 0)["result"]["capabilities"]["positionEncoding"]
