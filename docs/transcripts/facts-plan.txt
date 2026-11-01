@@ -1,0 +1,42 @@
+$ sudo sadame plan examples/facts
+sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
+
+~ file[/etc/motd]
+    --- /etc/motd
+    +++ /etc/motd (desired)
+    @@ -1,7 +1,4 @@
+    -
+    -The programs included with the Debian GNU/Linux system are free software;
+    -the exact distribution terms for each program are described in the
+    -individual files in /usr/share/doc/*/copyright.
+    -
+    -Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+    -permitted by applicable law.
+    +8a67e917846a, docker
+    +10 CPUs, 8003 MB of memory, 140 GB on /
+    +192.168.215.3 on eth0
+    +Managed by sadame.
+
++ directory[/etc/demo-app]
+    state: absent -> present
+    mode: 0755
+
++ file[/etc/demo-app/app.conf]
+    state: absent -> present
+    mode: 0644
+    --- /dev/null
+    +++ /etc/demo-app/app.conf (desired)
+    @@ -0,0 +1,3 @@
+    +workers = 20
+    +cache_mb = 1000
+    +listen = 192.168.215.3:8080
+
++ file[/etc/demo-app/nightly.schedule]
+    state: absent -> present
+    mode: 0644
+    --- /dev/null
+    +++ /etc/demo-app/nightly.schedule (desired)
+    @@ -0,0 +1 @@
+    +3 4 * * *
+
+Plan: 3 to create, 1 to update, 0 to remove, 0 to run, 0 unchanged.

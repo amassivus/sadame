@@ -131,6 +131,14 @@ module Transcripts
       ]
     },
     {
+      name: "facts",
+      image: "debian",
+      steps: [
+        { save: "facts-local", commands: ["sadame facts"] },
+        { save: "facts-plan", commands: ["sudo sadame plan examples/facts"] }
+      ]
+    },
+    {
       name: "service-openrc",
       image: "alpine-openrc",
       steps: [
@@ -242,7 +250,8 @@ module Transcripts
         { save: "remote-host-flag", dir: EXAMPLE_08, commands: ["sadame plan site.rb -h deploy@db1.example.com:2222"] },
         { save: "remote-unreachable", dir: EXAMPLE_08,
           commands: ["sadame plan site.rb -g db -h deploy@db2.example.com", "echo $?"] },
-        { save: "inventory-dynamic", dir: "/sadame/examples/11-dynamic-inventory", commands: ["sadame hosts -g db"] }
+        { save: "inventory-dynamic", dir: "/sadame/examples/11-dynamic-inventory", commands: ["sadame hosts -g db"] },
+        { save: "remote-facts", dir: EXAMPLE_08, commands: ["sadame facts -h web1.example.com"] }
       ]
     },
     {

@@ -19,7 +19,7 @@ written.
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `content` | String | none | The exact file content. |
-| `template` | String | none | ERB template, rendered with `vars` and `locals`. Looked up next to the recipe, then in its `templates/` directory. Absolute paths are used as is. |
+| `template` | String | none | ERB template, rendered with `vars`, `locals` and [`facts`](../recipes/facts.md). Looked up next to the recipe, then in its `templates/` directory. Absolute paths are used as is. |
 | `source` | String | none | File copied as is. Looked up next to the recipe, then in its `files/` directory. |
 | `locals` | Hash | `{}` | Values for the template, available as `locals[:name]`. Only with `template:`. |
 | `mode` | String of 3 or 4 octal digits | unmanaged | Permission bits, such as `"0644"` or `"0755"`. |

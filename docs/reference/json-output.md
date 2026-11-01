@@ -110,7 +110,7 @@ nested under `hosts`:
 |---|---|---|
 | `format_version` | integer | As above. |
 | `sadame_version` | string | Version of sadame on the machine that ran the push. |
-| `command` | string | `"plan"`, `"apply"` or `"drift"`. |
+| `command` | string | `"plan"`, `"apply"`, `"drift"` or `"facts"`. |
 | `hosts` | array | One object per host, in the order they were selected. |
 | `hosts[].name` | string | The host's name from the inventory or `-h`. |
 | `hosts[].status` | string | `"ok"`, `"drift"`, `"failed"`, `"error"`, `"unreachable"` or `"skipped"`; see [Remote hosts](../guides/remote-hosts.md#many-hosts-at-once). |
@@ -126,6 +126,21 @@ edited by hand:
 ```text
 --8<-- "docs/transcripts/remote-drift-json.txt"
 ```
+
+## facts
+
+`sadame facts --json` prints one document per machine. With `-h`, `-g` or
+`--limit`, each host's document is the `report` of the push-mode document
+below.
+
+| Field | Type | Description |
+|---|---|---|
+| `format_version` | integer | As above. |
+| `sadame_version` | string | Version of sadame that read the facts. |
+| `command` | string | `"facts"`. |
+| `host` | string | The host's name, as in a report. |
+| `platform` | object | See [platform](#platform). |
+| `facts` | object | Every fact by name, as in [Facts](../recipes/facts.md#the-facts); `null` for what could not be read. |
 
 ## Using it with jq
 

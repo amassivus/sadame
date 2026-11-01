@@ -69,6 +69,7 @@ Besides the resources, a recipe can use:
 | `platform.family` | `"debian"`, `"rhel"`, `"alpine"`, `"arch"` or `nil` |
 | `platform.package_manager` | `"apt"`, `"dnf"`, `"apk"`, `"pacman"` or `nil` |
 | `platform.id`, `platform.version`, `platform.codename`, `platform.name` | `ID`, `VERSION_ID`, `VERSION_CODENAME` and `PRETTY_NAME` from `/etc/os-release` |
+| `facts[:cpus]`, `facts[:memory_mb]`, `facts[:ipv4]` and more | what the machine has, read from it; see [Facts](facts.md) |
 | `host_name`, `host_groups` | the host's name and groups from the inventory; see [Inventory](inventory.md#using-groups-in-recipes) |
 | `include_recipe "path"` | evaluate another recipe file |
 
@@ -133,9 +134,9 @@ Ruby's ERB library:
 | `<%-` | at the start of a tag: also removes the indentation before it |
 | `<%%` | a literal `<%` |
 
-Inside a template, `vars` is the run's vars and `locals` is the Hash given
-to the `file` resource's `locals:` option. Nothing else from the recipe is
-visible.
+Inside a template, `vars` is the run's vars, `locals` is the Hash given
+to the `file` resource's `locals:` option, and `facts` are the machine's
+[facts](facts.md). Nothing else from the recipe is visible.
 
 The template is looked up in the recipe's directory first, then in its
 `templates/` subdirectory. `parts/motd.rb` above uses `motd.erb`, found at

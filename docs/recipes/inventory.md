@@ -162,6 +162,9 @@ not; check `sadame hosts --inventory ...` after upgrading the CLI.
 - **Secrets in hosts.rb.** It is evaluated on the machine running sadame,
   and its vars are sent to the targets. Read secrets from the environment
   (`ENV["DB_PASSWORD"]`) rather than committing them.
+- **Facts in hosts.rb.** For the same reason, `hosts.rb` cannot see what a
+  machine has. Read [facts](facts.md) in the recipe, which runs on the
+  target, and keep in `hosts.rb` what you decide.
 
 ## See also
 

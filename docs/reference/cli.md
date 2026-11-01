@@ -1,7 +1,8 @@
 # Command line
 
-`sadame` has four commands: `plan`, `apply` and `drift` run a recipe, and
-`hosts` shows which machines a selection reaches. Each takes the same
+`sadame` has five commands: `plan`, `apply` and `drift` run a recipe,
+`hosts` shows which machines a selection reaches, and `facts` shows what
+recipes see on them. Each takes the same
 target and output options, so a command line that plans a change also
 applies it after replacing `plan` with `apply`. This page lists every
 command, option, environment variable and file; the
@@ -36,6 +37,7 @@ Options may come before or after the command and the recipe.
 | `apply` | yes | Changes what differs from the recipe, in order, then runs notifications. |
 | `drift` | no | Same comparison as `plan`; exits `1` when anything differs. For scripts and CI. |
 | `hosts` | no | Prints the selected hosts, their connection options and vars, and where each var came from. Connects to nothing. |
+| `facts` | no | Prints the [facts](../recipes/facts.md) recipes see: of this machine, or with `-h`, `-g` or `--limit`, of each selected host over SSH. Runs no recipe. |
 
 `plan`, `apply` and `drift` are explained together in
 [plan, apply, drift](../concepts/plan-apply-drift.md).
@@ -50,7 +52,9 @@ Options may come before or after the command and the recipe.
 
 `vars.rb` and `hosts.rb` in the recipe's directory are loaded when they
 exist. Templates and files are looked up next to the recipe, then in its
-`templates/` and `files/` directories. `hosts` does not need a recipe.
+`templates/` and `files/` directories. `hosts` and `facts` do not need a
+recipe; given one, or a directory, they use the `hosts.rb` and `vars.rb`
+next to it.
 
 ## Targets
 

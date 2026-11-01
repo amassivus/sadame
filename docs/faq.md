@@ -32,6 +32,12 @@ and Arch Linux (including Omarchy), on x86_64 and ARM64. `service` works
 with systemd, and with OpenRC on Alpine. The machine running sadame can be
 Linux or macOS. Windows is not supported, as a target or otherwise.
 
+### Can a recipe see how much memory or how many CPUs a machine has?
+
+Yes: `facts[:memory_mb]`, `facts[:cpus]`, the machine's addresses and more,
+read on the machine when the recipe asks. `sadame facts -g web` shows them
+for each host. See [Facts](recipes/facts.md).
+
 ### How is this different from Ansible?
 
 Recipes are Ruby rather than YAML, targets need no Python, `plan` shows

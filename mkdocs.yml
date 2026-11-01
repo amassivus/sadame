@@ -97,6 +97,7 @@ nav:
   - Recipes:
       - Recipe basics: recipes/basics.md
       - Inventory: recipes/inventory.md
+      - Facts: recipes/facts.md
       - Notifications: recipes/notifications.md
   - Resources:
       - package: resources/package.md
