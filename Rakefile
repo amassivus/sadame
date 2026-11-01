@@ -163,9 +163,37 @@ namespace :docs do
 end
 
 namespace :test do
+  desc "Run the examples in Docker: test:docker[DISTRO,ARCH] (default: all distributions, this machine's architecture)"
+  task :docker, [:distro, :arch] do |_task, args|
+    sh "ruby", File.join(ROOT, "test", "integration", "docker", "run.rb"), *[args[:distro] || "all", args[:arch]].compact
+  end
+
   desc "Test push mode against SSH servers in Docker (needs dist/sadame-linux-ARCH)"
   task :push do
     sh "ruby", File.join(ROOT, "test", "integration", "push", "run.rb")
+  end
+end
+
+# Real-VM smoke tests: local only, never run in CI. They need
+# test/integration/vm/hosts.local.rb (see hosts.example.rb next to it).
+VM_RUNNER = File.join(ROOT, "test", "integration", "vm", "run.rb")
+
+namespace :vm do
+  desc "Revert a VM to its clean libvirt snapshot: vm:reset[DISTRO]"
+  task :reset, [:distro] do |_task, args|
+    sh "ruby", VM_RUNNER, "reset", args[:distro] || "all"
+  end
+
+  desc "Reset a VM, push every example that applies to it, check drift: vm:test[DISTRO]"
+  task :test, [:distro] do |_task, args|
+    sh "ruby", VM_RUNNER, "test", args[:distro] || "all"
+  end
+
+  namespace :test do
+    desc "Run vm:test on every VM in hosts.local.rb"
+    task :all do
+      sh "ruby", VM_RUNNER, "test", "all"
+    end
   end
 end
 
