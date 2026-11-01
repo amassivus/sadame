@@ -22,7 +22,9 @@ trap stop_server EXIT
 mkdir -p "$work/good" "$work/bad"
 cp "$root"/dist/sadame-* "$root/dist/SHA256SUMS" "$work/good/"
 cp "$root"/dist/sadame-* "$work/bad/"
-sed 's/^[0-9a-f]/0/' "$root/dist/SHA256SUMS" > "$work/bad/SHA256SUMS"
+# Every checksum with its first digit changed: 0 becomes 1, anything else 0.
+awk '{ first = substr($1, 1, 1); print (first == "0" ? "1" : "0") substr($1, 2) "  " $2 }' \
+  "$root/dist/SHA256SUMS" > "$work/bad/SHA256SUMS"
 sleep 1
 
 echo "== install with a matching checksum"
