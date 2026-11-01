@@ -256,6 +256,30 @@ class ExamplesTest < SadameTest
     end
   end
 
+  # The home page quotes line ranges of these transcripts; when a capture
+  # moves lines, the quoted ones must still be the ones meant.
+  LANDING_LINES = {
+    "docs/transcripts/landing-plan.txt" => {
+      1 => "$ sadame plan site.rb -g db", 4 => "~ file[/etc/cron.d/demo-db-backup]", 8 => "-0 3 * * *",
+      9 => "+0 4 * * *", 11 => "Plan: 0 to create, 1 to update"
+    },
+    "docs/transcripts/landing-apply.txt" => {
+      1 => "$ sadame apply site.rb -g db", 9 => "changed    file[/etc/cron.d/demo-db-backup]", 28 => "apply on 1 host: 1 ok"
+    },
+    "docs/transcripts/landing-drift.txt" => {
+      1 => "$ sadame drift site.rb -g db", 4 => "No drift", 9 => "drift on 1 host: 1 ok", 11 => "$ echo $?", 12 => "0"
+    }
+  }.freeze
+
+  def test_home_page_quotes_the_intended_transcript_lines
+    LANDING_LINES.each do |path, expected|
+      lines = File.read(path).split("\n")
+      expected.each do |number, text|
+        assert_includes lines[number - 1].to_s, text, "#{path}:#{number}"
+      end
+    end
+  end
+
   private
 
   # Values that make examples independent of the machine running the tests.

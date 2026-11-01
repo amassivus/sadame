@@ -1,6 +1,7 @@
 ---
 hide:
   - navigation
+  - toc
 ---
 
 <p align="center" markdown>
@@ -10,33 +11,73 @@ hide:
 
 # Sadame
 
-Sadame (定め, "what is ordained") is a configuration management tool: you
-describe the desired state of a machine in plain Ruby, `sadame plan` shows
-the difference as a diff, and `sadame apply` makes the machine match.
+**Sadame describes the desired state of Linux machines in plain Ruby,
+shows every change as a diff before it happens, and applies it over SSH
+from a single binary.**
 
-```ruby title="examples/01-hello/recipe.rb"
---8<-- "examples/01-hello/recipe.rb"
-```
+## See it work
+
+`backup_hour` changed from 3 to 4 in `hosts.rb`; the `db` group gets the
+change, and `drift` confirms the server matches:
 
 ```text
---8<-- "docs/transcripts/getting-started-plan.txt"
+--8<-- "docs/transcripts/landing-plan.txt:1:1,4:9,11:11"
+
+--8<-- "docs/transcripts/landing-apply.txt:1:1,9:9,28:28"
+
+--8<-- "docs/transcripts/landing-drift.txt:1:1,4:4,9:9,11:12"
 ```
 
-!!! note "Status"
-    Sadame is under development towards 0.1.0. It runs recipes with `plan`,
-    `apply` and `drift`, on the local machine or on remote hosts over SSH
-    with a `hosts.rb` inventory. The first release is being prepared.
+The recipe and inventory are
+[`examples/08-multi-role-inventory`](./examples/index.md). The server runs
+no agent: on the first run, sadame copied itself there over SSH.
 
 ## Where to start
 
 <div class="grid cards" markdown>
 
-- **Users** run sadame on servers and workstations.
-  Start with [Getting started](getting-started.md).
-- **Recipe authors** write recipes for their team.
-  Start with [Recipe basics](recipes/basics.md), then the
-  [resources](resources/package.md).
-- **Contributors** change sadame itself.
-  Start with [Contributing](contributing/index.md).
+-   **Users**
+
+    ---
+
+    Run sadame on servers and workstations: install it, apply a first
+    recipe, check for drift.
+
+    [:octicons-arrow-right-24: Getting started](getting-started.md)
+
+-   **Recipe authors**
+
+    ---
+
+    Write recipes and inventories for a team: resources, vars,
+    templates, notifications, `hosts.rb`.
+
+    [:octicons-arrow-right-24: Recipe basics](recipes/basics.md)
+
+-   **Contributors**
+
+    ---
+
+    Change sadame itself: architecture, the mruby build, the three test
+    layers.
+
+    [:octicons-arrow-right-24: Contributing](contributing/index.md)
 
 </div>
+
+## Install
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | sh
+```
+
+The script downloads the binary for your system from the latest release,
+checks its SHA-256 checksum and installs it to `/usr/local/bin`. Linux
+(x86_64, ARM64) and macOS; other ways in [Install](install.md).
+
+## How it compares
+
+Recipes in Ruby like Itamae, push over SSH without an agent like Ansible,
+one binary like mitamae, and a `drift` command for CI. Six resource types
+and Linux targets only, for now: the [comparison](comparison.md) lists
+what the others do that sadame does not.
