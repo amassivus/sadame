@@ -18,6 +18,9 @@ changelog.each_line do |line|
     inside = line.start_with?("## [#{version}]")
     next
   end
+  # Link definitions at the end of the file belong to no section.
+  next if line.match?(/\A\[[^\]]+\]: /)
+
   section << line if inside
 end
 
