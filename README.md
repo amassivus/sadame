@@ -51,9 +51,10 @@ A walkthrough with real output: [Getting started](https://enderkus.github.io/sad
 
 ## Documentation
 
-<https://enderkus.github.io/sadame/>: getting started, recipe basics, and
-every resource (`package`, `file`, `directory`, `service`, `exec`, `user`)
-with runnable examples from [`examples/`](examples/).
+<https://enderkus.github.io/sadame/>: getting started, guides (a new VPS,
+an Omarchy workstation, drift in CI, migrating from Ansible or Itamae), and
+every resource, with [twelve runnable examples](https://enderkus.github.io/sadame/examples/)
+that are tested on five distributions.
 
 ## Compared with similar tools
 

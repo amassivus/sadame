@@ -35,6 +35,15 @@ project uses [Semantic Versioning](https://semver.org/).
   vars, and where each var came from.
 - `host_name` and `host_groups` in recipes; `--host-name`, `--host-groups`
   and `--vars-file` for local runs.
+- `file` checks new content with `verify:` (such as `visudo -cf %{path}`)
+  before it replaces the target; `service` manages units of a user's
+  systemd instance with `user:`; `platform.codename`.
+- Examples 01 to 12, from a one-file hello to a hardened VPS, PostgreSQL,
+  Docker, a multi-role inventory and an Omarchy workstation, plus Ansible
+  and Itamae migration examples and CI pipelines for plan, apply and drift.
+- Docker integration tests: every example on Ubuntu, Debian, Rocky, Alpine
+  and Arch, on amd64 and arm64 (QEMU in CI), in containers booting systemd;
+  certbot against Pebble. A local-only VM layer (`rake vm:test`).
 - JSON report fields `drift`, `exit_status`, `duration_seconds`, and the
   notifications each resource triggers; documented in the JSON output
   reference.
