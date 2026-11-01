@@ -25,4 +25,5 @@ sadame plan site.rb -g web                    # the web servers
 sadame apply site.rb -g all                   # all three, in parallel
 sadame drift site.rb --limit "web*"           # hosts whose name starts with web
 sadame plan site.rb -h deploy@db1.example.com:2222
+sadame apply site.rb -g web --tags web         # only the web role's resources
 ```

@@ -7,8 +7,9 @@
 #
 # Covers: -h user@host:2222, port: 2222 in hosts.rb, a ProxyJump host from
 # a test-scoped ssh config passed with -F, vars precedence on the target,
-# parallel runs with prefixed output, --forks and --serial, facts, the
-# binary cache, sudo and --sudo, drift with --json, and an unreachable host.
+# parallel runs with prefixed output, --forks and --serial, --tags, facts,
+# the binary cache, sudo and --sudo, drift with --json, and an unreachable
+# host.
 
 require_relative "lab"
 
@@ -47,6 +48,7 @@ class PushTest
       forks_limit_runs_hosts_one_at_a_time
       serial_stops_after_a_failed_batch
       facts_of_every_host
+      tags_reach_every_target
       unreachable_host
     ]
   end
@@ -170,6 +172,15 @@ class PushTest
     expect_status(0, status, output)
     expect_includes(output, "\"command\": \"facts\",")
     expect_includes(output, "\"container\": true,")
+  end
+
+  # Only the role tagged web runs; the base file is left out of the report.
+  def tags_reach_every_target
+    status, output = sadame("plan site.rb -g all --tags web", dir: EXAMPLE)
+    expect_status(0, status, output)
+    expect_includes(output, "[web1.example.com] Only resources tagged web: 5 of 6.")
+    expect_includes(output, "[db1.example.com] Only resources tagged web: 0 of 6.")
+    expect_excludes(output, "file[/etc/motd]")
   end
 
   def unreachable_host
