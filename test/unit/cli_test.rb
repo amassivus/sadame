@@ -166,6 +166,25 @@ class CLITest < SadameTest
     status, _stdout, stderr = run_cli(["plan", "examples/01-hello", "--inventory", "missing.rb", "-g", "web"])
     assert_equal 2, status
     assert_includes stderr, "inventory not found: missing.rb"
+
+    ["--forks", "--serial"].each do |flag|
+      status, _stdout, stderr = run_cli(["plan", "examples/01-hello", flag, "2"])
+      assert_equal 2, status
+      assert_includes stderr, "#{flag} only applies to -h, -g and --limit"
+    end
+  end
+
+  def test_forks_and_serial_values
+    ["0", "-1", "two", "1.5", ""].each do |value|
+      status, _stdout, stderr = run_cli(["plan", "examples/01-hello", "-h", "web1", "--forks", value])
+      assert_equal 2, status, value
+      assert_includes stderr, "--forks needs", value
+    end
+    ["0%", "101%", "x%", "0"].each do |value|
+      status, _stdout, stderr = run_cli(["plan", "examples/01-hello", "-h", "web1", "--serial=#{value}"])
+      assert_equal 2, status, value
+      assert_includes stderr, "--serial needs", value
+    end
   end
 
   def test_vars_file_and_name_for_local_runs

@@ -2,8 +2,9 @@
 
 module Sadame
   module Push
-    # Runs one job per target at the same time and prints their output as
-    # it arrives, each line prefixed with "[target] ".
+    # Runs one job per target at the same time, or at most limit at a
+    # time, and prints their output as it arrives, each line prefixed with
+    # "[target] ".
     #
     # mruby has no threads, so each job runs in a child process (fork). The
     # child sends its output lines and, at the end, its result through a
@@ -25,13 +26,14 @@ module Sadame
       end
 
       # Yields each item and a callable that prints one line for it.
-      # Returns the block's results in the order of items.
-      def map(items, label:, &job)
+      # Returns the block's results in the order of items. With limit, at
+      # most that many jobs run at once; the next one starts as soon as one
+      # ends.
+      def map(items, label:, limit: nil, &job)
         return items.map { |item| job.call(item, printer(label.call(item))) } unless @forking
 
-        @io.flush if @io.respond_to?(:flush)
-        children = items.map { |item| start(item, label.call(item), job) }
-        collect(children)
+        children = []
+        collect(items.dup, children, limit || items.size, label, job)
         children.map { |child| child[:result] }
       end
 
@@ -43,6 +45,8 @@ module Sadame
       end
 
       def start(item, name, job)
+        # Output still buffered here would be written again by the child.
+        @io.flush if @io.respond_to?(:flush)
         reader, writer = IO.pipe
         pid = fork do
           reader.close
@@ -63,11 +67,23 @@ module Sadame
         { "status" => "error", "exit_status" => 2, "error" => "#{e.class}: #{e.message}" }
       end
 
-      def collect(children)
-        until (open = children.select { |child| child[:open] }).empty?
-          ready = IO.select(open.map { |child| child[:reader] })[0]
+      # Starts jobs from pending while fewer than limit run, and reads the
+      # output of the running ones, until every job has ended. Children are
+      # added in the order of their items.
+      def collect(pending, children, limit, label, job)
+        loop do
+          running = children.select { |child| child[:open] }
+          while running.size < limit && !pending.empty?
+            item = pending.shift
+            child = start(item, label.call(item), job)
+            children << child
+            running << child
+          end
+          break if running.empty?
+
+          ready = IO.select(running.map { |child| child[:reader] })[0]
           ready.each do |reader|
-            child = open.find { |candidate| candidate[:reader] == reader }
+            child = running.find { |candidate| candidate[:reader] == reader }
             chunk = read_chunk(reader)
             chunk.nil? ? finish(child) : consume(child, chunk)
           end

@@ -13,15 +13,24 @@ module Sadame
     #    output prefixed with the target's name;
     # 5. print a summary, or one JSON document with every target's report.
     #
+    # forks limits how many targets steps 2 and 4 work on at once. serial
+    # (a number of targets, or a percentage of them such as "25%") splits
+    # the targets into batches that go through steps 2 to 4 one after
+    # another; when a target of a batch ends with anything but ok or drift,
+    # the run stops and the targets of later batches are skipped.
+    #
     # The exit status is the highest of the targets' statuses; a target that
     # could not be reached or prepared counts as 2.
     class Run
       STATUS_LABELS = { 0 => "ok", 2 => "error" }.freeze
       BUNDLE_EXCLUDES = [".git", "vars.rb", "hosts.rb"].freeze
+      # Results that let the next batch start.
+      PASSING_STATUSES = ["ok", "drift"].freeze
+      STATUS_COLORS = { "ok" => 32, "drift" => 33, "skipped" => 2 }.freeze
 
       # work_dir and run_id are generated unless given (tests give them).
       def initialize(targets:, command:, recipe_path:, shell:, stdout:, binary_store:, parallel:,
-                     json: false, color: false, clock: nil, work_dir: nil, run_id: nil)
+                     json: false, color: false, forks: nil, serial: nil, clock: nil, work_dir: nil, run_id: nil)
         @targets = targets
         @command = command
         @recipe_path = recipe_path
@@ -31,6 +40,9 @@ module Sadame
         @parallel = parallel
         @json = json
         @color = color
+        @forks = forks
+        @serial = serial
+        @found = {}
         @clock = clock || -> { Time.now }
         @work_dir = work_dir || "/tmp/sadame-push-#{Process.pid}-#{Time.now.to_i}"
         @run_id = run_id || "#{Time.now.to_i}-#{Process.pid}"
@@ -53,21 +65,83 @@ module Sadame
 
       private
 
+      # Returns one result per target, in the order of @targets.
       def execute(bundle, vars_files, control_dir)
-        platforms = @parallel.map(@targets, label: ->(target) { target.name }) do |target, _print|
+        results = Array.new(@targets.size)
+        batches = batches_of((0...@targets.size).to_a)
+        batches.each_with_index do |batch, number|
+          announce(batch, number, batches.size) if batches.size > 1
+          run_batch(batch, bundle, vars_files, control_dir).each_with_index do |result, position|
+            results[batch[position]] = result
+          end
+          failed = batch.reject { |index| PASSING_STATUSES.include?(results[index]["status"]) }
+          next if failed.empty? || number == batches.size - 1
+
+          skip_rest(batches[(number + 1)..].flatten, failed, number, batches.size, results)
+          break
+        end
+        results
+      end
+
+      # Indexes of the targets, in batches of the size --serial asks for, or
+      # in one batch.
+      def batches_of(indexes)
+        size = batch_size(indexes.size)
+        batches = []
+        start = 0
+        while start < indexes.size
+          batches << indexes[start, size]
+          start += size
+        end
+        batches
+      end
+
+      def batch_size(total)
+        return total if @serial.nil?
+
+        text = @serial.to_s
+        return text.to_i unless text.end_with?("%")
+
+        size = ((total * text.chomp("%").to_i) + 99) / 100
+        size < 1 ? 1 : size
+      end
+
+      def run_batch(batch, bundle, vars_files, control_dir)
+        targets = batch.map { |index| @targets[index] }
+        platforms = @parallel.map(targets, label: ->(target) { target.name }, limit: @forks) do |target, _print|
           detect(target, control_dir)
         end
 
         binaries = resolve_binaries(platforms)
         jobs = []
-        @targets.each_with_index { |target, index| jobs << [target, index] }
-        @parallel.map(jobs, label: ->(job) { job[0].name }) do |job, print|
-          target, index = job
-          early = platforms[index]["error"] ? platforms[index] : binaries[index]
+        batch.each_with_index { |index, position| jobs << [@targets[index], index, position] }
+        @parallel.map(jobs, label: ->(job) { job[0].name }, limit: @forks) do |job, print|
+          target, index, position = job
+          early = platforms[position]["error"] ? platforms[position] : binaries[position]
           next early if early
 
-          run_target(target, binaries_for(platforms[index]), bundle, vars_files[index], control_dir, print)
+          run_target(target, binaries_for(platforms[position]), bundle, vars_files[index], control_dir, print)
         end
+      end
+
+      def announce(batch, number, count)
+        return if @json
+
+        names = batch.map { |index| @targets[index].name }.join(", ")
+        @stdout.write("#{"\n" if number > 0}#{bold("Batch #{number + 1} of #{count}:")} #{names}\n")
+      end
+
+      def skip_rest(skipped, failed, number, count, results)
+        skipped.each do |index|
+          results[index] = { "status" => "skipped", "exit_status" => nil,
+                             "error" => "not run: batch #{number + 1} failed", "report" => nil }
+        end
+        return if @json
+
+        names = failed.map { |index| @targets[index].name }.join(", ")
+        noun = skipped.size == 1 ? "host" : "hosts"
+        @stdout.write("\n#{bold("Stopped after batch #{number + 1} of #{count}:")} #{names} did not succeed; " \
+                      "#{skipped.size} #{noun} not run.\n")
       end
 
       def detect(target, control_dir)
@@ -80,7 +154,6 @@ module Sadame
       # Looks up each needed binary once. Returns, per target, nil or the
       # failure result when no binary could be found for its system.
       def resolve_binaries(platforms)
-        @found = {}
         platforms.map do |platform|
           next nil if platform["error"]
 
@@ -179,7 +252,12 @@ module Sadame
         else
           print_summary(results, duration)
         end
-        results.map { |result| result["exit_status"] }.max || 0
+        exit_status(results)
+      end
+
+      # Skipped targets have no exit status of their own.
+      def exit_status(results)
+        results.map { |result| result["exit_status"] }.compact.max || 0
       end
 
       def json_document(results, duration)
@@ -195,7 +273,7 @@ module Sadame
           sadame_version: VERSION,
           command: @command,
           hosts: hosts,
-          exit_status: results.map { |result| result["exit_status"] }.max || 0,
+          exit_status: exit_status(results),
           duration_seconds: (duration * 100).round / 100.0
         }
       end
@@ -220,8 +298,11 @@ module Sadame
       def paint(text, status)
         return text unless @color
 
-        code = status == "ok" ? 32 : (status == "drift" ? 33 : 31)
-        "\e[#{code}m#{text}\e[0m"
+        "\e[#{STATUS_COLORS.fetch(status, 31)}m#{text}\e[0m"
+      end
+
+      def bold(text)
+        @color ? "\e[1m#{text}\e[0m" : text
       end
     end
   end

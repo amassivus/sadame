@@ -34,6 +34,9 @@ module Sadame
         --limit GLOB                        Only hosts whose name matches, e.g. "web*"
         --inventory PATH                    Use this inventory instead of ./hosts.rb
         --sudo                              Run sadame with sudo on every target
+        --forks N                           Work on at most N hosts at once (default: all)
+        --serial N|N%                       Run in batches of N hosts (or N% of them), one
+                                            batch after another; stop when a batch fails
 
       Options:
         --var KEY=VALUE     Set vars[:KEY]; repeatable, overrides everything else
@@ -90,6 +93,9 @@ module Sadame
 
     def run_local(options, recipe_path, base_vars)
       raise UsageError, "--sudo only applies to -h, -g and --limit; run `sudo sadame` here instead" if options[:sudo]
+      [["--forks", :forks], ["--serial", :serial]].each do |flag, key|
+        raise UsageError, "#{flag} only applies to -h, -g and --limit" if options[key]
+      end
 
       file_vars = options[:vars_file] ? load_vars_file(options[:vars_file]) : {}
       vars = Vars.merge(base_vars, file_vars, options[:vars])
@@ -117,7 +123,7 @@ module Sadame
         targets: targets, command: options[:command], recipe_path: recipe_path, shell: @shell, stdout: @stdout,
         binary_store: Push::BinaryStore.new(@shell, environment: @environment),
         parallel: Push::Parallel.new(@stdout, color: color, forking: @forking),
-        json: options[:json], color: color
+        json: options[:json], color: color, forks: options[:forks], serial: options[:serial]
       ).call
     end
 
@@ -160,7 +166,8 @@ module Sadame
 
     def parse(argv)
       options = { vars: {}, hosts: [], groups: [], limit: nil, inventory: nil, sudo: false, json: false,
-                  color: nil, vars_file: nil, host_name: nil, host_groups: [], help: false, version: false }
+                  color: nil, vars_file: nil, host_name: nil, host_groups: [], forks: nil, serial: nil,
+                  help: false, version: false }
       positional = []
       arguments = argv.dup
 
@@ -179,6 +186,8 @@ module Sadame
         when "-g", "--group" then options[:groups].concat(list_value(name, inline_value || arguments.shift))
         when "--limit" then options[:limit] = value(name, inline_value || arguments.shift)
         when "--inventory" then options[:inventory] = value(name, inline_value || arguments.shift)
+        when "--forks" then options[:forks] = positive_integer(name, inline_value || arguments.shift)
+        when "--serial" then options[:serial] = batch_size(name, inline_value || arguments.shift)
         when "--vars-file" then options[:vars_file] = value(name, inline_value || arguments.shift)
         when "--host-name" then options[:host_name] = value(name, inline_value || arguments.shift)
         when "--host-groups" then options[:host_groups].concat(list_value(name, inline_value || arguments.shift))
@@ -204,6 +213,28 @@ module Sadame
       raise UsageError, "#{name} needs a value" if text.nil? || text.empty?
 
       text
+    end
+
+    def positive_integer(name, text)
+      text = value(name, text)
+      return text.to_i if digits?(text) && text.to_i > 0
+
+      raise UsageError, "#{name} needs a whole number of hosts, at least 1 (got #{text})"
+    end
+
+    # A number of hosts, or a percentage of them: "2" or "25%".
+    def batch_size(name, text)
+      text = value(name, text)
+      return positive_integer(name, text) unless text.end_with?("%")
+
+      percent = text.chomp("%")
+      return text if digits?(percent) && percent.to_i.between?(1, 100)
+
+      raise UsageError, "#{name} needs a number of hosts or a percentage from 1% to 100% (got #{text})"
+    end
+
+    def digits?(text)
+      !text.empty? && text.chars.all? { |char| "0123456789".include?(char) }
     end
 
     def list_value(name, text)
