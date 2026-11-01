@@ -154,6 +154,30 @@ class FileResourceTest < SadameTest
     assert_equal "rm -f /etc/motd.sadame-new", shell.commands.last
   end
 
+  def test_verify_checks_the_new_content_before_it_replaces_the_file
+    shell = stub_missing(linux_shell, "/etc/sudoers.d/deploy")
+    file = build_resource(Sadame::FileResource, "/etc/sudoers.d/deploy",
+                          { content: "deploy ALL=(ALL) NOPASSWD: ALL\n", mode: "0440", verify: "visudo -cf %{path}" },
+                          shell: shell)
+    file.apply(file.diff)
+    assert_equal ["visudo -cf /etc/sudoers.d/deploy.sadame-new",
+                  "mv -f /etc/sudoers.d/deploy.sadame-new /etc/sudoers.d/deploy"], shell.commands.last(2)
+
+    shell = stub_missing(linux_shell, "/etc/sudoers.d/deploy")
+    shell.on("visudo -cf /etc/sudoers.d/deploy.sadame-new", stderr: "syntax error near line 1\n", exit_status: 1)
+    file = build_resource(Sadame::FileResource, "/etc/sudoers.d/deploy", { content: "nonsense", verify: "visudo -cf %{path}" },
+                          shell: shell)
+    error = assert_raises(Sadame::ResourceError) { file.apply(file.diff) }
+    assert_includes error.message, "verify failed, /etc/sudoers.d/deploy was not changed"
+    assert_includes error.message, "syntax error near line 1"
+    assert_equal "rm -f /etc/sudoers.d/deploy.sadame-new", shell.commands.last
+  end
+
+  def test_verify_needs_the_path_placeholder
+    error = assert_raises(Sadame::ResourceError) { file_resource({ content: "x", verify: "visudo -c" }) }
+    assert_includes error.message, "verify must be a command containing %{path}"
+  end
+
   def test_uses_bsd_stat_on_macos
     shell = FakeShell.new.on("uname -s", stdout: "Darwin\n")
     shell.on("stat -f '%Lp %Su %Sg %HT' /etc/motd", stdout: "644 root wheel Regular File\n")

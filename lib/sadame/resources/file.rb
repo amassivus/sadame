@@ -10,7 +10,10 @@ module Sadame
   #
   # New content is written to a temporary file next to the target, given
   # its final mode and owner, then renamed over the target, so readers never
-  # see a half-written file.
+  # see a half-written file. With verify:, a command checks the temporary
+  # file first and a failure leaves the target untouched:
+  #
+  #   file "/etc/sudoers.d/deploy", content: "...", verify: "visudo -cf %{path}"
   class FileResource < Resource
     STATES = %w[present absent].freeze
     CONTENT_OPTIONS = [:content, :template, :source].freeze
@@ -22,7 +25,7 @@ module Sadame
     end
 
     def self.allowed_options
-      [:content, :template, :source, :locals, :mode, :owner, :group, :state, :sensitive]
+      [:content, :template, :source, :locals, :mode, :owner, :group, :state, :sensitive, :verify]
     end
 
     def path
@@ -73,6 +76,7 @@ module Sadame
       validate_boolean(:sensitive)
       validate_mode
       validate_content_options
+      validate_verify
       @local_file = resolve_local_file
     end
 
@@ -87,6 +91,14 @@ module Sadame
       return unless absent? && !given.empty?
 
       raise ResourceError, "#{id}: #{given.first}: makes no sense with state: :absent"
+    end
+
+    def validate_verify
+      command = options[:verify]
+      return if command.nil?
+      return if command.is_a?(String) && command.include?("%{path}")
+
+      raise ResourceError, "#{id}: verify must be a command containing %{path}, such as \"visudo -cf %{path}\""
     end
 
     # Finds template: or source: relative to the recipe's directory, then in
@@ -158,10 +170,20 @@ module Sadame
       group = options[:group] || existing&.group
       shell.run!("chmod #{mode} #{quote(temporary)}") if mode
       shell.run!("chown #{ownership(owner, group)} #{quote(temporary)}") if owner || group
+      verify(temporary) if options[:verify]
       shell.run!("mv -f #{quote(temporary)} #{quote(path)}")
     rescue StandardError => e
       shell.run("rm -f #{quote(temporary)}") if temporary
       raise e
+    end
+
+    def verify(temporary)
+      command = options[:verify].gsub("%{path}") { quote(temporary) }
+      result = shell.run(command)
+      return if result.success?
+
+      details = (result.stderr.strip.empty? ? result.stdout : result.stderr).strip
+      raise ResourceError, "#{id}: verify failed, #{path} was not changed: #{command}\n#{details}"
     end
   end
 end
