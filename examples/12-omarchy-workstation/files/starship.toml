@@ -1,0 +1,5 @@
+# Managed by sadame.
+add_newline = false
+
+[directory]
+truncation_length = 3

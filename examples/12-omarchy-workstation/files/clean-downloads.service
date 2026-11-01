@@ -1,0 +1,6 @@
+[Unit]
+Description=Remove files older than 30 days from ~/Downloads
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/find %h/Downloads -type f -mtime +30 -delete
