@@ -85,3 +85,29 @@ jobs:
           path: dist
       - run: chmod 0755 dist/sadame-linux-amd64
       - run: bundle exec rake test:push
+
+  docker:
+    name: Docker ${{ matrix.distro }} (${{ matrix.arch }})
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [ubuntu, debian, rocky, alpine, arch]
+        arch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - uses: actions/download-artifact@v8
+        with:
+          name: sadame-linux-${{ matrix.arch }}
+          path: dist
+      - run: chmod 0755 dist/sadame-linux-${{ matrix.arch }}
+      # arm64 containers run on this x86_64 runner under QEMU.
+      - name: Register QEMU
+        if: matrix.arch == 'arm64'
+        run: docker run --privileged --rm tonistiigi/binfmt --install arm64
+      - run: bundle exec rake "test:docker[${{ matrix.distro }},${{ matrix.arch }}]"
