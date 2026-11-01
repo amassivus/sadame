@@ -92,6 +92,7 @@ runtimes, which catches most mistakes, but these are the ones that come up:
 | `Integer#zero?`, `#even?`, `#odd?`, `#positive?` | not in the included gems | `== 0`, `% 2` |
 | enumerators without a block: `each_slice(2).to_a`, `map.with_index`, `each_char.map` | mruby's enumerators need fibers, which are not built in | blocks, `each_with_index` with a block, `chars` |
 | `catch` / `throw` | not built in | return values |
+| `send`, `instance_variable_get`, `define_singleton_method` and the rest of mruby-metaprog | the test build has it, through mruby-mtest, so unit tests pass; release builds do not | call methods directly, or choose with `case` |
 | `File.basename(path, ".rb")` | only one argument is supported | `File.basename(path).delete_suffix(".rb")` |
 | bare `raise` in a `rescue` clause | mruby 3.4 raises a new `RuntimeError` | `rescue Foo => e` and `raise e` |
 | backticks, `system`, `Process.spawn` | they bypass `Shell`, and spawn does not exist | `Shell#run`, `Shell#run!` |
