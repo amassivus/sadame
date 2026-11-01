@@ -11,6 +11,7 @@ module Sadame
   #   exec "certbot --nginx -d example.com", not_if: "test -f /etc/letsencrypt/live/example.com/fullchain.pem"
   #   user "deploy", shell: "/bin/bash", groups: ["docker"]
   #   group "app", gid: 1500
+  #   link "/etc/nginx/sites-enabled/app", to: "/etc/nginx/sites-available/app"
   #   include_recipe "roles/web"
   #
   # `vars`, `platform`, `host_name` and `host_groups` are available for
@@ -70,6 +71,10 @@ module Sadame
 
     def group(name, options = {})
       declare(GroupResource, name, options)
+    end
+
+    def link(path, options = {})
+      declare(LinkResource, path, options)
     end
 
     # Evaluates another recipe, relative to this recipe's directory. The
