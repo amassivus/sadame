@@ -6,6 +6,16 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- A Japanese README, `README.ja.md`; a test keeps its code and output the
+  same as the English one's.
+
+### Changed
+
+- The README shows a real plan, many servers, how push mode works, every
+  command and resource, and where sadame stands.
+
 ## [0.5.0] - 2026-11-02
 
 Editor support, and recipes shared between projects.

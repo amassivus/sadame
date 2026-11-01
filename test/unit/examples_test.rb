@@ -294,8 +294,20 @@ class ExamplesTest < SadameTest
     assert_equal ["always", "drift.xml"], [gitlab["drift"]["artifacts"]["when"], gitlab["drift"]["artifacts"]["reports"]["junit"]]
   end
 
+  # README.ja.md is a translation: the same sections, and the same code and
+  # output, apart from comments and diagram labels.
+  def test_the_japanese_readme_follows_the_english_one
+    english = File.read("README.md")
+    japanese = File.read("README.ja.md")
+    assert_includes english, "<a href=\"README.ja.md\">日本語</a>"
+    assert_includes japanese, "<a href=\"README.md\">English</a>"
+    headings = ->(text) { text.split("\n").count { |line| line.start_with?("## ") } }
+    assert_equal headings.call(english), headings.call(japanese)
+    assert_equal code_blocks(english), code_blocks(japanese)
+  end
+
   def test_paths_mentioned_in_the_docs_exist
-    (markdown_files("docs") + ["README.md"]).each do |document|
+    (markdown_files("docs") + ["README.md", "README.ja.md"]).each do |document|
       # Only paths from the repository root: not ../examples/index.md, the docs page.
       File.read(document).scan(%r{(?<![\w./-])examples/[A-Za-z0-9_./-]+}).each do |reference|
         path = reference.sub(%r{[.]+\z}, "")
@@ -350,6 +362,28 @@ class ExamplesTest < SadameTest
         !line.strip.start_with?("#") && !(line =~ /\A\s*service\s|systemctl|loginctl/).nil?
       end
     end
+  end
+
+  # The fenced code blocks of a Markdown text, without comments after #
+  # in shell blocks, and without diagrams.
+  def code_blocks(text)
+    blocks = []
+    current = nil
+    language = nil
+    text.split("\n").each do |line|
+      if line.start_with?("```")
+        if current
+          blocks << current.join("\n") unless language == "mermaid"
+          current = nil
+        else
+          language = line[3..].strip
+          current = []
+        end
+      elsif current
+        current << (language == "sh" ? line.split(" #").first.to_s.rstrip : line)
+      end
+    end
+    blocks
   end
 
   def recipe_files(directory)
