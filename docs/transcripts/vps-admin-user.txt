@@ -1,5 +1,5 @@
 $ sadame apply examples/06-app-deploy-user -h root@vps1.example.com --var "ssh_keys=$(cat ~/.ssh/id_ed25519.pub)" --var sudo_commands=ALL
-[vps1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/3bd706b9f48d068fdb2aa1c8696d1a503093682402f57b997b68e40a861c4419/
+[vps1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/0f5ac3e919a236ce85be6982b6359caa653a58af782f20f994cf8190bca0259a/
 [vps1.example.com] sadame 0.1.0.dev apply on vps1.example.com (Debian GNU/Linux 12 (bookworm))
 [vps1.example.com]
 [vps1.example.com] changed    package[sudo]
@@ -19,7 +19,7 @@ $ sadame apply examples/06-app-deploy-user -h root@vps1.example.com --var "ssh_k
 [vps1.example.com]            +++ /home/deploy/.ssh/authorized_keys (desired)
 [vps1.example.com]            @@ -0,0 +1,2 @@
 [vps1.example.com]            +# Managed by sadame. Keys added by hand will be removed.
-[vps1.example.com]            +ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDkxp9cWiMIrLaV29g23C+cu+Dg3ESKppJSnlkcOw1bt root@b8ce9673435b
+[vps1.example.com]            +ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPLNVZpy2idAHvjA+m+AaNNhXjiN/0numSSsRTT2PwfY root@cf323f99e7b6
 [vps1.example.com] changed    file[/etc/sudoers.d/deploy]
 [vps1.example.com]            state: absent -> present
 [vps1.example.com]            mode: 0440
@@ -41,9 +41,9 @@ $ sadame apply examples/06-app-deploy-user -h root@vps1.example.com --var "ssh_k
 [vps1.example.com]   skipped      0
 [vps1.example.com]   notified     0
 [vps1.example.com]
-[vps1.example.com] Finished in 2.94s.
+[vps1.example.com] Finished in 3.32s.
 
 Hosts
   vps1.example.com  ok
 
-apply on 1 host: 1 ok. Finished in 3.13s.
+apply on 1 host: 1 ok. Finished in 3.49s.

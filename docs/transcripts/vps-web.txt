@@ -147,9 +147,9 @@ $ sadame apply examples/02-nginx-static-site -h deploy@vps1.example.com:2222 --s
 [vps1.example.com]   skipped      0
 [vps1.example.com]   notified     1  service[nginx]: reload
 [vps1.example.com]
-[vps1.example.com] Finished in 1.99s.
+[vps1.example.com] Finished in 2.09s.
 
 Hosts
   vps1.example.com  ok
 
-apply on 1 host: 1 ok. Finished in 2.20s.
+apply on 1 host: 1 ok. Finished in 2.31s.

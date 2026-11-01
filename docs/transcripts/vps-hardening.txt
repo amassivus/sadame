@@ -1,5 +1,5 @@
 $ sadame apply examples/07-hardening-baseline -h deploy@vps1.example.com --sudo --var open_ports=80,443
-[vps1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/3bd706b9f48d068fdb2aa1c8696d1a503093682402f57b997b68e40a861c4419/
+[vps1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/0f5ac3e919a236ce85be6982b6359caa653a58af782f20f994cf8190bca0259a/
 [vps1.example.com] sadame 0.1.0.dev apply on vps1.example.com (Debian GNU/Linux 12 (bookworm))
 [vps1.example.com]
 [vps1.example.com] unchanged  package[openssh-server]
@@ -10,6 +10,7 @@ $ sadame apply examples/07-hardening-baseline -h deploy@vps1.example.com --sudo 
 [vps1.example.com] changed    package[unattended-upgrades]
 [vps1.example.com]            state: absent -> installed
 [vps1.example.com] unchanged  service[ssh]
+[vps1.example.com] unchanged  exec[move ssh.socket to the new port]
 [vps1.example.com] changed    file[/etc/ssh/sshd_config.d/10-hardening.conf]
 [vps1.example.com]            state: absent -> present
 [vps1.example.com]            mode: 0644
@@ -56,6 +57,7 @@ $ sadame apply examples/07-hardening-baseline -h deploy@vps1.example.com --sudo 
 [vps1.example.com] unchanged  file[/etc/apt/apt.conf.d/20auto-upgrades]
 [vps1.example.com] unchanged  service[apt-daily-upgrade.timer]
 [vps1.example.com] notified   service[ssh]: restart (delayed, from file[/etc/ssh/sshd_config.d/10-hardening.conf])
+[vps1.example.com] notified   exec[move ssh.socket to the new port]: run (delayed, from file[/etc/ssh/sshd_config.d/10-hardening.conf])
 [vps1.example.com] notified   service[fail2ban]: restart (delayed, from file[/etc/fail2ban/jail.d/sshd.local])
 [vps1.example.com]
 [vps1.example.com] Summary
@@ -70,15 +72,16 @@ $ sadame apply examples/07-hardening-baseline -h deploy@vps1.example.com --sudo 
 [vps1.example.com]                   exec[ufw --force enable]
 [vps1.example.com]                   file[/etc/fail2ban/jail.d/sshd.local]
 [vps1.example.com]                   service[fail2ban]
-[vps1.example.com]   unchanged    4
+[vps1.example.com]   unchanged    5
 [vps1.example.com]   failed       0
 [vps1.example.com]   skipped      0
-[vps1.example.com]   notified     2  service[ssh]: restart
+[vps1.example.com]   notified     3  service[ssh]: restart
+[vps1.example.com]                   exec[move ssh.socket to the new port]: run
 [vps1.example.com]                   service[fail2ban]: restart
 [vps1.example.com]
-[vps1.example.com] Finished in 17.36s.
+[vps1.example.com] Finished in 12.98s.
 
 Hosts
   vps1.example.com  ok
 
-apply on 1 host: 1 ok. Finished in 17.59s.
+apply on 1 host: 1 ok. Finished in 13.21s.

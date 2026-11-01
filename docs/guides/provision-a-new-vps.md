@@ -62,7 +62,10 @@ SSH and the ports in `open_ports` through the firewall:
 ```
 
 sshd restarted on the new port at the end of the run; the connection that
-ran it was kept, because `ufw` lets established connections through.
+ran it was kept, because `ufw` lets established connections through. On
+Ubuntu, where systemd starts sshd from `ssh.socket`, the recipe also moves
+the socket to the new port; restarting sshd alone would leave it on 22,
+behind the firewall.
 
 ## 4. The web server
 

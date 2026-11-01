@@ -19,11 +19,22 @@ package "unattended-upgrades"
 # sshd runs before its configuration changes: starting it creates
 # /run/sshd, which `sshd -t` needs to check the new file.
 service "ssh", enable: true, state: :running
+
+# Ubuntu 22.10 and later start sshd from ssh.socket, which listens on the
+# ports systemd generated from sshd_config at its last reload: restarting
+# sshd alone would leave SSH on port 22, behind a firewall that no longer
+# allows it. Where the socket is in use, regenerate its ports and restart
+# it. Debian starts sshd directly, and there this does nothing.
+exec "move ssh.socket to the new port",
+     command: "if systemctl is-enabled --quiet ssh.socket; then " +
+              "systemctl daemon-reload && systemctl restart ssh.socket; fi",
+     action: :nothing
+
 file "/etc/ssh/sshd_config.d/10-hardening.conf",
      template: "sshd-hardening.conf.erb",
      mode: "0644",
      verify: "sshd -t -f %{path}",
-     notifies: [:restart, "service[ssh]"]
+     notifies: [[:restart, "service[ssh]"], [:run, "exec[move ssh.socket to the new port]"]]
 
 # Firewall: allow the SSH port before turning the firewall on, so the
 # connection running this recipe survives.

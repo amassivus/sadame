@@ -36,6 +36,13 @@ The change to make in your inventory after the first run:
 The connection that runs the first apply is not cut: sshd restarts at the
 end of the run, and `ufw` keeps established connections.
 
+On Ubuntu 22.10 and later, systemd starts sshd from `ssh.socket`, which
+listens on the ports generated from `sshd_config` when systemd last
+reloaded. Restarting sshd alone would leave SSH on port 22, which the
+firewall no longer allows, and lock you out; the recipe therefore also
+regenerates the socket's ports and restarts it when the configuration
+changes. Debian starts sshd directly, so there that step does nothing.
+
 **Testing.** The firewall and sshd need a real kernel and boot to be
 trusted, so this example only counts as passing after the VM layer (see
 [Testing](../../docs/contributing/testing.md)), even though it also runs in
