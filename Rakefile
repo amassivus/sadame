@@ -129,7 +129,7 @@ def test_files
 end
 
 def shared_support_files
-  %w[test_helpers fake_shell fake_io].map { |name| File.join(ROOT, "test", "support", "#{name}.rb") }
+  %w[test_helpers fake_shell fake_io example_matrix].map { |name| File.join(ROOT, "test", "support", "#{name}.rb") }
 end
 
 namespace :test do

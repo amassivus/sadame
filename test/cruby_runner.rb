@@ -8,6 +8,7 @@ require "sadame"
 require "support/test_helpers"
 require "support/fake_shell"
 require "support/fake_io"
+require "support/example_matrix"
 
 class SadameTest < Minitest::Test
   include TestHelpers

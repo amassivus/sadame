@@ -1,0 +1,77 @@
+# frozen_string_literal: true
+
+# Where every example runs. The unit tests plan and apply each example on a
+# fake machine of every distribution listed here; the Docker integration
+# tests (test/integration/docker) run them for real in containers.
+#
+#   path      a recipe file, or a directory containing recipe.rb
+#   distros   where it runs; the others are skipped with why:
+#   why       the reason it does not run on the other distributions
+#   runs      argument lists for sadame; each is applied, then checked with
+#             drift (default: one run without arguments)
+#   setup     shell commands that prepare a container before the first run
+#   pebble    true when the container needs the Pebble test ACME server
+#   drift_demo true for 10-drift-demo, which also breaks the machine
+module ExampleMatrix
+  ALL = %w[ubuntu debian rocky alpine arch].freeze
+  SYSTEMD = %w[ubuntu debian rocky arch].freeze
+  DEBIAN = %w[ubuntu debian].freeze
+  NO_SYSTEMD = "Alpine uses OpenRC, and the service resource needs systemd"
+
+  EXAMPLES = [
+    { path: "examples/01-hello", distros: ALL },
+    { path: "examples/02-nginx-static-site", distros: SYSTEMD, why: NO_SYSTEMD },
+    { path: "examples/03-nginx-tls-certbot", distros: SYSTEMD, why: NO_SYSTEMD, pebble: true,
+      runs: [["--var", "domain=site.example.test", "--var", "email=admin@example.test",
+              "--var", "acme_server=https://pebble:14000/dir", "--var", "certbot_flags=--no-verify-ssl"]] },
+    { path: "examples/04-docker-host", distros: SYSTEMD, why: NO_SYSTEMD },
+    { path: "examples/05-postgres", distros: SYSTEMD, why: NO_SYSTEMD },
+    { path: "examples/06-app-deploy-user", distros: ALL },
+    { path: "examples/07-hardening-baseline", distros: DEBIAN, why: "ufw and unattended-upgrades are Debian's and Ubuntu's" },
+    { path: "examples/08-multi-role-inventory/site.rb", distros: DEBIAN,
+      why: "the roles use Debian's package names and paths",
+      runs: [["--host-name", "web1.example.com", "--host-groups", "web,all"],
+             ["--host-name", "db1.example.com", "--host-groups", "db,all"]] },
+    { path: "examples/09-cron-and-logrotate", distros: SYSTEMD, why: NO_SYSTEMD },
+    { path: "examples/10-drift-demo", distros: DEBIAN, why: "it uses Debian's nginx and nologin paths",
+      drift_demo: true },
+    { path: "examples/11-dynamic-inventory/recipe.rb", distros: ALL },
+    { path: "examples/12-omarchy-workstation", distros: ["arch"], why: "it is for Arch Linux and Omarchy",
+      setup: ["useradd -m alice"], runs: [["--var", "user=alice"]] },
+    { path: "examples/basics", distros: %w[ubuntu debian alpine arch],
+      why: "Rocky ships curl-minimal, which conflicts with the curl package" },
+    { path: "examples/quickstart", distros: DEBIAN, why: "it writes Debian's default web root" },
+    { path: "examples/notifications", distros: SYSTEMD, why: NO_SYSTEMD },
+    { path: "examples/resources/package/recipe.rb", distros: %w[ubuntu debian alpine arch],
+      why: "htop needs EPEL on Rocky" },
+    { path: "examples/resources/package/minimal.rb", distros: %w[ubuntu debian alpine arch],
+      why: "htop needs EPEL on Rocky" },
+    { path: "examples/resources/package/by_family.rb", distros: %w[ubuntu debian rocky],
+      why: "Arch calls the package apache, not httpd" },
+    { path: "examples/resources/package/aur.rb", distros: ["arch"], why: "the AUR is Arch's",
+      runs: [["--var", "aur_user=alice"]] },
+    { path: "examples/resources/file/recipe.rb", distros: ALL },
+    { path: "examples/resources/file/minimal.rb", distros: ALL },
+    { path: "examples/resources/directory/recipe.rb", distros: DEBIAN, why: "it uses Debian's www-data user" },
+    { path: "examples/resources/directory/minimal.rb", distros: ALL },
+    { path: "examples/resources/service/recipe.rb", distros: SYSTEMD, why: NO_SYSTEMD },
+    { path: "examples/resources/service/reload_on_change.rb", distros: %w[ubuntu debian rocky],
+      why: "Arch's nginx.conf does not include conf.d, and Alpine has no systemd" },
+    { path: "examples/resources/exec/recipe.rb", distros: ALL },
+    { path: "examples/resources/exec/minimal.rb", distros: DEBIAN, why: "/var/backups is Debian's" },
+    { path: "examples/resources/user/recipe.rb", distros: SYSTEMD, why: "Alpine needs the shadow package first" },
+    { path: "examples/resources/user/minimal.rb", distros: SYSTEMD, why: "Alpine needs the shadow package first" },
+    { path: "examples/resources/user/docker_group.rb", distros: DEBIAN, why: "docker.io is Debian's package name" },
+    { path: "examples/resources/user/remove.rb", distros: SYSTEMD, why: "Alpine needs the shadow package first" }
+  ].freeze
+
+  # The recipe file of an example.
+  def self.recipe_path(example)
+    path = example[:path]
+    path.end_with?(".rb") ? path : "#{path}/recipe.rb"
+  end
+
+  def self.runs(example)
+    example[:runs] || [[]]
+  end
+end

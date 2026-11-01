@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 # Every recipe under examples/ is loaded, planned and applied against a fake
-# fresh machine here, so the examples the docs show keep working.
+# fresh machine of every distribution it supports (test/support/
+# example_matrix.rb), so the examples the docs show keep working. The Docker
+# integration tests run the same matrix in real containers.
 class ExamplesTest < SadameTest
+  # The resources each example declares, on one distribution.
   EXAMPLES = {
     "examples/01-hello/recipe.rb" => ["debian", ["file[/tmp/sadame-hello.txt]"]],
     "examples/basics/recipe.rb" => [
@@ -34,7 +37,6 @@ class ExamplesTest < SadameTest
     "examples/resources/package/by_family.rb" => ["rocky", ["package[httpd]"]],
     "examples/resources/file/minimal.rb" => ["debian", ["file[/etc/motd]"]],
     "examples/resources/directory/minimal.rb" => ["debian", ["directory[/srv/app]"]],
-    "examples/resources/service/minimal.rb" => ["debian", ["service[nginx]"]],
     "examples/resources/service/reload_on_change.rb" => [
       "debian", ["package[nginx]", "file[/etc/nginx/conf.d/status.conf]", "service[nginx]"]
     ],
@@ -47,6 +49,14 @@ class ExamplesTest < SadameTest
       ["package[nginx]", "user[demo-app]", "directory[/etc/demo-app]", "file[/etc/demo-app/app.conf]", "service[nginx]"]
     ],
     "examples/08-multi-role-inventory/site.rb" => ["debian", ["file[/etc/motd]"]],
+    "examples/02-nginx-static-site/recipe.rb" => ["debian", ["package[nginx]", "service[nginx]", "file[/etc/nginx/nginx.conf]", "directory[/etc/nginx/conf.d]", "file[/etc/nginx/conf.d/static-site.conf]", "directory[/var/www/static-site]", "file[/var/www/static-site/index.html]"]],
+    "examples/03-nginx-tls-certbot/recipe.rb" => ["debian", ["package[nginx]", "package[certbot]", "service[nginx]", "file[/etc/nginx/nginx.conf]", "directory[/etc/nginx/conf.d]", "directory[/var/www/example.com]", "file[/var/www/example.com/index.html]", "file[/etc/nginx/conf.d/example.com.conf]", "exec[request the certificate for example.com]", "file[/etc/nginx/conf.d/example.com-tls.conf]", "directory[/etc/letsencrypt/renewal-hooks/deploy]", "file[/etc/letsencrypt/renewal-hooks/deploy/reload-nginx]", "service[certbot.timer]"]],
+    "examples/04-docker-host/recipe.rb" => ["ubuntu", ["package[ca-certificates]", "package[curl]", "directory[/etc/apt/keyrings]", "exec[download Docker's signing key]", "file[/etc/apt/sources.list.d/docker.list]", "exec[apt-get update]", "package[docker-ce]", "package[docker-ce-cli]", "package[containerd.io]", "package[docker-buildx-plugin]", "package[docker-compose-plugin]", "directory[/etc/docker]", "file[/etc/docker/daemon.json]", "service[docker]", "user[deploy]"]],
+    "examples/05-postgres/recipe.rb" => ["rocky", ["package[postgresql-server]", "exec[create the database cluster]", "exec[include conf.d in postgresql.conf]", "service[postgresql]", "directory[/var/lib/pgsql/data/conf.d]", "file[/var/lib/pgsql/data/conf.d/tuning.conf]"]],
+    "examples/06-app-deploy-user/recipe.rb" => ["alpine", ["package[sudo]", "package[shadow]", "package[bash]", "user[deploy]", "directory[/home/deploy/.ssh]", "file[/home/deploy/.ssh/authorized_keys]", "file[/etc/sudoers.d/deploy]"]],
+    "examples/07-hardening-baseline/recipe.rb" => ["debian", ["package[openssh-server]", "package[ufw]", "package[fail2ban]", "package[unattended-upgrades]", "file[/etc/ssh/sshd_config.d/10-hardening.conf]", "service[ssh]", "exec[ufw default deny incoming]", "exec[ufw allow 2222/tcp]", "exec[ufw --force enable]", "file[/etc/fail2ban/jail.d/sshd.local]", "service[fail2ban]", "file[/etc/apt/apt.conf.d/20auto-upgrades]", "service[apt-daily-upgrade.timer]"]],
+    "examples/09-cron-and-logrotate/recipe.rb" => ["arch", ["package[cronie]", "package[logrotate]", "service[cronie]", "user[app]", "directory[/var/lib/app]", "directory[/var/log/app]", "file[/etc/cron.d/app]", "file[/etc/logrotate.d/app]"]],
+    "examples/12-omarchy-workstation/recipe.rb" => ["arch", ["package[git]", "package[htop]", "package[ripgrep]", "package[fd]", "package[bat]", "package[starship]", "directory[/home/alice/.config]", "directory[/home/alice/.config/systemd]", "directory[/home/alice/.config/systemd/user]", "directory[/home/alice/.local]", "directory[/home/alice/.local/bin]", "file[/home/alice/.gitconfig]", "file[/home/alice/.config/starship.toml]", "file[/home/alice/.local/bin/update-system]", "exec[enable lingering for alice]", "exec[start alice's systemd instance]", "exec[reload alice's systemd units]", "file[/home/alice/.config/systemd/user/clean-downloads.service]", "file[/home/alice/.config/systemd/user/clean-downloads.timer]", "service[clean-downloads.timer]", "exec[install visual-studio-code-bin from the AUR]"]],
     "examples/11-dynamic-inventory/recipe.rb" => ["debian", ["file[/etc/motd]"]],
     "examples/notifications/recipe.rb" => [
       "debian",
@@ -57,6 +67,8 @@ class ExamplesTest < SadameTest
 
   # Inventories, and the cloud CLI output their commands are faked with.
   INVENTORIES = {
+    "examples/07-hardening-baseline/hosts.rb" => [nil, { new: ["vps1.example.com"] }],
+    "examples/07-hardening-baseline/hosts-after.rb" => [nil, { new: ["vps1.example.com"] }],
     "examples/08-multi-role-inventory/hosts.rb" => [
       nil, { web: ["web1.example.com", "web2.example.com"], db: ["db1.example.com"],
              all: ["web1.example.com", "web2.example.com", "db1.example.com"] }
@@ -84,9 +96,6 @@ class ExamplesTest < SadameTest
   SUPPORT_FILE_NAMES = ["vars.rb"].freeze
   INCLUDED_RECIPE_DIRECTORIES = ["parts", "roles"].freeze
 
-  # --var values that make examples independent of the machine running the tests.
-  FIXED_VARS = ["--var", "aur_user=alice"].freeze
-
   def test_every_recipe_is_covered
     recipe_files("examples").each do |path|
       assert_includes EXAMPLES.keys, path, "#{path} is not exercised by ExamplesTest"
@@ -100,14 +109,25 @@ class ExamplesTest < SadameTest
     end
   end
 
-  def test_examples_plan_and_apply_on_a_fresh_machine
-    EXAMPLES.each do |path, (distribution, _ids)|
-      status, stdout, stderr = run_cli(["plan", path] + FIXED_VARS, shell: fresh_shell(distribution))
-      assert_equal 0, status, "plan #{path}: #{stderr}"
-      refute_includes stdout, "\nx ", path
+  def test_every_recipe_is_in_the_matrix
+    matrix_paths = ExampleMatrix::EXAMPLES.map { |example| ExampleMatrix.recipe_path(example) }
+    assert_equal EXAMPLES.keys.sort, matrix_paths.sort
+  end
 
-      status, stdout, stderr = run_cli(["apply", path] + FIXED_VARS, shell: fresh_shell(distribution))
-      assert_equal 0, status, "apply #{path}: #{stdout}#{stderr}"
+  def test_examples_plan_and_apply_on_every_distribution_they_support
+    ExampleMatrix::EXAMPLES.each do |example|
+      path = ExampleMatrix.recipe_path(example)
+      example[:distros].each do |distribution|
+        ExampleMatrix.runs(example).each do |arguments|
+          label = "#{path} on #{distribution} #{arguments.join(" ")}"
+          status, stdout, stderr = run_cli(["plan", path] + arguments, shell: fresh_shell(distribution))
+          assert_equal 0, status, "plan #{label}: #{stdout}#{stderr}"
+          refute_includes stdout, "\nx ", label
+
+          status, stdout, stderr = run_cli(["apply", path] + arguments, shell: fresh_shell(distribution))
+          assert_equal 0, status, "apply #{label}: #{stdout}#{stderr}"
+        end
+      end
     end
   end
 
@@ -126,6 +146,14 @@ class ExamplesTest < SadameTest
     walk("examples").select { |path| File.basename(path).start_with?("hosts") && path.end_with?(".rb") }.each do |path|
       assert_includes INVENTORIES.keys, path, "#{path} is not exercised by ExamplesTest"
     end
+  end
+
+  def test_hardening_inventories_differ_only_in_the_port
+    before = Sadame::Inventory.load("examples/07-hardening-baseline/hosts.rb", shell: linux_shell).select(group_names: ["new"]).first
+    after = Sadame::Inventory.load("examples/07-hardening-baseline/hosts-after.rb", shell: linux_shell)
+                             .select(group_names: ["new"]).first
+    assert_equal [nil, 2222], [before.port, after.port]
+    assert_equal [before.user, before.sudo], [after.user, after.sudo]
   end
 
   def test_multi_role_example_includes_roles_by_group
@@ -179,8 +207,10 @@ class ExamplesTest < SadameTest
 
   private
 
+  # Values that make examples independent of the machine running the tests.
   def example_vars(path)
-    Sadame::Vars.merge(Sadame::Vars.load_file(File.join(File.dirname(path), "vars.rb")), { aur_user: "alice" })
+    Sadame::Vars.merge(Sadame::Vars.load_file(File.join(File.dirname(path), "vars.rb")),
+                       { aur_user: "alice", user: path.include?("12-omarchy") ? "alice" : nil }.reject { |_key, value| value.nil? })
   end
 
   def recipe_files(directory)
