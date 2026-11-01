@@ -77,9 +77,17 @@ xattr -d com.apple.quarantine sadame-darwin-arm64
 
 ## Homebrew
 
-The formula for the release binaries, macOS and Linux, is in
-`homebrew/sadame.rb` in the repository. It is not published in a tap yet;
-until it is, use the install script.
+On macOS and Linux:
+
+```sh
+brew install enderkus/sadame/sadame
+```
+
+The formula, in the
+[enderkus/homebrew-sadame](https://github.com/enderkus/homebrew-sadame)
+tap, installs the release binary for your system after Homebrew checks its
+SHA-256 checksum. It is updated for each release, so `brew upgrade sadame`
+installs new versions.
 
 ## Arch Linux (AUR)
 

@@ -1,7 +1,8 @@
-# Homebrew formula for the release binaries. To publish it, put this
-# file in Formula/ of a repository named homebrew-sadame; then
-# `brew install enderkus/sadame/sadame` installs it. Written by
-# script/build/packaging.rb: regenerate it for each release.
+# Homebrew formula for the release binaries of sadame, published in the
+# enderkus/homebrew-sadame tap: brew install enderkus/sadame/sadame.
+# Written for each release by script/build/packaging.rb in
+# enderkus/sadame (homebrew/sadame.rb), then copied to the tap's
+# Formula/; do not edit it by hand.
 class Sadame < Formula
   desc "Configuration management in plain Ruby, in one binary"
   homepage "https://enderkus.github.io/sadame/"

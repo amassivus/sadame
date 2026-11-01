@@ -115,6 +115,9 @@ To publish a release:
    `rake "packaging[0.1.0]"`, and commit them: the Homebrew formula in
    `homebrew/sadame.rb` and the AUR package (`PKGBUILD` and `.SRCINFO`)
    in `packaging/aur/`.
+5. Copy `homebrew/sadame.rb` to `Formula/sadame.rb` in the
+   [enderkus/homebrew-sadame](https://github.com/enderkus/homebrew-sadame)
+   tap and push it there; `brew upgrade sadame` then finds the release.
 
 ## Building a release locally
 

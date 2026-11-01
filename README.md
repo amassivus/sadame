@@ -21,7 +21,8 @@ curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | s
 
 The script picks the binary for your system (Linux x86_64 or ARM64,
 macOS), checks its SHA-256 checksum and installs it to `/usr/local/bin`.
-The binary is about 1 MB; the machines you manage need nothing installed.
+With Homebrew: `brew install enderkus/sadame/sadame`. The binary is about
+1 MB; the machines you manage need nothing installed.
 
 ## Quickstart (60 seconds)
 

@@ -6,6 +6,15 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Homebrew tap: `brew install enderkus/sadame/sadame` installs the release
+  binary on macOS and Linux.
+
+### Fixed
+
+- The icons on the docs' home page cards were shown as text.
+
 ## [0.1.0] - 2026-11-01
 
 The first release.
