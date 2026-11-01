@@ -45,9 +45,8 @@ its name, and a summary:
   `drift` reads files only root can read).
 
 The CI job installs sadame with `install.sh`, which downloads the latest
-release. Until the first release (0.1.0) is published, there is nothing to
-download; build sadame from source in the job instead (see
-[Install](../install.md#from-source)).
+release. To pin a version, set `SADAME_VERSION` (see
+[Install](../install.md)).
 
 ## GitHub Actions
 

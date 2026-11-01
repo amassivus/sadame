@@ -28,8 +28,8 @@ classes are available. Most recipe logic needs no more.
 ### Which systems are supported?
 
 Targets: Debian, Ubuntu, Rocky Linux and other RHEL-like systems, Alpine
-and Arch Linux (including Omarchy), on x86_64 and ARM64. `service` needs
-systemd, so it does not work on Alpine. The machine running sadame can be
+and Arch Linux (including Omarchy), on x86_64 and ARM64. `service` works
+with systemd, and with OpenRC on Alpine. The machine running sadame can be
 Linux or macOS. Windows is not supported, as a target or otherwise.
 
 ### How is this different from Ansible?
@@ -74,21 +74,23 @@ only run when notified.
 
 ### Can sadame upgrade packages?
 
-Not in 0.1: `package` makes sure a package is installed or absent, not that
+Not yet: `package` makes sure a package is installed or absent, not that
 it is the newest version. Upgrade with the package manager, or with a
 guarded `exec`.
 
 ### Does sadame support the AUR?
 
-Not directly in 0.1. Use an AUR helper through `exec`; see
+Not directly. Use an AUR helper through `exec`; see
 [package](resources/package.md#aur-packages).
 
 ### How many hosts can it handle?
 
-Every selected host runs at the same time, each in its own process, so the
-limit is your machine's processes and SSH connections. Sadame has not been
-tested on fleets of hundreds of hosts; for those, run it in batches with
-`--limit`.
+By default every selected host runs at the same time, each in its own
+process, so the limit is your machine's processes and SSH connections.
+`--forks 20` works on at most 20 at once, and `--serial` runs them in
+batches that stop at the first failed one; see
+[Remote hosts](guides/remote-hosts.md#many-hosts-at-once). Sadame has not
+been tested on fleets of hundreds of hosts.
 
 ### Where are the logs?
 

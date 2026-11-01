@@ -68,7 +68,7 @@ Debian, Rocky Linux, Alpine and Arch.
 | Drift check for CI | `drift`, exit status 1 | no dedicated command | `--detailed-exitcode` | no |
 | JSON output | `--json` | callback plugins | no | no |
 | Distributed as | one static binary | Python package | Ruby gem | one binary |
-| Maturity | 0.1.0, six resource types | since 2012, thousands of modules | since 2013 | since 2016 |
+| Maturity | 0.2.0, ten resource types | since 2012, thousands of modules | since 2013 | since 2016 |
 
 The [full comparison](https://enderkus.github.io/sadame/comparison/) adds
 Chef and Puppet, and lists what sadame does not do yet.

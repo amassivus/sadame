@@ -133,7 +133,7 @@ checks its SHA-256 checksum and installs it to `/usr/local/bin`. Linux
 ## How it compares
 
 Recipes in Ruby like Itamae, push over SSH without an agent like Ansible,
-one binary like mitamae, and a `drift` command for CI. Six resource types
+one binary like mitamae, and a `drift` command for CI. Ten resource types
 and Linux targets only, for now: the [comparison](comparison.md) lists
 what the others do that sadame does not.
 

@@ -41,7 +41,8 @@ instance variables, sadame's `locals:` as a Hash.
 
 - Recipes are Ruby files evaluated in order; resources run in the order
   they are declared.
-- `package`, `directory`, `file`, `user` and `service` keep their names.
+- `package`, `directory`, `file`, `user`, `service`, `group`, `link` and
+  `git` keep their names.
 - `include_recipe "path"`, relative to the including file, each file once.
 - `notifies` and `subscribes`, with delayed notifications by default and
   `:immediately`.
@@ -56,6 +57,8 @@ instance variables, sadame's `locals:` as a Hash.
 | `remote_file "/path" do source "files/x" end` | `file "/path", source: "x"` (looked up next to the recipe, then in `files/`) |
 | `execute "name" do command "..." end` | `exec "name", command: "..."` |
 | `service "x" do action [:enable, :start] end` | `service "x", enable: true, state: :running` |
+| `link "/srv/app/current" do to "/srv/app/v2" end` | `link "/srv/app/current", to: "/srv/app/v2"` |
+| `git "/srv/app" do repository "URL"; revision "v2" end` | `git "/srv/app", repository: "URL", revision: "v2"` |
 | `action :nothing` | `action: :nothing`, on `exec` only; `service` without `enable:`/`state:` manages nothing |
 | `node[:attr]`, `-j node.json`, `-y node.yml` | `vars[:attr]`, `vars.rb`, `--var`, vars in `hosts.rb` |
 | `@name` in templates | `locals[:name]`; `vars[:name]` is also available |
@@ -75,16 +78,18 @@ mruby limits on recipe code are similar (no gems, no standard library); see
 The differences from mitamae are the same as above, plus push over SSH,
 inventories and `drift`.
 
-## Resources Itamae has and sadame 0.1 does not
+## Resources Itamae has and sadame does not
 
-`link`, `group`, `git`, `http_request`, `local_ruby_block`, `gem_package`
-and plugins. Use `exec` with a guard in the meantime:
+`http_request`, `local_ruby_block`, `gem_package` and plugins. Use `exec`
+with a guard in their place:
 
-| Itamae | With sadame 0.1 |
+| Itamae | sadame |
 |---|---|
-| `link "/etc/app/current" do to "/srv/app/v2" end` | `exec "ln -sfn /srv/app/v2 /etc/app/current", not_if: "test \"$(readlink /etc/app/current)\" = /srv/app/v2"` |
-| `group "deploy"` | `exec "groupadd deploy", not_if: "getent group deploy"` |
-| `git "/srv/app" do repository "..." end` | `exec "git clone URL /srv/app", creates: "/srv/app/.git"` |
+| `http_request "/srv/app/example.html" do url "https://..." end` | `exec "curl -fsSL -o /srv/app/example.html https://...", creates: "/srv/app/example.html"` |
+| `gem_package "bundler"` | `exec "gem install bundler", not_if: "gem list -i bundler"` |
+
+`link`, `group` and `git` came in sadame 0.2.0; before that, they needed a
+guarded `exec` too.
 
 ## How to port
 

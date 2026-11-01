@@ -19,6 +19,8 @@ and its translation, which the test suite applies on Debian and Ubuntu.
 | `when:` | Ruby `if` |
 | `loop:` | Ruby `each` |
 | `--check --diff` | `sadame plan` |
+| `forks` | `--forks` |
+| `serial:` | `--serial` |
 | no built-in drift command | `sadame drift` |
 | `become: true` | `sudo: true` in `hosts.rb`, or `--sudo` |
 | Python on every target | nothing on the targets; sadame copies itself |
@@ -132,9 +134,11 @@ and sadame's `drift` always reports it.
 --8<-- "examples/migrate-from-ansible/recipe.rb:lineinfile"
 ```
 
-sadame has no `lineinfile`. Prefer managing the whole file with `file`, so
-the recipe states what the file contains; for files other programs also
-edit, a guarded `exec` as above works.
+`line` is sadame's `lineinfile`: `match` plays the part of `regexp`, and
+`state: :absent` removes the line. One difference: when several lines
+match, `line` replaces all of them, where `lineinfile` replaces the last
+one. Prefer managing the whole file with `file` when sadame can own it, so
+the recipe states what the file contains; see [line](../resources/line.md).
 
 ### cron
 
@@ -199,14 +203,17 @@ vars override the groups it includes. Ansible has many more layers
 
 ## Gaps
 
-Things Ansible does that sadame 0.1 does not:
+Things Ansible does that sadame does not:
 
 - no facts gathering beyond `platform` (os-release) and `host_name`,
   `host_groups`;
-- no modules beyond `package`, `file`, `directory`, `service`, `exec` and
-  `user`: no `git`, `apt_repository`, `mount`, `sysctl`, `firewalld` and
-  so on; use `file` and guarded `exec` (see `examples/04-docker-host` for a
-  package repository);
+- ten resource types (`package`, `file`, `line`, `directory`, `link`,
+  `service`, `exec`, `user`, `group`, `git`) where Ansible has thousands
+  of modules: no `apt_repository`, `mount`, `sysctl`, `firewalld` and so
+  on; use `file`, `line` and guarded `exec` (see `examples/04-docker-host`
+  for a package repository);
+- no `max_fail_percentage`: `--serial` stops after the first batch with a
+  failure;
 - no Windows, no network devices, no agent or pull mode;
 - no vault; read secrets from the environment in `vars.rb`;
 - no roles from Galaxy: recipes are files you `include_recipe`.
