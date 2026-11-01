@@ -156,9 +156,9 @@ target). It looks in this order:
 
 ## Many hosts at once
 
-Every selected host runs at the same time, in its own process. Lines from
-different hosts interleave, each with its host's name in front, and a table
-at the end shows each host's result:
+By default every selected host runs at the same time, in its own process.
+Lines from different hosts interleave, each with its host's name in front,
+and a table at the end shows each host's result:
 
 ```text
 --8<-- "docs/transcripts/remote-drift-limit.txt"
@@ -171,6 +171,7 @@ at the end shows each host's result:
 | `failed` | `apply` had a failed resource | 1 |
 | `error` | sadame could not run, or exited with 2 | 2 |
 | `unreachable` | ssh could not connect | 2 |
+| `skipped` | not run, because an earlier batch failed (`--serial`) | none |
 
 The exit status of the whole run is the highest of its hosts. A host that
 cannot be reached does not stop the others:
@@ -187,6 +188,38 @@ cannot be reached does not stop the others:
 
 With `--json`, the run prints one document with each host's result and its
 full report; see [JSON output](../reference/json-output.md#push-mode).
+
+### Fewer at a time: --forks
+
+`--forks N` works on at most N hosts at once; the next one starts as soon
+as one finishes. Use it when the machine running sadame, or a jump host
+between it and the servers, should not open a connection to every server
+at once. Through a jump host, keep it at 10 or below: past 10 connections
+that are still logging in, OpenSSH's sshd refuses new ones at random
+(`MaxStartups`).
+
+```sh
+sadame apply site.rb -g all --forks 10
+```
+
+### Rolling changes: --serial
+
+`--serial N` runs the hosts in batches of N, in the order they were
+selected, one batch after another; `--serial 25%` makes each batch a
+quarter of the hosts. When a host of a batch ends as `failed`, `error` or
+`unreachable`, sadame stops after that batch, and the hosts of later
+batches are `skipped`: a change that breaks one server does not reach the
+others. `drift` results do not stop the run.
+
+Here web2 has a file where the recipe wants a directory, so its apply
+fails and db1, in the third batch, is never touched:
+
+```text
+--8<-- "docs/transcripts/remote-serial.txt"
+```
+
+`--forks` limits each batch too: `--serial 10 --forks 5` runs batches of
+ten hosts, five at a time.
 
 ## Troubleshooting
 

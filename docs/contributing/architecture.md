@@ -18,11 +18,11 @@ order; the mruby build compiles the same list.
 | `target.rb` | A host to push to, and parsing `[user@]host[:port]`. |
 | `glob.rb` | `*` and `?` matching for `--limit`. |
 | `hosts_listing.rb` | The output of `sadame hosts`. |
-| `push/run.rb` | Push mode: bundles the recipe, detects each target's system, finds binaries, runs every target, prints the summary or the combined JSON. |
+| `push/run.rb` | Push mode: bundles the recipe, detects each target's system, finds binaries, runs every target (in `--serial` batches when asked), prints the summary or the combined JSON. |
 | `push/session.rb` | One target: copies the binary (once per checksum) and the recipe, runs sadame there. |
 | `push/ssh.rb` | The `ssh` and `scp` command lines for a target. |
 | `push/binary_store.rb` | Finds the binary for a target's system on the machine running sadame, downloading and checking it if needed. |
-| `push/parallel.rb` | Runs one child process per target and prints their output as it arrives. |
+| `push/parallel.rb` | Runs one child process per target, at most `--forks` at a time, and prints their output as it arrives. |
 | `ruby_literal.rb` | Writes values as Ruby source, to send vars to targets and results between processes. |
 | `vars.rb` | Loads `vars.rb`, parses `--var`, merges layers. |
 | `recipe.rb` | The recipe DSL: `package`, `file`, ..., `include_recipe`, `vars`, `platform`. Evaluates recipe files with `instance_eval`. |
@@ -35,7 +35,7 @@ order; the mruby build compiles the same list.
 | `output.rb` | Renders a report as text (as it happens) or as JSON (at the end). |
 | `diff.rb` | Attribute changes and unified diffs (Myers' algorithm). |
 | `template.rb` | The ERB-compatible template engine. |
-| `host.rb` | The machine being configured: its shell plus facts read once (platform, package manager, systemd). |
+| `host.rb` | The machine being configured: its shell plus facts read once (platform, package manager, service manager). |
 | `platform.rb` | Reads `/etc/os-release`; maps distributions to families and package managers. |
 | `package_managers/*.rb` | apt, dnf, apk and pacman: the command lines for query, install and remove. |
 | `path_stat.rb` | Type, mode, owner and group of a path, from `stat`. |

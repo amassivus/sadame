@@ -1,0 +1,53 @@
+$ sadame apply site.rb -g all --serial 1
+Batch 1 of 3: web1.example.com
+[web1.example.com] sadame 0.2.0 apply on web1.example.com (Debian GNU/Linux 12 (bookworm))
+[web1.example.com]
+[web1.example.com] unchanged  file[/etc/motd]
+[web1.example.com] unchanged  package[nginx]
+[web1.example.com] unchanged  directory[/etc/demo-app]
+[web1.example.com] unchanged  file[/etc/demo-app/web.conf]
+[web1.example.com] unchanged  file[/etc/nginx/conf.d/demo-app.conf]
+[web1.example.com] unchanged  service[nginx]
+[web1.example.com]
+[web1.example.com] Summary
+[web1.example.com]   changed      0
+[web1.example.com]   unchanged    6
+[web1.example.com]   failed       0
+[web1.example.com]   skipped      0
+[web1.example.com]   notified     0
+[web1.example.com]
+[web1.example.com] Finished in 0.01s.
+
+Batch 2 of 3: web2.example.com
+[web2.example.com] sadame 0.2.0 apply on web2.example.com (Debian GNU/Linux 12 (bookworm))
+[web2.example.com]
+[web2.example.com] unchanged  file[/etc/motd]
+[web2.example.com] unchanged  package[nginx]
+[web2.example.com] failed     directory[/etc/demo-app]
+[web2.example.com]            error: directory[/etc/demo-app]: /etc/demo-app is a regular file, not a directory
+[web2.example.com] skipped    file[/etc/demo-app/web.conf]
+[web2.example.com] skipped    file[/etc/nginx/conf.d/demo-app.conf]
+[web2.example.com] skipped    service[nginx]
+[web2.example.com]
+[web2.example.com] Summary
+[web2.example.com]   changed      0
+[web2.example.com]   unchanged    2
+[web2.example.com]   failed       1  directory[/etc/demo-app]
+[web2.example.com]   skipped      3  file[/etc/demo-app/web.conf]
+[web2.example.com]                   file[/etc/nginx/conf.d/demo-app.conf]
+[web2.example.com]                   service[nginx]
+[web2.example.com]   notified     0
+[web2.example.com]
+[web2.example.com] Finished in 0.00s.
+
+Stopped after batch 2 of 3: web2.example.com did not succeed; 1 host not run.
+
+Hosts
+  web1.example.com  ok
+  web2.example.com  failed
+  db1.example.com   skipped      not run: batch 2 failed
+
+apply on 3 hosts: 1 ok, 1 failed, 1 skipped. Finished in 0.43s.
+
+$ echo $?
+1

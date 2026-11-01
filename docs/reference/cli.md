@@ -65,6 +65,8 @@ and the recipe there first (see [Remote hosts](../guides/remote-hosts.md)).
 | `--limit` | glob, such as `"web*"` | Only the selected hosts whose name matches (`*` any characters, `?` one). Alone, it filters every host of the inventory. |
 | `--inventory` | path | Use this inventory instead of `hosts.rb` next to the recipe. |
 | `--sudo` | | Run sadame with sudo on every target, whatever the inventory says. Needs passwordless sudo. Only with remote targets. |
+| `--forks` | number | Work on at most this many hosts at once (default: every selected host). Only with remote targets. |
+| `--serial` | number, or percentage such as `25%` | Run the hosts in batches of this size, one batch after another, in the order they were selected. When a host of a batch fails or cannot be reached, the hosts of later batches are skipped. Only with remote targets. |
 
 `-h` and `-g` add up: `-g db -h web1.example.com` selects both.
 `--limit` narrows the result. Selection rules and vars precedence are in
@@ -128,6 +130,14 @@ at it, then apply to the rest:
 ```sh
 sadame apply site.rb -g web --limit "web1*"
 sadame apply site.rb -g web
+```
+
+**Roll out one server at a time.** With `--serial 1`, a change that breaks
+the first server stops before it reaches the second; `--serial 25%` keeps
+three quarters of the group untouched while the first quarter changes:
+
+```sh
+sadame apply site.rb -g web --serial 1
 ```
 
 **Check one machine that is not in the inventory.** `-h` takes a full

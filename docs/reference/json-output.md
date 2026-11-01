@@ -113,8 +113,8 @@ nested under `hosts`:
 | `command` | string | `"plan"`, `"apply"` or `"drift"`. |
 | `hosts` | array | One object per host, in the order they were selected. |
 | `hosts[].name` | string | The host's name from the inventory or `-h`. |
-| `hosts[].status` | string | `"ok"`, `"drift"`, `"failed"`, `"error"` or `"unreachable"`; see [Remote hosts](../guides/remote-hosts.md#many-hosts-at-once). |
-| `hosts[].exit_status` | integer | That host's exit status; `2` when it could not be reached or prepared. |
+| `hosts[].status` | string | `"ok"`, `"drift"`, `"failed"`, `"error"`, `"unreachable"` or `"skipped"`; see [Remote hosts](../guides/remote-hosts.md#many-hosts-at-once). |
+| `hosts[].exit_status` | integer or null | That host's exit status; `2` when it could not be reached or prepared; `null` when it was skipped. |
 | `hosts[].error` | string or null | Why the host could not be reached or prepared, or sadame's error message. |
 | `hosts[].report` | object or null | The host's report; `null` when sadame did not run there. |
 | `exit_status` | integer | The highest exit status of all hosts: the run's exit status. |
