@@ -17,6 +17,7 @@
 
 require "json"
 require "open3"
+require "shellwords"
 require_relative "../../../lib/sadame"
 require_relative "../../support/example_matrix"
 
@@ -72,9 +73,9 @@ module VMTests
     def reset
       domain = @target.vars.fetch(:libvirt_domain)
       snapshot = @target.vars.fetch(:snapshot)
-      uri = @hypervisor.vars.fetch(:libvirt_uri, "qemu:///system")
       puts "== #{@distribution}: reverting #{domain} to snapshot #{snapshot}"
-      run!(ssh(@hypervisor, "virsh -c #{uri} snapshot-revert #{domain} #{snapshot} --running --force"))
+      virsh("snapshot-revert", domain, snapshot, "--running", "--force")
+      add_forwards(domain)
       wait_for_ssh(@target.port)
     end
 
@@ -113,11 +114,28 @@ module VMTests
       Result.new(example, failure ? :fail : :pass, failure)
     end
 
-    # After 07, SSH listens on 2222: drift connects there.
+    # After 07, SSH listens on 2222 inside the VM: drift connects there, or
+    # to the hypervisor port forwarded to it.
     def drift_target(example)
       return ["-g", @distribution] unless example[:path] == LAST
 
-      ["-h", "#{@target.name}:2222"]
+      ["-h", "#{@target.name}:#{@target.vars.fetch(:ssh_port_after_07, 2222)}"]
+    end
+
+    # On user-mode networking (GNOME Boxes, plain QEMU) the VM is reached
+    # through ports QEMU forwards. Forwards added at run time do not survive
+    # a restart of the VM, so the ones in vars hostfwd: are added again
+    # after every revert; QEMU refuses a rule that already exists, which is
+    # harmless.
+    def add_forwards(domain)
+      Array(@target.vars[:hostfwd]).each do |rule|
+        virsh("qemu-monitor-command", domain, "--hmp", "hostfwd_add #{rule}")
+      end
+    end
+
+    def virsh(*arguments)
+      uri = @hypervisor.vars.fetch(:libvirt_uri, "qemu:///system")
+      run!(ssh(@hypervisor, Shellwords.join(["virsh", "-c", uri] + arguments)))
     end
 
     def drift_demo(path)

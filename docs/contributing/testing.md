@@ -145,6 +145,14 @@ machine running libvirt. The VM hosts use
 in `known_hosts` yet; accept-new records an unknown key and still refuses
 one that changed.
 
+VMs on user-mode networking, such as GNOME Boxes', have no address of their
+own; SSH reaches them through ports QEMU forwards on the hypervisor. For
+those, list the forwarding rules in the VM's `hostfwd:` var (the runner adds
+them again after every revert, because rules added at run time do not
+survive a restart of the VM) and forward a port to the VM's port 2222 for
+the drift check after example 07, named in `ssh_port_after_07:`.
+`hosts.example.rb` shows both, and the libvirt URI of GNOME Boxes.
+
 ```sh
 cp test/integration/vm/hosts.example.rb test/integration/vm/hosts.local.rb   # then edit it
 rake build:linux-amd64

@@ -11,6 +11,22 @@
 #                        that changed is still refused
 #   vars libvirt_domain: the VM's libvirt domain name
 #   vars snapshot:       the libvirt snapshot with the VM's clean state
+#
+# On user-mode networking (GNOME Boxes, plain QEMU) a VM has no address of
+# its own: SSH goes to a port of the hypervisor that QEMU forwards. Then
+# give the hypervisor's address and that port, and also
+#   vars hostfwd:           the QEMU forwarding rules; the runner adds them
+#                           again after each revert, because rules added at
+#                           run time are lost when the VM restarts
+#   vars ssh_port_after_07: the hypervisor port forwarded to the VM's port
+#                           2222, where example 07 moves SSH
+# For example:
+#   host "debian-vm", address: "192.0.2.1", port: 2202, user: "tester", sudo: true, ssh_opts: vm_ssh_opts,
+#        vars: { libvirt_domain: "debian13", snapshot: "clean",
+#                hostfwd: ["tcp::2202-:22", "tcp::3202-:2222"], ssh_port_after_07: 3202 }
+# GNOME Boxes installed as a snap keeps its VMs in its own libvirt; set the
+# hypervisor's libvirt_uri to
+#   "qemu:///session?socket=/run/user/UID/snap.gnome-boxes/libvirt/virtqemud-sock"
 vm_ssh_opts = ["-o", "StrictHostKeyChecking=accept-new"]
 
 group :ubuntu do
