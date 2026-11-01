@@ -77,15 +77,20 @@ xattr -d com.apple.quarantine sadame-darwin-arm64
 
 ## Homebrew
 
-Not available yet. A tap is planned, so that
-`brew install enderkus/sadame/sadame` installs the macOS and Linux
-binaries.
+The formula for the release binaries, macOS and Linux, is in
+`homebrew/sadame.rb` in the repository. It is not published in a tap yet;
+until it is, use the install script.
 
 ## Arch Linux (AUR)
 
-Not available yet. A `sadame-bin` package that installs the release binary
-is planned. Until then, use the install script, or `exec` it from your own
-recipe.
+A `sadame-bin` package that installs the release binary is in
+`packaging/aur/`, ready for the AUR but not submitted yet. Build and
+install it from a checkout:
+
+```sh
+cd packaging/aur
+makepkg -si
+```
 
 ## From source
 
