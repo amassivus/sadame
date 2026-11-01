@@ -211,3 +211,10 @@ desc "Run the test suite on CRuby and on mruby"
 task test: ["test:cruby", "test:mruby"]
 
 task default: "test:cruby"
+
+namespace :lsp do
+  desc "Write lib/sadame/lsp/reference.rb from the docs (what sadame lsp shows)"
+  task :reference do
+    sh "ruby", File.join(ROOT, "script", "build", "lsp-reference.rb")
+  end
+end

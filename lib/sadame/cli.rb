@@ -11,7 +11,7 @@ module Sadame
   #   2 usage or recipe error, a state that could not be read, or a target
   #     that could not be reached
   class CLI
-    COMMANDS = %w[init plan apply drift validate hosts facts report].freeze
+    COMMANDS = %w[init plan apply drift validate hosts facts report lsp].freeze
     DEFAULT_RECIPE = "recipe.rb"
     DEFAULT_INVENTORY = "hosts.rb"
 
@@ -19,6 +19,7 @@ module Sadame
       Usage: sadame COMMAND [RECIPE] [options]
              sadame init [DIRECTORY] [--ci github|gitlab]
              sadame report FILE [--format markdown|junit]
+             sadame lsp
 
       Commands:
         init     Start a project: recipe.rb, vars.rb, hosts.rb, a template, and
@@ -31,6 +32,7 @@ module Sadame
         facts    Show the facts recipes see on each host: CPUs, memory, addresses.
         report   Turn the --json output of plan, apply or drift into Markdown
                  (for a CI summary page) or JUnit XML (for test reports).
+        lsp      Run a language server for editors, on stdin and stdout.
 
       RECIPE is a recipe file or a directory containing recipe.rb
       (default: ./recipe.rb). vars.rb and hosts.rb next to it are loaded if
@@ -71,8 +73,9 @@ module Sadame
            or a host could not be reached
     TEXT
 
-    def initialize(argv, stdout: $stdout, stderr: $stderr, shell: nil, environment: ENV, forking: true)
+    def initialize(argv, stdout: $stdout, stderr: $stderr, stdin: $stdin, shell: nil, environment: ENV, forking: true)
       @argv = argv
+      @stdin = stdin
       @stdout = stdout
       @stderr = stderr
       @shell = shell || Shell.new
@@ -111,6 +114,7 @@ module Sadame
       raise UsageError, "--ci only applies to init" if options[:ci] && options[:command] != "init"
       return convert_report(options) if options[:command] == "report"
       return init_project(options) if options[:command] == "init"
+      return Lsp::Server.new(@stdin, @stdout, shell: @shell).run if options[:command] == "lsp"
       return list_hosts(options) if options[:command] == "hosts"
       return show_facts(options) if options[:command] == "facts"
       return validate(options) if options[:command] == "validate"

@@ -7,22 +7,25 @@ module Sadame
   # names and options, notifications, include_recipe paths, and templates
   # and source files, which are found and rendered.
   class Validation
-    Result = Struct.new(:name, :resources, :error)
+    # files: the expanded paths of the recipe files evaluated.
+    Result = Struct.new(:name, :resources, :error, :files)
 
     def initialize(recipe_path, platform:)
       @recipe_path = recipe_path
       @platform = platform
     end
 
-    def check(name:, groups:, vars:)
+    # sources: see Recipe.load.
+    def check(name:, groups:, vars:, sources: {})
+      files = []
       host = StandIn::Host.new(name: name, groups: groups, platform: @platform)
-      resources = Recipe.load(@recipe_path, host: host, vars: vars)
+      resources = Recipe.load(@recipe_path, host: host, vars: vars, sources: sources, loaded: files)
       resources.each { |resource| resource.check_offline }
-      Result.new(name, resources.size, nil)
+      Result.new(name, resources.size, nil, files)
     rescue Error => e
-      Result.new(name, nil, e.message)
+      Result.new(name, nil, e.message, files)
     rescue StandardError => e
-      Result.new(name, nil, "#{e.class}: #{e.message}")
+      Result.new(name, nil, "#{e.class}: #{e.message}", files)
     end
   end
 

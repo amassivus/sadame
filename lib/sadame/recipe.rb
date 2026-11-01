@@ -21,28 +21,33 @@ module Sadame
   class Recipe
     attr_reader :vars
 
-    # Loads the recipe at path and everything it includes.
-    def self.load(path, host:, vars:)
+    # Loads the recipe at path and everything it includes. sources maps
+    # expanded paths to text to use instead of the file's, such as an
+    # editor's unsaved changes. The expanded path of every file evaluated
+    # is added to loaded, even when evaluation fails.
+    def self.load(path, host:, vars:, sources: {}, loaded: [])
       collection = ResourceCollection.new
-      new(path, host: host, vars: vars, collection: collection, loaded: []).evaluate
+      new(path, host: host, vars: vars, collection: collection, loaded: loaded, sources: sources).evaluate
       collection.link_notifications
       collection
     end
 
     # tags are added to every resource this recipe declares (see
     # include_recipe).
-    def initialize(path, host:, vars:, collection:, loaded:, tags: [])
+    def initialize(path, host:, vars:, collection:, loaded:, tags: [], sources: {})
       @path = path
       @host = host
       @vars = vars
       @collection = collection
       @loaded = loaded
       @tags = tags
+      @sources = sources
     end
 
     def evaluate
-      @loaded << File.expand_path(@path)
-      instance_eval(File.read(@path), @path, 1)
+      expanded = File.expand_path(@path)
+      @loaded << expanded
+      instance_eval(@sources[expanded] || File.read(@path), @path, 1)
       self
     rescue RecipeError => e
       raise e
@@ -104,7 +109,8 @@ module Sadame
       raise Error, "include_recipe cannot find #{path}" unless File.file?(path)
       return if @loaded.include?(File.expand_path(path))
 
-      Recipe.new(path, host: @host, vars: @vars, collection: @collection, loaded: @loaded, tags: tags).evaluate
+      Recipe.new(path, host: @host, vars: @vars, collection: @collection, loaded: @loaded, tags: tags,
+                       sources: @sources).evaluate
       nil
     end
 
