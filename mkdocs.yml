@@ -41,9 +41,11 @@ theme:
 extra_css:
   - stylesheets/extra.css
 
-# Captured terminal sessions are embedded into pages, not published alone.
+# Captured terminal sessions are embedded into pages, not published alone;
+# launch/ holds drafts for posts elsewhere.
 exclude_docs: |
   transcripts/
+  launch/
 
 markdown_extensions:
   - admonition
