@@ -143,7 +143,8 @@ template. `sadame validate` checks the recipe without touching a machine:
 ```
 
 Add `--ci github` or `--ci gitlab` to also get a daily
-[drift check](guides/drift-in-ci.md) for your CI.
+[drift check](guides/drift-in-ci.md) for your CI, and set up your editor
+with [`sadame lsp`](guides/editors.md) to see mistakes as you type.
 
 ## Common mistakes
 

@@ -45,6 +45,17 @@ the inventory, renders its templates and connects to nothing. It finds
 typos and template errors in pull requests that cannot read SSH secrets.
 See [Command line](reference/cli.md#validate).
 
+### Does my editor know about recipes?
+
+With `sadame lsp`, editors that speak the Language Server Protocol show
+recipe errors as you type and complete resources, options and facts. See
+[Editor support](guides/editors.md) for Neovim, Helix and Emacs.
+
+### Can recipes be shared between projects?
+
+Yes, as git submodules: each project pins the version it uses. See
+[Sharing recipes](guides/sharing-recipes.md).
+
 ### How is this different from Ansible?
 
 Recipes are Ruby rather than YAML, targets need no Python, `plan` shows

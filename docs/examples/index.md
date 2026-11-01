@@ -24,7 +24,8 @@ they work as shown.
 
 Besides these, the documentation's own examples live in `examples/basics`,
 `examples/quickstart`, `examples/notifications`, `examples/facts`,
-`examples/resources/` and `examples/ci/`; each page shows the ones it uses.
+`examples/shared-recipes`, `examples/resources/` and `examples/ci/`; each
+page shows the ones it uses.
 
 ## Where to go from here
 

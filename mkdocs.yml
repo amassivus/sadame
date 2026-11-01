@@ -116,6 +116,8 @@ nav:
       - Remote hosts: guides/remote-hosts.md
       - Drift in CI: guides/drift-in-ci.md
       - Team workflow: guides/team-workflow.md
+      - Sharing recipes: guides/sharing-recipes.md
+      - Editor support: guides/editors.md
       - Omarchy workstation: guides/omarchy-workstation.md
       - Migrate from Ansible: guides/migrate-from-ansible.md
       - Migrate from Itamae: guides/migrate-from-itamae.md
