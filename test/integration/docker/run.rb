@@ -17,6 +17,8 @@
 # resources run for real; Alpine uses OpenRC and only runs the examples
 # without services. The other architecture runs under QEMU; register it
 # with: docker run --privileged --rm tonistiigi/binfmt --install all
+# Arch's systemd does not boot under QEMU, so emulated Arch containers run
+# without it and skip the examples that need it, as Alpine does.
 #
 # Development tooling: CRuby only.
 
@@ -42,6 +44,13 @@ module DockerIntegration
     "arch" => ["arch", { "amd64" => "archlinux:latest", "arm64" => "menci/archlinuxarm:latest" }, true]
   }.freeze
 
+  # Distributions whose systemd does not boot when the CPU is emulated. Their
+  # emulated containers run without systemd, and the examples marked
+  # systemd: true are skipped with this reason.
+  NO_SYSTEMD_WHEN_EMULATED = {
+    "arch" => "Arch's systemd does not boot under QEMU user emulation (PID 1 spins without progress)"
+  }.freeze
+
   Result = Struct.new(:example, :status, :detail, :seconds)
 
   # A container of this image did not boot systemd: the others will not
@@ -56,13 +65,16 @@ module DockerIntegration
       @platform = "linux/#{arch}"
       @image = "#{PREFIX}-#{distro}-#{arch}"
       @dockerfile, @bases, @systemd = DISTROS.fetch(distro)
+      @no_systemd = emulated ? NO_SYSTEMD_WHEN_EMULATED[distro] : nil
+      @systemd = false if @no_systemd
       @timeout = emulated ? TIMEOUT * 2 : TIMEOUT
       @printing = Mutex.new
     end
 
     def run
       check_binary
-      puts "== #{@distro} (#{@platform}#{@emulated ? ", emulated" : ""}): building #{@image}"
+      notes = [@emulated ? "emulated" : nil, @no_systemd ? "without systemd" : nil].compact
+      puts "== #{@distro} (#{([@platform] + notes).join(", ")}): building #{@image}"
       build_image
       results = Queue.new
       runnable = []
@@ -104,6 +116,7 @@ module DockerIntegration
 
     def skip_reason(example)
       return ExampleMatrix.skip_reason(example, @distro) unless example[:distros].include?(@distro)
+      return @no_systemd if @no_systemd && example[:systemd]
 
       @emulated ? example[:emulated] : nil
     end
@@ -156,7 +169,8 @@ module DockerIntegration
       if @systemd
         command += ["--privileged", "--cgroupns=host", "--volume", "/sys/fs/cgroup:/sys/fs/cgroup:rw"]
       end
-      sh(*command, @image)
+      # The image starts systemd; without it the container just waits.
+      sh(*command, @image, *(@no_systemd ? ["sleep", "infinity"] : []))
       wait_for_systemd(name) if @systemd
       exec_in(name, "ln -s /sadame/dist/sadame-linux-#{@arch} /usr/local/bin/sadame")
       (example[:setup] || []).each { |command_line| exec_in(name, command_line) }

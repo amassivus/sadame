@@ -131,6 +131,15 @@ class ExamplesTest < SadameTest
     end
   end
 
+  # The Docker tests run containers without systemd where it cannot boot
+  # and skip the examples marked systemd: true there.
+  def test_examples_that_need_systemd_say_so
+    ExampleMatrix::EXAMPLES.each do |example|
+      assert_equal uses_systemd?(example), example[:systemd] == true,
+                   "#{example[:path]}: set systemd: true exactly when the example needs systemd"
+    end
+  end
+
   def test_examples_plan_and_apply_on_every_distribution_they_support
     ExampleMatrix::EXAMPLES.each do |example|
       path = ExampleMatrix.recipe_path(example)
@@ -253,6 +262,22 @@ class ExamplesTest < SadameTest
   def example_vars(path)
     Sadame::Vars.merge(Sadame::Vars.load_file(File.join(File.dirname(path), "vars.rb")),
                        { aur_user: "alice", user: path.include?("12-omarchy") ? "alice" : nil }.reject { |_key, value| value.nil? })
+  end
+
+  # Whether the recipe files of an example (not its vars or inventories)
+  # declare a service or call systemctl or loginctl.
+  def uses_systemd?(example)
+    path = ExampleMatrix.recipe_path(example)
+    files = path.start_with?("examples/resources/") ? [path] : walk(File.dirname(path))
+    files.any? do |file|
+      name = File.basename(file)
+      next false unless file.end_with?(".rb") && !SUPPORT_FILE_NAMES.include?(name) && !name.start_with?("hosts")
+      next false unless (File.dirname(file).split("/") & OTHER_TOOLS_DIRECTORIES).empty?
+
+      File.read(file).split("\n").any? do |line|
+        !line.strip.start_with?("#") && !(line =~ /\A\s*service\s|systemctl|loginctl/).nil?
+      end
+    end
   end
 
   def recipe_files(directory)
