@@ -35,6 +35,7 @@ theme:
     - navigation.top
     - navigation.footer
     - search.highlight
+    - search.suggest
     - toc.follow
 
 extra_css:
@@ -68,36 +69,44 @@ markdown_extensions:
       base_path: ["."]
       check_paths: true
 
+# The order follows a reader's path: install, first recipe, concepts, then
+# depth. The home page's three cards send users, recipe authors and
+# contributors to their starting points.
 nav:
   - Home: index.md
-  - Users:
-      - Install: install.md
-      - Getting started: getting-started.md
-      - "Concepts: plan, apply, drift": concepts/plan-apply-drift.md
-      - Guides:
-          - Provision a new VPS: guides/provision-a-new-vps.md
-          - Remote hosts: guides/remote-hosts.md
-          - Drift in CI: guides/drift-in-ci.md
-          - Team workflow: guides/team-workflow.md
-          - Omarchy workstation: guides/omarchy-workstation.md
-          - Migrate from Ansible: guides/migrate-from-ansible.md
-          - Migrate from Itamae: guides/migrate-from-itamae.md
-      - "Reference: JSON output": reference/json-output.md
-      - FAQ: faq.md
-  - Recipe authors:
+  - Install: install.md
+  - Getting started: getting-started.md
+  - Concepts:
+      - "plan, apply, drift": concepts/plan-apply-drift.md
+  - Recipes:
       - Recipe basics: recipes/basics.md
       - Inventory: recipes/inventory.md
       - Notifications: recipes/notifications.md
-      - Resources:
-          - package: resources/package.md
-          - file: resources/file.md
-          - directory: resources/directory.md
-          - service: resources/service.md
-          - exec: resources/exec.md
-          - user: resources/user.md
-      - Examples: examples/index.md
-  - Contributors:
-      - Contributing: contributing/index.md
+  - Resources:
+      - package: resources/package.md
+      - file: resources/file.md
+      - directory: resources/directory.md
+      - service: resources/service.md
+      - exec: resources/exec.md
+      - user: resources/user.md
+  - Guides:
+      - Provision a new VPS: guides/provision-a-new-vps.md
+      - Remote hosts: guides/remote-hosts.md
+      - Drift in CI: guides/drift-in-ci.md
+      - Team workflow: guides/team-workflow.md
+      - Omarchy workstation: guides/omarchy-workstation.md
+      - Migrate from Ansible: guides/migrate-from-ansible.md
+      - Migrate from Itamae: guides/migrate-from-itamae.md
+      - FAQ: faq.md
+  - Examples: examples/index.md
+  - Reference:
+      - Command line: reference/cli.md
+      - JSON output: reference/json-output.md
+      - Exit codes: reference/exit-codes.md
+  - Comparison: comparison.md
+  - Contributing:
+      - Overview: contributing/index.md
       - Architecture: contributing/architecture.md
       - Building: contributing/building.md
       - Testing: contributing/testing.md
+  - Changelog: changelog.md
