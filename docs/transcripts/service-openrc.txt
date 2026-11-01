@@ -1,5 +1,5 @@
 $ sudo sadame apply examples/resources/service
-sadame 0.4.0 apply on local (Alpine Linux v3.20)
+sadame 0.5.0 apply on local (Alpine Linux v3.20)
 
 changed    package[nginx]
            state: absent -> installed
@@ -15,7 +15,7 @@ Summary
   skipped      0
   notified     0
 
-Finished in 1.31s.
+Finished in 1.81s.
 
 $ rc-update show default
                 nginx | default

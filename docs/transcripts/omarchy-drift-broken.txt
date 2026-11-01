@@ -3,7 +3,7 @@ $ sed -i 's/rebase = true/rebase = false/' ~/.gitconfig
 $ rm ~/.local/bin/update-system
 
 $ sudo sadame drift examples/12-omarchy-workstation
-sadame 0.4.0 drift on local (Arch Linux ARM)
+sadame 0.5.0 drift on local (Arch Linux ARM)
 
 ~ file[/home/alice/.gitconfig]
     --- /home/alice/.gitconfig

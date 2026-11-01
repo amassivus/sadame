@@ -1,10 +1,10 @@
 $ sadame plan site.rb -g web --tags web
-[web2.example.com] sadame 0.4.0 plan on web2.example.com (Debian GNU/Linux 12 (bookworm))
-[web2.example.com] Only resources tagged web: 5 of 6.
-[web2.example.com]
-[web1.example.com] sadame 0.4.0 plan on web1.example.com (Debian GNU/Linux 12 (bookworm))
+[web1.example.com] sadame 0.5.0 plan on web1.example.com (Debian GNU/Linux 12 (bookworm))
 [web1.example.com] Only resources tagged web: 5 of 6.
 [web1.example.com]
+[web2.example.com] sadame 0.5.0 plan on web2.example.com (Debian GNU/Linux 12 (bookworm))
+[web2.example.com] Only resources tagged web: 5 of 6.
+[web2.example.com]
 [web2.example.com] ~ file[/etc/demo-app/web.conf]
 [web2.example.com]     --- /etc/demo-app/web.conf
 [web2.example.com]     +++ /etc/demo-app/web.conf (desired)
@@ -14,11 +14,11 @@ $ sadame plan site.rb -g web --tags web
 [web2.example.com]     -workers     = 12
 [web2.example.com]     +workers     = 8
 [web2.example.com]
-[web2.example.com] Plan: 0 to create, 1 to update, 0 to remove, 0 to run, 4 unchanged.
 [web1.example.com] Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 5 unchanged.
+[web2.example.com] Plan: 0 to create, 1 to update, 0 to remove, 0 to run, 4 unchanged.
 
 Hosts
   web1.example.com  ok
   web2.example.com  ok
 
-plan on 2 hosts: 2 ok. Finished in 0.23s.
+plan on 2 hosts: 2 ok. Finished in 0.24s.

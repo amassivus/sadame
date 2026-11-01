@@ -1,6 +1,6 @@
 $ sadame apply site.rb -g all --serial 1
 Batch 1 of 3: web1.example.com
-[web1.example.com] sadame 0.4.0 apply on web1.example.com (Debian GNU/Linux 12 (bookworm))
+[web1.example.com] sadame 0.5.0 apply on web1.example.com (Debian GNU/Linux 12 (bookworm))
 [web1.example.com]
 [web1.example.com] unchanged  file[/etc/motd]
 [web1.example.com] unchanged  package[nginx]
@@ -19,7 +19,7 @@ Batch 1 of 3: web1.example.com
 [web1.example.com] Finished in 0.01s.
 
 Batch 2 of 3: web2.example.com
-[web2.example.com] sadame 0.4.0 apply on web2.example.com (Debian GNU/Linux 12 (bookworm))
+[web2.example.com] sadame 0.5.0 apply on web2.example.com (Debian GNU/Linux 12 (bookworm))
 [web2.example.com]
 [web2.example.com] unchanged  file[/etc/motd]
 [web2.example.com] unchanged  package[nginx]
@@ -47,7 +47,7 @@ Hosts
   web2.example.com  failed
   db1.example.com   skipped      not run: batch 2 failed
 
-apply on 3 hosts: 1 ok, 1 failed, 1 skipped. Finished in 0.44s.
+apply on 3 hosts: 1 ok, 1 failed, 1 skipped. Finished in 0.43s.
 
 $ echo $?
 1

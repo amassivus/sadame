@@ -1,5 +1,5 @@
 $ sadame hosts
-sadame 0.4.0 hosts: 3 hosts from hosts.rb
+sadame 0.5.0 hosts: 3 hosts from hosts.rb
 
 web1.example.com
   address   web1.example.com

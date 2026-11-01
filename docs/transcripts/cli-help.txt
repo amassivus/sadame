@@ -2,6 +2,7 @@ $ sadame --help
 Usage: sadame COMMAND [RECIPE] [options]
        sadame init [DIRECTORY] [--ci github|gitlab]
        sadame report FILE [--format markdown|junit]
+       sadame lsp
 
 Commands:
   init     Start a project: recipe.rb, vars.rb, hosts.rb, a template, and
@@ -14,6 +15,7 @@ Commands:
   facts    Show the facts recipes see on each host: CPUs, memory, addresses.
   report   Turn the --json output of plan, apply or drift into Markdown
            (for a CI summary page) or JUnit XML (for test reports).
+  lsp      Run a language server for editors, on stdin and stdout.
 
 RECIPE is a recipe file or a directory containing recipe.rb
 (default: ./recipe.rb). vars.rb and hosts.rb next to it are loaded if

@@ -1,5 +1,5 @@
 $ sudo sadame plan examples/facts
-sadame 0.4.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.5.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 ~ file[/etc/motd]
     --- /etc/motd
@@ -12,7 +12,7 @@ sadame 0.4.0 plan on local (Debian GNU/Linux 12 (bookworm))
     -
     -Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
     -permitted by applicable law.
-    +8d5eee1b3778, docker
+    +76237023158c, docker
     +10 CPUs, 8003 MB of memory, 139 GB on /
     +192.168.215.2 on eth0
     +Managed by sadame.
@@ -37,6 +37,6 @@ sadame 0.4.0 plan on local (Debian GNU/Linux 12 (bookworm))
     --- /dev/null
     +++ /etc/demo-app/nightly.schedule (desired)
     @@ -0,0 +1 @@
-    +36 4 * * *
+    +11 4 * * *
 
 Plan: 3 to create, 1 to update, 0 to remove, 0 to run, 0 unchanged.

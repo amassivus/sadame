@@ -6,6 +6,30 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-02
+
+Editor support, and recipes shared between projects.
+
+### Added
+
+- `sadame lsp`, a language server: editors show what `validate` finds as
+  you type, on the right file and line, complete resources, options,
+  `state:` values and facts, describe them on hover, and list a recipe's
+  resources in the outline. A file a recipe includes is checked through
+  that recipe, for the hosts that include it. The Editor support guide
+  sets it up in Neovim, Helix and Emacs.
+- The Sharing recipes guide: recipes shared between projects as git
+  submodules, pinned and updated on purpose, with an example project.
+- The release binaries' smoke test runs `validate`, `facts`, `init`,
+  `report` and a language server session too, in every distribution image
+  and on macOS.
+
+### Fixed
+
+- Push mode leaves every `.git` out of the recipe it copies to servers,
+  not only the top one, so a submodule's history stays behind.
+- The resource pages list the `tags` option.
+
 ## [0.4.0] - 2026-11-01
 
 Checking recipes without servers, running part of a recipe, and reports
@@ -171,7 +195,8 @@ The first release.
   line, JSON output and exit code references, and a comparison with
   Ansible, Itamae, mitamae, Chef and Puppet.
 
-[Unreleased]: https://github.com/enderkus/sadame/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/enderkus/sadame/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/enderkus/sadame/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/enderkus/sadame/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/enderkus/sadame/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/enderkus/sadame/compare/v0.1.0...v0.2.0

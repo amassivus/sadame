@@ -3,4 +3,4 @@ $ sadame plan site.rb -h web1.example.com
 Hosts
   web1.example.com  unreachable  connect failed: Host key verification failed.
 
-plan on 1 host: 1 unreachable. Finished in 0.03s.
+plan on 1 host: 1 unreachable. Finished in 0.04s.
