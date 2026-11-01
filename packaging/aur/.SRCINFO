@@ -1,6 +1,6 @@
 pkgbase = sadame-bin
 	pkgdesc = Configuration management in plain Ruby, in one binary
-	pkgver = 0.1.0
+	pkgver = 0.2.0
 	pkgrel = 1
 	url = https://enderkus.github.io/sadame/
 	arch = x86_64
@@ -10,11 +10,11 @@ pkgbase = sadame-bin
 	conflicts = sadame
 	options = !strip
 	options = !debug
-	source = LICENSE-0.1.0::https://raw.githubusercontent.com/enderkus/sadame/v0.1.0/LICENSE
+	source = LICENSE-0.2.0::https://raw.githubusercontent.com/enderkus/sadame/v0.2.0/LICENSE
 	sha256sums = b4800ebfb21284a8d00af5dcf5523c503eff4e9046bd53f352aed5ac6e43fda1
-	source_x86_64 = sadame-0.1.0-x86_64::https://github.com/enderkus/sadame/releases/download/v0.1.0/sadame-linux-amd64
-	sha256sums_x86_64 = 7d3b3f45f43bc59bffb6f10a399976878fdb4d485ed99f51a2e2f6b03fe11932
-	source_aarch64 = sadame-0.1.0-aarch64::https://github.com/enderkus/sadame/releases/download/v0.1.0/sadame-linux-arm64
-	sha256sums_aarch64 = af0ca7fd9b4e138bec76af3a44f0d5660e39fd2683706d37b7b9e56e340e1475
+	source_x86_64 = sadame-0.2.0-x86_64::https://github.com/enderkus/sadame/releases/download/v0.2.0/sadame-linux-amd64
+	sha256sums_x86_64 = 1fc5b297dbf1cf3e0b0c35b20b05ef0035b54c44645873bcb0b165485dfb5cd3
+	source_aarch64 = sadame-0.2.0-aarch64::https://github.com/enderkus/sadame/releases/download/v0.2.0/sadame-linux-arm64
+	sha256sums_aarch64 = 506c6f1bff94679ba2fd7ad417daada1e83802d80a3fe3a56febf45cb884d10f
 
 pkgname = sadame-bin
