@@ -20,9 +20,12 @@ module TestHelpers
     shell.on("uname -s", stdout: "Linux\n")
   end
 
-  # A fake Linux machine on which nothing from the recipe exists yet.
-  def fresh_shell(distribution = "debian")
-    FreshHostShell.new(files: { "/etc/os-release" => os_release(distribution) }).on("uname -s", stdout: "Linux\n")
+  # A fake Linux machine on which nothing from the recipe exists yet, apart
+  # from the existing files (empty), such as files a package would ship.
+  def fresh_shell(distribution = "debian", existing: [])
+    files = { "/etc/os-release" => os_release(distribution) }
+    existing.each { |path| files[path] = "" }
+    FreshHostShell.new(files: files).on("uname -s", stdout: "Linux\n")
   end
 
   def host_for(shell)

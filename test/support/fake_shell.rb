@@ -43,7 +43,9 @@ class FakeShell < Sadame::Shell
 end
 
 # A fake shell for a machine where nothing has been configured yet: state
-# queries report "missing" and every other command succeeds.
+# queries report "missing" and every other command succeeds. Files given
+# to it (such as /etc/os-release, or a configuration file a package would
+# ship) exist as regular files.
 class FreshHostShell < FakeShell
   QUERY_PREFIXES = [
     "stat ", "dpkg-query ", "rpm -q ", "apk info ", "pacman -Q ", "getent ", "id -nG ",
@@ -55,14 +57,34 @@ class FreshHostShell < FakeShell
     on("test -d /run/systemd/system")
   end
 
+  # A remote a git resource asks about has every branch and tag asked for.
+  FAKE_COMMIT = "0123456789abcdef0123456789abcdef01234567"
+
+  STAT = "stat -c '%a %U %G %F' "
+
   def run(command)
-    return super if @responses.key?(command) || !query?(command)
+    return super if @responses.key?(command)
+    return remote_refs(command) if command.include?("git ls-remote ") || command.include?(" ls-remote ")
+    return existing_file(command) if command.start_with?(STAT) && @files.key?(command[STAT.size..])
+    return super unless query?(command)
 
     @commands << command
     Sadame::CommandResult.new(command, stdout: "", stderr: "No such file or directory\n", exit_status: 1)
   end
 
   private
+
+  def existing_file(command)
+    @commands << command
+    Sadame::CommandResult.new(command, stdout: "644 root root regular file\n", stderr: "", exit_status: 0)
+  end
+
+  def remote_refs(command)
+    @commands << command
+    refs = command.tr("'", " ").split(" ").select { |word| word == "HEAD" || word.start_with?("refs/") }
+    Sadame::CommandResult.new(command, stdout: refs.map { |ref| "#{FAKE_COMMIT}\t#{ref}\n" }.join, stderr: "",
+                                       exit_status: 0)
+  end
 
   def query?(command)
     QUERY_PREFIXES.any? { |prefix| command.start_with?(prefix) }

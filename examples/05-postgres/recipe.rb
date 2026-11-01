@@ -33,9 +33,11 @@ file "#{conf_dir}/tuning.conf",
      mode: "0640",
      notifies: [:restart, "service[postgresql]"]
 if data_dir
-  exec "include conf.d in postgresql.conf",
-       command: "echo \"include_dir = 'conf.d'\" >> #{data_dir}/postgresql.conf",
-       not_if: "grep -q \"^include_dir = 'conf.d'\" #{data_dir}/postgresql.conf",
+  # Rocky's and Arch's postgresql.conf has include_dir commented out; this
+  # turns that line into one that reads conf.d.
+  line "include_dir = 'conf.d'",
+       path: "#{data_dir}/postgresql.conf",
+       match: /^#?\s*include_dir\s*=/,
        notifies: [:restart, "service[postgresql]"]
 end
 

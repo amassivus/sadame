@@ -42,8 +42,7 @@ exec "openssl req -x509 -newkey rsa:2048 -nodes -days 365 -subj /CN=app.example.
 # --8<-- [end:command]
 
 # --8<-- [start:lineinfile]
-# No lineinfile: manage the whole file with file, or guard an exec.
-exec "echo EDITOR=vim >> /etc/environment", not_if: "grep -q '^EDITOR=vim$' /etc/environment"
+line "EDITOR=vim", path: "/etc/environment", match: /^EDITOR=/
 # --8<-- [end:lineinfile]
 
 # --8<-- [start:cron]
