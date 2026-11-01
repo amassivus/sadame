@@ -267,6 +267,7 @@ class ExamplesTest < SadameTest
 
   def test_team_workflow_pipelines
     plan = File.read("examples/ci/github-actions-plan.yml")
+    assert_includes plan, "run: sadame validate site/site.rb -g all\n"
     assert_includes plan, "sadame plan site/site.rb -g all --no-color | tee plan.txt"
     assert_includes plan, "$GITHUB_STEP_SUMMARY"
     apply = File.read("examples/ci/github-actions-apply.yml")

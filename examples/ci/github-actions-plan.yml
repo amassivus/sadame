@@ -1,6 +1,7 @@
-# Shows what a pull request would change on every server: runs `sadame plan`
-# against the inventory and puts the output on the run's summary page, next
-# to the code being reviewed. It changes nothing.
+# Shows what a pull request would change on every server: checks the recipe
+# for every host first, without connecting (sadame validate), then runs
+# `sadame plan` against the inventory and puts the output on the run's
+# summary page, next to the code being reviewed. It changes nothing.
 #
 # Copy to .github/workflows/plan.yml. It needs the same secrets as
 # github-actions-drift.yml: SSH_PRIVATE_KEY and SSH_KNOWN_HOSTS.
@@ -18,6 +19,11 @@ jobs:
 
       - name: Install sadame
         run: curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | sh
+
+      # Typos, unknown options and template errors, for every host, before
+      # anything connects to a server.
+      - name: Validate the recipe
+        run: sadame validate site/site.rb -g all
 
       - name: Set up SSH
         run: |
