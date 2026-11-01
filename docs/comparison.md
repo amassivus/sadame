@@ -19,9 +19,9 @@ add-ons can do more.
 | **Drift detection** | `sadame drift`: exit status `1` when a host differs | no dedicated command; `--check` reports what would change | no dedicated command; `--detailed-exitcode` exits `2` when resources changed | no | no dedicated command; scheduled runs correct drift | scheduled runs correct drift and mark it as a corrective change in their reports |
 | **Rolling changes** | `--serial N` or `N%`: batches, stopping after a failed one | `serial:`, with `max_fail_percentage` | no; one host per `itamae ssh` run | no | no built-in; each client runs on its own schedule, optionally delayed by a random `splay` | no built-in; agents run on their own schedules, optionally with `splay` |
 | **JSON output** | `--json`: one document per run, per host and resource | callback plugins, such as `ansible.posix.json` | no | no | report handlers, such as the built-in JSON file handler | run reports (YAML on the agent, JSON from PuppetDB) |
-| **Single binary** | yes, about 1 MB, static on Linux | no: a Python package | no: a Ruby gem | yes, built with mruby | no: an installer package with an embedded Ruby | no: packages with an embedded Ruby |
+| **Single binary** | yes, about 1.5 MB, static on Linux | no: a Python package | no: a Ruby gem | yes, built with mruby | no: an installer package with an embedded Ruby | no: packages with an embedded Ruby |
 | **Package managers** | apt, dnf, apk, pacman; the AUR through `exec` | modules for most, from apt and dnf to zypper and Homebrew | through Specinfra: apt, yum and dnf, apk, pacman, zypper and others | as Itamae, through Specinfra | built-in resources for Linux, BSD, macOS and Windows | built-in providers for Linux, BSD, macOS and Windows |
-| **Maturity** | 0.4.0, November 2026: ten resource types, one maintainer | since 2012, maintained by Red Hat, thousands of modules | since 2013, community maintained | since 2016, community maintained | since 2009, maintained by Progress | since 2005, maintained by Perforce |
+| **Maturity** | 0.5.0, November 2026: ten resource types, one maintainer | since 2012, maintained by Red Hat, thousands of modules | since 2013, community maintained | since 2016, community maintained | since 2009, maintained by Progress | since 2005, maintained by Perforce |
 
 ## Where Sadame falls short
 
@@ -39,7 +39,7 @@ add-ons can do more.
   from plugins.
 - **No ecosystem.** No Galaxy, Supermarket or Forge; recipes are shared
   as files.
-- **Young.** Four releases, tested on five distributions and in CI, with
+- **Young.** Five releases, tested on five distributions and in CI, with
   none of the years of production use the others have.
 
 ## Where it fits

@@ -23,7 +23,7 @@ curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | s
 The script picks the binary for your system (Linux x86_64 or ARM64,
 macOS), checks its SHA-256 checksum and installs it to `/usr/local/bin`.
 With Homebrew: `brew install enderkus/sadame/sadame`. The binary is about
-1 MB; the machines you manage need nothing installed.
+1.5 MB; the machines you manage need nothing installed.
 
 ## Quickstart (60 seconds)
 
@@ -68,7 +68,7 @@ Debian, Rocky Linux, Alpine and Arch.
 | Drift check for CI | `drift`, exit status 1 | no dedicated command | `--detailed-exitcode` | no |
 | JSON output | `--json` | callback plugins | no | no |
 | Distributed as | one static binary | Python package | Ruby gem | one binary |
-| Maturity | 0.4.0, ten resource types | since 2012, thousands of modules | since 2013 | since 2016 |
+| Maturity | 0.5.0, ten resource types | since 2012, thousands of modules | since 2013 | since 2016 |
 
 The [full comparison](https://enderkus.github.io/sadame/comparison/) adds
 Chef and Puppet, and lists what sadame does not do yet.

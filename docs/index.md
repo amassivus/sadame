@@ -68,7 +68,7 @@ from a single binary.**
 
     ---
 
-    About 1 MB, for Linux (x86_64, ARM64) and macOS. Nothing else to
+    About 1.5 MB, for Linux (x86_64, ARM64) and macOS. Nothing else to
     install, on your machine or on the servers.
 
 -   :material-radar:{ .lg .middle } **Drift checks for CI**
