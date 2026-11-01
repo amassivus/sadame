@@ -90,6 +90,8 @@ jobs:
     name: Docker ${{ matrix.distro }} (${{ matrix.arch }})
     needs: build
     runs-on: ubuntu-latest
+    # A hang fails the job instead of holding a runner for six hours.
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:

@@ -9,6 +9,9 @@
 #   rake "test:docker[all,arm64]"      every distribution, arm64
 #   rake test:docker                   every distribution, this machine's architecture
 #   SADAME_IT_ONLY=03-nginx rake ...   only examples whose path contains the text
+#   SADAME_IT_JOBS=2                   examples run at once (default 4)
+#   SADAME_IT_TIMEOUT=600              seconds before a command is killed
+#                                      (default 900, doubled under emulation)
 #
 # Containers boot systemd (privileged, with the host's cgroups) so service
 # resources run for real; Alpine uses OpenRC and only runs the examples
@@ -26,6 +29,9 @@ module DockerIntegration
   JOBS = Integer(ENV.fetch("SADAME_IT_JOBS", "4"))
   ONLY = ENV.fetch("SADAME_IT_ONLY", "")
   PEBBLE_IMAGE = "ghcr.io/letsencrypt/pebble:latest"
+  # Seconds one command in a container may take before it is killed and the
+  # example fails; doubled under emulation, where everything is slower.
+  TIMEOUT = Integer(ENV.fetch("SADAME_IT_TIMEOUT", "900"))
 
   # distro => [Dockerfile, base image per architecture (for build args), boots systemd]
   DISTROS = {
@@ -38,6 +44,10 @@ module DockerIntegration
 
   Result = Struct.new(:example, :status, :detail, :seconds)
 
+  # A container of this image did not boot systemd: the others will not
+  # either, so the remaining examples fail without waiting.
+  class BootError < StandardError; end
+
   class Runner
     def initialize(distro, arch, emulated:)
       @distro = distro
@@ -46,6 +56,8 @@ module DockerIntegration
       @platform = "linux/#{arch}"
       @image = "#{PREFIX}-#{distro}-#{arch}"
       @dockerfile, @bases, @systemd = DISTROS.fetch(distro)
+      @timeout = emulated ? TIMEOUT * 2 : TIMEOUT
+      @printing = Mutex.new
     end
 
     def run
@@ -63,11 +75,22 @@ module DockerIntegration
 
       pending = Queue.new
       runnable.each_with_index { |example, i| pending << [example, i] }
+      finished = 0
       workers = Array.new(JOBS) do
         Thread.new do
           loop do
             example, index = pending.pop(true)
-            results << run_example(example, index)
+            result = if @boot_failure
+                       Result.new(example, :fail, "not run: #{@boot_failure}", 0)
+                     else
+                       run_example(example, index)
+                     end
+            results << result
+            @printing.synchronize do
+              finished += 1
+              puts format("  [%d/%d] %s  %s  %.0fs", finished, runnable.size, label(result), example[:path],
+                          result.seconds)
+            end
           rescue ThreadError
             break
           end
@@ -97,7 +120,7 @@ module DockerIntegration
                  "--file", File.join(__dir__, "images", "#{@dockerfile}.Dockerfile")]
       base = @bases[@arch]
       command += ["--build-arg", "BASE=#{base}"] if base
-      sh(*command, File.join(__dir__, "images"))
+      sh(*command, File.join(__dir__, "images"), timeout: 3600)
     end
 
     def run_example(example, index)
@@ -107,6 +130,9 @@ module DockerIntegration
       start(example, name, network)
       detail = exercise(example, name)
       Result.new(example, detail ? :fail : :pass, detail, Time.now - started)
+    rescue BootError => e
+      @boot_failure ||= "a container of this image did not boot systemd"
+      Result.new(example, :fail, e.message, Time.now - started)
     rescue StandardError => e
       Result.new(example, :fail, "#{e.class}: #{e.message}", Time.now - started)
     ensure
@@ -155,31 +181,41 @@ module DockerIntegration
     end
 
     def expect(name, command, wanted)
-      output, status = Open3.capture2e("docker", "exec", name, "sh", "-c", command)
-      return nil if status.exitstatus == wanted
+      output, status = capture("docker", "exec", name, "sh", "-c", command)
+      return nil if status == wanted
 
-      "#{command} exited #{status.exitstatus}, expected #{wanted}:\n#{output.lines.last(40).join}"
+      ended = status ? "exited #{status}" : "did not finish in #{@timeout}s"
+      "#{command} #{ended}, expected #{wanted}:\n#{output.lines.last(40).join}"
     end
 
+    # Polls rather than using `is-system-running --wait`, which never
+    # returns when a unit hangs during boot.
     def wait_for_systemd(name)
-      deadline = Time.now + 180
+      deadline = Time.now + (@emulated ? 600 : 180)
       loop do
-        output, = Open3.capture2e("docker", "exec", name, "systemctl", "is-system-running", "--wait")
+        output, = capture("docker", "exec", name, "systemctl", "is-system-running", timeout: 60)
         return if output.include?("running") || output.include?("degraded")
-        raise "systemd did not start in #{name}: #{output.strip}" if Time.now > deadline
 
+        if Time.now > deadline
+          jobs, = capture("docker", "exec", name, "systemctl", "list-jobs", "--no-pager", timeout: 60)
+          raise BootError, "systemd did not finish booting in #{name} (#{output.strip}); pending jobs:\n#{jobs}"
+        end
         sleep 2
       end
     end
 
     def exec_in(name, command)
-      output, status = Open3.capture2e("docker", "exec", name, "sh", "-c", command)
-      raise "#{command} failed in #{name}:\n#{output}" unless status.success?
+      output, status = capture("docker", "exec", name, "sh", "-c", command)
+      raise "#{command} failed in #{name}:\n#{output}" unless status == 0
     end
 
     def cleanup(name, network)
-      quiet("docker", "rm", "--force", name, "#{name}-pebble")
-      quiet("docker", "network", "rm", network) if network
+      capture("docker", "rm", "--force", name, "#{name}-pebble", timeout: 300)
+      capture("docker", "network", "rm", network, timeout: 300) if network
+    end
+
+    def label(result)
+      { pass: "pass", fail: "FAIL", skip: "skip" }[result.status]
     end
 
     def report(results)
@@ -188,10 +224,9 @@ module DockerIntegration
       width = results.map { |result| result.example[:path].size }.max
       puts
       results.each do |result|
-        label = { pass: "pass", fail: "FAIL", skip: "skip" }[result.status]
         time = result.status == :skip ? "" : format("%5.0fs  ", result.seconds)
         reason = result.status == :skip ? result.detail : ""
-        puts "  #{label}  #{result.example[:path].ljust(width)}  #{time}#{reason}"
+        puts "  #{label(result)}  #{result.example[:path].ljust(width)}  #{time}#{reason}"
       end
       failures = results.select { |result| result.status == :fail }
       failures.each { |result| puts "\n--- #{result.example[:path]} on #{@distro} (#{@arch})\n#{result.detail}" }
@@ -206,15 +241,31 @@ module DockerIntegration
       "'#{text.gsub("'", "'\\\\''")}'"
     end
 
-    def sh(*command)
-      output, status = Open3.capture2e(*command)
-      raise "#{command.join(" ")} failed:\n#{output}" unless status.success?
+    def sh(*command, timeout: @timeout)
+      output, status = capture(*command, timeout: timeout)
+      raise "#{command.join(" ")} failed:\n#{output}" unless status == 0
 
       output
     end
 
-    def quiet(*command)
-      Open3.capture2e(*command)
+    # Runs a command on this machine. Returns its output and exit status;
+    # the status is nil when the command ran longer than the timeout and
+    # was killed, with everything it started.
+    def capture(*command, timeout: @timeout)
+      Open3.popen2e(*command, pgroup: true) do |stdin, output, waiter|
+        stdin.close
+        reader = Thread.new { output.read }
+        unless waiter.join(timeout)
+          begin
+            Process.kill("KILL", -waiter.pid)
+          rescue Errno::ESRCH
+            nil
+          end
+          waiter.join
+          return ["#{reader.value}\n(killed after #{timeout}s)", nil]
+        end
+        [reader.value, waiter.value.exitstatus]
+      end
     end
   end
 
@@ -224,6 +275,7 @@ module DockerIntegration
   end
 
   def self.main(distro_argument, arch_argument)
+    $stdout.sync = true
     distros = distro_argument.nil? || distro_argument == "all" ? DISTROS.keys : distro_argument.split(",")
     arch = arch_argument || native_arch
     unknown = distros - DISTROS.keys

@@ -76,7 +76,17 @@ server, which accepts every challenge, so certbot really requests and
 installs a certificate without a public domain.
 
 The report lists every example as pass, fail or skip, with the reason for
-each skip and the last lines of output for each failure.
+each skip and the last lines of output for each failure. Results also
+print one by one as examples finish.
+
+A command that runs longer than 15 minutes (30 under emulation) is killed
+and fails its example; set `SADAME_IT_TIMEOUT` in seconds to change that.
+If systemd in a container has not finished booting after 3 minutes (10
+under emulation), that example fails with the units systemd is still
+waiting for, and the examples not yet started fail at once. To run only
+some examples, set `SADAME_IT_ONLY` to text their path contains
+(`SADAME_IT_ONLY=03-nginx`); `SADAME_IT_JOBS` sets how many run at once
+(4 by default).
 
 `rake test:push` is the push-mode part of this layer. It starts SSH servers
 that boot systemd: three targets named like `examples/08-multi-role-inventory`'s
