@@ -7,8 +7,8 @@
 #
 # Covers: -h user@host:2222, port: 2222 in hosts.rb, a ProxyJump host from
 # a test-scoped ssh config passed with -F, vars precedence on the target,
-# parallel runs with prefixed output, the binary cache, sudo and --sudo,
-# drift with --json, and an unreachable host.
+# parallel runs with prefixed output, --forks and --serial, the binary
+# cache, sudo and --sudo, drift with --json, and an unreachable host.
 
 require_relative "lab"
 
@@ -44,6 +44,8 @@ class PushTest
       sudo_is_needed_for_root_files
       parallel_run_of_a_multi_role_inventory
       drift_json_after_a_hand_edit
+      forks_limit_runs_hosts_one_at_a_time
+      serial_stops_after_a_failed_batch
       unreachable_host
     ]
   end
@@ -123,6 +125,35 @@ class PushTest
     expect_includes(output, "\"name\": \"web2.example.com\",\n      \"status\": \"ok\"")
     expect_includes(output, "-workers     = 32\\n+workers     = 4")
     sadame("apply site.rb -h web1.example.com", dir: EXAMPLE)
+  end
+
+  # One host at a time: each host's lines come out together.
+  def forks_limit_runs_hosts_one_at_a_time
+    status, output = sadame("plan site.rb -g all --forks 1", dir: EXAMPLE)
+    expect_status(0, status, output)
+    lines = output.split("\n")
+    names = %w[web1.example.com web2.example.com db1.example.com]
+    blocks = names.map do |host|
+      indexes = lines.each_index.select { |index| lines[index].start_with?("[#{host}]") }
+      [indexes.min, indexes.max]
+    end
+    expect(blocks.each_cons(2).all? { |first, second| first[1] < second[0] }, "host output interleaved", output)
+  end
+
+  # web2 has a file where the recipe wants a directory: batch 2 fails, and
+  # db1, alone in batch 3, is never contacted.
+  def serial_stops_after_a_failed_batch
+    @lab.target("web2", "rm -rf /etc/demo-app && touch /etc/demo-app")
+    status, output = sadame("apply site.rb -g all --serial 1", dir: EXAMPLE)
+    expect_status(1, status, output)
+    expect_includes(output, "Batch 2 of 3: web2.example.com\n")
+    expect_includes(output, "Stopped after batch 2 of 3: web2.example.com did not succeed; 1 host not run.")
+    expect_includes(output, "db1.example.com   skipped      not run: batch 2 failed")
+    expect_includes(output, "apply on 3 hosts: 1 ok, 1 failed, 1 skipped.")
+    expect_excludes(output, "[db1.example.com]")
+    @lab.target("web2", "rm -f /etc/demo-app")
+    status, output = sadame("apply site.rb -g all --serial 1", dir: EXAMPLE)
+    expect_status(0, status, output)
   end
 
   def unreachable_host
