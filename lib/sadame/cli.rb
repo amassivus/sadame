@@ -11,15 +11,18 @@ module Sadame
   #   2 usage or recipe error, a state that could not be read, or a target
   #     that could not be reached
   class CLI
-    COMMANDS = %w[plan apply drift validate hosts facts report].freeze
+    COMMANDS = %w[init plan apply drift validate hosts facts report].freeze
     DEFAULT_RECIPE = "recipe.rb"
     DEFAULT_INVENTORY = "hosts.rb"
 
     USAGE = <<~TEXT
       Usage: sadame COMMAND [RECIPE] [options]
+             sadame init [DIRECTORY] [--ci github|gitlab]
              sadame report FILE [--format markdown|junit]
 
       Commands:
+        init     Start a project: recipe.rb, vars.rb, hosts.rb, a template, and
+                 with --ci a daily drift check for GitHub Actions or GitLab CI.
         plan     Show what apply would change, as a diff. Changes nothing.
         apply    Make the hosts match the recipe.
         drift    Like plan, but exit 1 when a host differs from the recipe.
@@ -53,6 +56,7 @@ module Sadame
         --vars-file PATH    Load more vars from a Ruby file (local runs)
         --json              Print a JSON report instead of text
         --format FORMAT     report: markdown (default) or junit
+        --ci SYSTEM         init: also write a drift check for github or gitlab
         --color             Always use colors
         --no-color          Never use colors (also: NO_COLOR environment variable)
         --host-name NAME    host_name in recipes and reports for local runs (default: local)
@@ -104,7 +108,9 @@ module Sadame
         raise UsageError, "--platform only applies to validate"
       end
       raise UsageError, "--format only applies to report" if options[:format] && options[:command] != "report"
+      raise UsageError, "--ci only applies to init" if options[:ci] && options[:command] != "init"
       return convert_report(options) if options[:command] == "report"
+      return init_project(options) if options[:command] == "init"
       return list_hosts(options) if options[:command] == "hosts"
       return show_facts(options) if options[:command] == "facts"
       return validate(options) if options[:command] == "validate"
@@ -141,6 +147,30 @@ module Sadame
                else runner.apply(resources)
                end
       report.exit_status
+    end
+
+    # RECIPE is the directory here, "." by default.
+    def init_project(options)
+      directory = options[:recipe] || "."
+      ci = options[:ci]
+      if ci && !Scaffold::CI_SYSTEMS.include?(ci)
+        raise UsageError, "--ci must be one of #{Scaffold::CI_SYSTEMS.join(", ")}, got #{ci}"
+      end
+      if ci && directory.start_with?("/")
+        raise UsageError, "with --ci, give the directory relative to the repository's root, where the CI file goes"
+      end
+
+      Scaffold.new(@shell, directory, ci: ci).write.each { |path| @stdout.write("created #{path}\n") }
+      target = directory == "." ? "" : " #{directory}"
+      hosts = directory == "." ? "hosts.rb" : File.join(directory, "hosts.rb")
+      @stdout.write(<<~TEXT)
+
+        Next:
+          sadame validate#{target}        check the recipe without connecting to anything
+          sudo sadame plan#{target}       see what it would change on this machine
+          sadame plan#{target} -g all     on your servers, once #{hosts} lists them
+      TEXT
+      0
     end
 
     # RECIPE is the JSON file here.
@@ -244,7 +274,10 @@ module Sadame
       base_vars = Vars.load_file(in_directory(base_dir, "vars.rb"))
       inventory = load_inventory(options, base_dir)
       if inventory.empty? && options[:hosts].empty?
-        raise UsageError, "no hosts: #{in_directory(base_dir, DEFAULT_INVENTORY)} not found; use --inventory or -h"
+        path = options[:inventory] || in_directory(base_dir, DEFAULT_INVENTORY)
+        raise UsageError, "no hosts in #{path} yet; declare some there, or use -h" if File.file?(path)
+
+        raise UsageError, "no hosts: #{path} not found; use --inventory or -h"
       end
 
       targets = select_targets(inventory, options, base_vars)
@@ -279,7 +312,7 @@ module Sadame
     def parse(argv)
       options = { vars: {}, hosts: [], groups: [], limit: nil, inventory: nil, sudo: false, json: false,
                   color: nil, vars_file: nil, host_name: nil, host_groups: [], forks: nil, serial: nil,
-                  tags: [], skip_tags: [], platform: nil, format: nil,
+                  tags: [], skip_tags: [], platform: nil, format: nil, ci: nil,
                   help: false, version: false }
       positional = []
       arguments = argv.dup
@@ -301,6 +334,7 @@ module Sadame
         when "--inventory" then options[:inventory] = value(name, inline_value || arguments.shift)
         when "--platform" then options[:platform] = value(name, inline_value || arguments.shift)
         when "--format" then options[:format] = value(name, inline_value || arguments.shift)
+        when "--ci" then options[:ci] = value(name, inline_value || arguments.shift)
         when "--tags" then options[:tags].concat(list_value(name, inline_value || arguments.shift))
         when "--skip-tags" then options[:skip_tags].concat(list_value(name, inline_value || arguments.shift))
         when "--forks" then options[:forks] = positive_integer(name, inline_value || arguments.shift)
