@@ -1,5 +1,5 @@
 $ sudo sadame apply examples/10-drift-demo
-sadame 0.1.0 apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.2.0 apply on local (Debian GNU/Linux 12 (bookworm))
 
 changed    package[nginx]
            state: absent -> installed
@@ -36,4 +36,4 @@ Summary
   skipped      0
   notified     0
 
-Finished in 41.13s.
+Finished in 5.24s.

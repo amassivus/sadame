@@ -1,7 +1,7 @@
 $ sadame drift site.rb --limit 'web*'
-[web1.example.com] sadame 0.1.0 drift on web1.example.com (Debian GNU/Linux 12 (bookworm))
+[web1.example.com] sadame 0.2.0 drift on web1.example.com (Debian GNU/Linux 12 (bookworm))
 [web1.example.com]
-[web2.example.com] sadame 0.1.0 drift on web2.example.com (Debian GNU/Linux 12 (bookworm))
+[web2.example.com] sadame 0.2.0 drift on web2.example.com (Debian GNU/Linux 12 (bookworm))
 [web2.example.com]
 [web2.example.com] ~ file[/etc/demo-app/web.conf]
 [web2.example.com]     --- /etc/demo-app/web.conf
@@ -19,7 +19,7 @@ Hosts
   web1.example.com  ok
   web2.example.com  drift
 
-drift on 2 hosts: 1 ok, 1 drift. Finished in 0.22s.
+drift on 2 hosts: 1 ok, 1 drift. Finished in 0.23s.
 
 $ echo $?
 1

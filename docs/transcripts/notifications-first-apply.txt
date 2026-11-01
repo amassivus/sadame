@@ -1,5 +1,5 @@
 $ sudo sadame apply examples/notifications
-sadame 0.1.0 apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.2.0 apply on local (Debian GNU/Linux 12 (bookworm))
 
 unchanged  exec[systemctl daemon-reload]
 changed    file[/etc/systemd/system/ticker.service]

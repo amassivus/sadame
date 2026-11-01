@@ -1,7 +1,7 @@
 $ sadame plan examples/01-hello --json
 {
   "format_version": 1,
-  "sadame_version": "0.1.0",
+  "sadame_version": "0.2.0",
   "command": "plan",
   "host": "local",
   "platform": {

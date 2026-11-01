@@ -1,5 +1,5 @@
 $ sadame hosts --limit web2.example.com --var workers=16
-sadame 0.1.0 hosts: 1 host from hosts.rb
+sadame 0.2.0 hosts: 1 host from hosts.rb
 
 web2.example.com
   address   web2.example.com

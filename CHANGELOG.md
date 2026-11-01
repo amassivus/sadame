@@ -6,8 +6,28 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-01
+
+Rolling changes across a fleet, four more resource types, and Alpine
+services.
+
 ### Added
 
+- `--forks N` works on at most N hosts at once.
+- `--serial N` or `--serial N%` runs the hosts in batches, one after
+  another, and stops after a batch in which a host failed or could not be
+  reached. The hosts of later batches are reported as `skipped`.
+- The `line` resource manages one line in a file that a package owns:
+  lines that match `match:` are replaced, otherwise the line is appended.
+  `verify:` checks the edited file first, and plan shows the edit as a
+  diff of the file.
+- The `link` resource manages symbolic links; `force: true` replaces a
+  regular file in the way.
+- The `group` resource manages local groups and their gid, with BusyBox's
+  `addgroup` and `delgroup` on an Alpine without `shadow`.
+- The `git` resource keeps a checkout at a tag, a branch or a commit, and
+  moves it when the branch moves. With `user:`, git runs as that user.
+- `service` works with OpenRC, so on Alpine too.
 - Homebrew tap: `brew install enderkus/sadame/sadame` installs the release
   binary on macOS and Linux.
 - The docs' home page shows the navigation, the terminal recording and what
@@ -17,6 +37,13 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- In push mode's JSON, `hosts[].exit_status` is `null` for hosts that
+  `--serial` skipped.
+- Example 05 sets PostgreSQL's `include_dir` with `line` instead of a
+  guarded `exec`, and the Ansible migration example translates
+  `lineinfile` to `line`.
+- The Docker integration tests boot OpenRC in the Alpine containers, so
+  the `service` examples run on Alpine too.
 - The terminal recording in the README and on the docs' home page has
   larger, readable text.
 
@@ -96,5 +123,6 @@ The first release.
   line, JSON output and exit code references, and a comparison with
   Ansible, Itamae, mitamae, Chef and Puppet.
 
-[Unreleased]: https://github.com/enderkus/sadame/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/enderkus/sadame/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/enderkus/sadame/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/enderkus/sadame/releases/tag/v0.1.0

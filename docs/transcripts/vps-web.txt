@@ -1,5 +1,5 @@
 $ sadame apply examples/02-nginx-static-site -h deploy@vps1.example.com:2222 --sudo --var server_name=vps1.example.com
-[vps1.example.com] sadame 0.1.0 apply on vps1.example.com (Debian GNU/Linux 12 (bookworm))
+[vps1.example.com] sadame 0.2.0 apply on vps1.example.com (Debian GNU/Linux 12 (bookworm))
 [vps1.example.com]
 [vps1.example.com] changed    package[nginx]
 [vps1.example.com]            state: absent -> installed
@@ -147,9 +147,9 @@ $ sadame apply examples/02-nginx-static-site -h deploy@vps1.example.com:2222 --s
 [vps1.example.com]   skipped      0
 [vps1.example.com]   notified     1  service[nginx]: reload
 [vps1.example.com]
-[vps1.example.com] Finished in 4.04s.
+[vps1.example.com] Finished in 1.97s.
 
 Hosts
   vps1.example.com  ok
 
-apply on 1 host: 1 ok. Finished in 4.26s.
+apply on 1 host: 1 ok. Finished in 2.19s.

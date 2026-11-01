@@ -3,4 +3,4 @@ $ SADAME_BINARY_DIR=/opt/empty sadame plan site.rb -h web1.example.com
 Hosts
   web1.example.com  error        /opt/empty/sadame-linux-arm64 does not exist (SADAME_BINARY_DIR is set)
 
-plan on 1 host: 1 error. Finished in 0.19s.
+plan on 1 host: 1 error. Finished in 0.18s.

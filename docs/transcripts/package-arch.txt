@@ -1,5 +1,5 @@
 $ sudo sadame plan examples/resources/package
-sadame 0.1.0 plan on local (Arch Linux)
+sadame 0.2.0 plan on local (Arch Linux)
 
 + package[tree]
     state: absent -> installed
@@ -10,7 +10,7 @@ sadame 0.1.0 plan on local (Arch Linux)
 Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
 
 $ sudo sadame apply examples/resources/package
-sadame 0.1.0 apply on local (Arch Linux)
+sadame 0.2.0 apply on local (Arch Linux)
 
 changed    package[tree]
            state: absent -> installed
@@ -26,7 +26,7 @@ Summary
   skipped      0
   notified     0
 
-Finished in 2.71s.
+Finished in 2.73s.
 
 $ pacman -Q tree htop
 tree 2.3.2-1

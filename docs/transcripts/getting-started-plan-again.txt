@@ -1,4 +1,4 @@
 $ sadame plan examples/01-hello
-sadame 0.1.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.2.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
