@@ -14,11 +14,6 @@ Arch and other distributions.
 
 Every release also has `SHA256SUMS`, the SHA-256 checksum of each file.
 
-!!! warning "No release yet"
-    The first release will be 0.1.0. Until it is published, the install
-    script and the download links below return "not found"; install
-    [from source](#from-source) instead.
-
 ## Install script
 
 ```sh

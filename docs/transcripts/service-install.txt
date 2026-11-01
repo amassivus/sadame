@@ -1,5 +1,5 @@
 $ sudo sadame plan examples/resources/service
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.1.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 + package[nginx]
     state: absent -> installed
@@ -11,7 +11,7 @@ sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
 Plan: 1 to create, 1 to update, 0 to remove, 0 to run, 0 unchanged.
 
 $ sudo sadame apply examples/resources/service
-sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.1.0 apply on local (Debian GNU/Linux 12 (bookworm))
 
 changed    package[nginx]
            state: absent -> installed
@@ -26,4 +26,4 @@ Summary
   skipped      0
   notified     0
 
-Finished in 5.25s.
+Finished in 5.94s.

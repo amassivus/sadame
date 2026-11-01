@@ -1,5 +1,5 @@
 $ sudo sadame plan examples/resources/file --var environment=production
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.1.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 ~ file[/etc/hello/hello.conf]
     --- /etc/hello/hello.conf

@@ -1,8 +1,8 @@
 $ sadame apply site.rb -g all
-[db1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/ed24c04d850c6091dd95b976a6c671145ce37c3d541acda2c6662cf52aa17c10/
-[web2.example.com] sadame 0.1.0.dev apply on web2.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/af0ca7fd9b4e138bec76af3a44f0d5660e39fd2683706d37b7b9e56e340e1475/
+[web2.example.com] sadame 0.1.0 apply on web2.example.com (Debian GNU/Linux 12 (bookworm))
 [web2.example.com]
-[web1.example.com] sadame 0.1.0.dev apply on web1.example.com (Debian GNU/Linux 12 (bookworm))
+[web1.example.com] sadame 0.1.0 apply on web1.example.com (Debian GNU/Linux 12 (bookworm))
 [web1.example.com]
 [web2.example.com] changed    file[/etc/motd]
 [web2.example.com]            --- /etc/motd
@@ -32,7 +32,7 @@ $ sadame apply site.rb -g all
 [web1.example.com]            +web1.example.com (production)
 [web1.example.com]            +Groups: web, all
 [web1.example.com]            +Managed by sadame. Local changes will be overwritten.
-[db1.example.com] sadame 0.1.0.dev apply on db1.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com] sadame 0.1.0 apply on db1.example.com (Debian GNU/Linux 12 (bookworm))
 [db1.example.com]
 [db1.example.com] changed    file[/etc/motd]
 [db1.example.com]            --- /etc/motd
@@ -48,51 +48,6 @@ $ sadame apply site.rb -g all
 [db1.example.com]            +db1.example.com (production)
 [db1.example.com]            +Groups: db, all
 [db1.example.com]            +Managed by sadame. Local changes will be overwritten.
-[web1.example.com] changed    package[nginx]
-[web1.example.com]            state: absent -> installed
-[web1.example.com] changed    directory[/etc/demo-app]
-[web1.example.com]            state: absent -> present
-[web1.example.com]            mode: 0755
-[web1.example.com] changed    file[/etc/demo-app/web.conf]
-[web1.example.com]            state: absent -> present
-[web1.example.com]            mode: 0644
-[web1.example.com]            --- /dev/null
-[web1.example.com]            +++ /etc/demo-app/web.conf (desired)
-[web1.example.com]            @@ -0,0 +1,3 @@
-[web1.example.com]            +# Managed by sadame.
-[web1.example.com]            +environment = production
-[web1.example.com]            +workers     = 4
-[web1.example.com] changed    file[/etc/nginx/conf.d/demo-app.conf]
-[web1.example.com]            state: absent -> present
-[web1.example.com]            mode: 0644
-[web1.example.com]            --- /dev/null
-[web1.example.com]            +++ /etc/nginx/conf.d/demo-app.conf (desired)
-[web1.example.com]            @@ -0,0 +1,8 @@
-[web1.example.com]            +# Managed by sadame.
-[web1.example.com]            +server {
-[web1.example.com]            +  listen 8080;
-[web1.example.com]            +  server_name www.example.com;
-[web1.example.com]            +  location / {
-[web1.example.com]            +    return 200 "production\n";
-[web1.example.com]            +  }
-[web1.example.com]            +}
-[web1.example.com] changed    service[nginx]
-[web1.example.com]            state: stopped -> running
-[web1.example.com] notified   service[nginx]: reload (delayed, from file[/etc/nginx/conf.d/demo-app.conf])
-[web1.example.com]
-[web1.example.com] Summary
-[web1.example.com]   changed      6  file[/etc/motd]
-[web1.example.com]                   package[nginx]
-[web1.example.com]                   directory[/etc/demo-app]
-[web1.example.com]                   file[/etc/demo-app/web.conf]
-[web1.example.com]                   file[/etc/nginx/conf.d/demo-app.conf]
-[web1.example.com]                   service[nginx]
-[web1.example.com]   unchanged    0
-[web1.example.com]   failed       0
-[web1.example.com]   skipped      0
-[web1.example.com]   notified     1  service[nginx]: reload
-[web1.example.com]
-[web1.example.com] Finished in 9.21s.
 [web2.example.com] changed    package[nginx]
 [web2.example.com]            state: absent -> installed
 [web2.example.com] changed    directory[/etc/demo-app]
@@ -137,7 +92,52 @@ $ sadame apply site.rb -g all
 [web2.example.com]   skipped      0
 [web2.example.com]   notified     1  service[nginx]: reload
 [web2.example.com]
-[web2.example.com] Finished in 10.81s.
+[web2.example.com] Finished in 18.97s.
+[web1.example.com] changed    package[nginx]
+[web1.example.com]            state: absent -> installed
+[web1.example.com] changed    directory[/etc/demo-app]
+[web1.example.com]            state: absent -> present
+[web1.example.com]            mode: 0755
+[web1.example.com] changed    file[/etc/demo-app/web.conf]
+[web1.example.com]            state: absent -> present
+[web1.example.com]            mode: 0644
+[web1.example.com]            --- /dev/null
+[web1.example.com]            +++ /etc/demo-app/web.conf (desired)
+[web1.example.com]            @@ -0,0 +1,3 @@
+[web1.example.com]            +# Managed by sadame.
+[web1.example.com]            +environment = production
+[web1.example.com]            +workers     = 4
+[web1.example.com] changed    file[/etc/nginx/conf.d/demo-app.conf]
+[web1.example.com]            state: absent -> present
+[web1.example.com]            mode: 0644
+[web1.example.com]            --- /dev/null
+[web1.example.com]            +++ /etc/nginx/conf.d/demo-app.conf (desired)
+[web1.example.com]            @@ -0,0 +1,8 @@
+[web1.example.com]            +# Managed by sadame.
+[web1.example.com]            +server {
+[web1.example.com]            +  listen 8080;
+[web1.example.com]            +  server_name www.example.com;
+[web1.example.com]            +  location / {
+[web1.example.com]            +    return 200 "production\n";
+[web1.example.com]            +  }
+[web1.example.com]            +}
+[web1.example.com] changed    service[nginx]
+[web1.example.com]            state: stopped -> running
+[web1.example.com] notified   service[nginx]: reload (delayed, from file[/etc/nginx/conf.d/demo-app.conf])
+[web1.example.com]
+[web1.example.com] Summary
+[web1.example.com]   changed      6  file[/etc/motd]
+[web1.example.com]                   package[nginx]
+[web1.example.com]                   directory[/etc/demo-app]
+[web1.example.com]                   file[/etc/demo-app/web.conf]
+[web1.example.com]                   file[/etc/nginx/conf.d/demo-app.conf]
+[web1.example.com]                   service[nginx]
+[web1.example.com]   unchanged    0
+[web1.example.com]   failed       0
+[web1.example.com]   skipped      0
+[web1.example.com]   notified     1  service[nginx]: reload
+[web1.example.com]
+[web1.example.com] Finished in 19.88s.
 [db1.example.com] changed    package[sqlite3]
 [db1.example.com]            state: absent -> installed
 [db1.example.com] changed    package[cron]
@@ -171,11 +171,11 @@ $ sadame apply site.rb -g all
 [db1.example.com]   skipped      0
 [db1.example.com]   notified     0
 [db1.example.com]
-[db1.example.com] Finished in 17.37s.
+[db1.example.com] Finished in 37.94s.
 
 Hosts
   web1.example.com  ok
   web2.example.com  ok
   db1.example.com   ok
 
-apply on 3 hosts: 3 ok. Finished in 17.60s.
+apply on 3 hosts: 3 ok. Finished in 38.16s.

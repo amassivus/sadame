@@ -1,5 +1,5 @@
 $ sudo sadame apply examples/resources/file
-sadame 0.1.0.dev apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.1.0 apply on local (Debian GNU/Linux 12 (bookworm))
 
 changed    file[/etc/issue.net]
            --- /etc/issue.net

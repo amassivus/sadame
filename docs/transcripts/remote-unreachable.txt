@@ -1,5 +1,5 @@
 $ sadame plan site.rb -g db -h deploy@db2.example.com
-[db1.example.com] sadame 0.1.0.dev plan on db1.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com] sadame 0.1.0 plan on db1.example.com (Debian GNU/Linux 12 (bookworm))
 [db1.example.com]
 [db1.example.com] Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 6 unchanged.
 
@@ -7,7 +7,7 @@ Hosts
   db1.example.com  ok
   db2.example.com  unreachable  connect failed: ssh: Could not resolve hostname db2.example.com: Name or service not known
 
-plan on 2 hosts: 1 ok, 1 unreachable. Finished in 0.21s.
+plan on 2 hosts: 1 ok, 1 unreachable. Finished in 0.20s.
 
 $ echo $?
 2

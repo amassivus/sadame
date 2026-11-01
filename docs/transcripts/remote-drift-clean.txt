@@ -1,13 +1,13 @@
 $ sadame drift site.rb -g all
-[web2.example.com] sadame 0.1.0.dev drift on web2.example.com (Debian GNU/Linux 12 (bookworm))
+[web2.example.com] sadame 0.1.0 drift on web2.example.com (Debian GNU/Linux 12 (bookworm))
 [web2.example.com]
-[web1.example.com] sadame 0.1.0.dev drift on web1.example.com (Debian GNU/Linux 12 (bookworm))
-[db1.example.com] sadame 0.1.0.dev drift on db1.example.com (Debian GNU/Linux 12 (bookworm))
-[db1.example.com]
+[web1.example.com] sadame 0.1.0 drift on web1.example.com (Debian GNU/Linux 12 (bookworm))
 [web1.example.com]
+[db1.example.com] sadame 0.1.0 drift on db1.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com]
 [db1.example.com] No drift: 6 resources match the recipe.
-[web1.example.com] No drift: 6 resources match the recipe.
 [web2.example.com] No drift: 6 resources match the recipe.
+[web1.example.com] No drift: 6 resources match the recipe.
 
 Hosts
   web1.example.com  ok

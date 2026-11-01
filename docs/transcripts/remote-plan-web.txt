@@ -1,10 +1,16 @@
 $ sadame plan site.rb -g web
-[web1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/ed24c04d850c6091dd95b976a6c671145ce37c3d541acda2c6662cf52aa17c10/
-[web2.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/ed24c04d850c6091dd95b976a6c671145ce37c3d541acda2c6662cf52aa17c10/
-[web2.example.com] sadame 0.1.0.dev plan on web2.example.com (Debian GNU/Linux 12 (bookworm))
-[web1.example.com] sadame 0.1.0.dev plan on web1.example.com (Debian GNU/Linux 12 (bookworm))
+[web1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/af0ca7fd9b4e138bec76af3a44f0d5660e39fd2683706d37b7b9e56e340e1475/
+[web2.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/af0ca7fd9b4e138bec76af3a44f0d5660e39fd2683706d37b7b9e56e340e1475/
+[web2.example.com] sadame 0.1.0 plan on web2.example.com (Debian GNU/Linux 12 (bookworm))
 [web2.example.com]
+[web1.example.com] sadame 0.1.0 plan on web1.example.com (Debian GNU/Linux 12 (bookworm))
 [web1.example.com]
+[web1.example.com] ~ file[/etc/motd]
+[web1.example.com]     --- /etc/motd
+[web1.example.com]     +++ /etc/motd (desired)
+[web1.example.com]     @@ -1,7 +1,3 @@
+[web1.example.com]     -
+[web1.example.com]     -The programs included with the Debian GNU/Linux system are free software;
 [web2.example.com] ~ file[/etc/motd]
 [web2.example.com]     --- /etc/motd
 [web2.example.com]     +++ /etc/motd (desired)
@@ -20,12 +26,6 @@ $ sadame plan site.rb -g web
 [web2.example.com]     +Groups: web, all
 [web2.example.com]     +Managed by sadame. Local changes will be overwritten.
 [web2.example.com]
-[web1.example.com] ~ file[/etc/motd]
-[web1.example.com]     --- /etc/motd
-[web1.example.com]     +++ /etc/motd (desired)
-[web1.example.com]     @@ -1,7 +1,3 @@
-[web1.example.com]     -
-[web1.example.com]     -The programs included with the Debian GNU/Linux system are free software;
 [web1.example.com]     -the exact distribution terms for each program are described in the
 [web1.example.com]     -individual files in /usr/share/doc/*/copyright.
 [web1.example.com]     -
@@ -35,21 +35,20 @@ $ sadame plan site.rb -g web
 [web1.example.com]     +Groups: web, all
 [web1.example.com]     +Managed by sadame. Local changes will be overwritten.
 [web1.example.com]
-[web1.example.com] + package[nginx]
-[web1.example.com]     state: absent -> installed
-[web1.example.com]
 [web2.example.com] + package[nginx]
+[web1.example.com] + package[nginx]
 [web2.example.com]     state: absent -> installed
 [web2.example.com]
-[web2.example.com] + directory[/etc/demo-app]
+[web1.example.com]     state: absent -> installed
+[web1.example.com]
 [web1.example.com] + directory[/etc/demo-app]
 [web1.example.com]     state: absent -> present
 [web1.example.com]     mode: 0755
 [web1.example.com]
+[web2.example.com] + directory[/etc/demo-app]
 [web2.example.com]     state: absent -> present
 [web2.example.com]     mode: 0755
 [web2.example.com]
-[web2.example.com] + file[/etc/demo-app/web.conf]
 [web1.example.com] + file[/etc/demo-app/web.conf]
 [web1.example.com]     state: absent -> present
 [web1.example.com]     mode: 0644
@@ -60,6 +59,7 @@ $ sadame plan site.rb -g web
 [web1.example.com]     +environment = production
 [web1.example.com]     +workers     = 4
 [web1.example.com]
+[web2.example.com] + file[/etc/demo-app/web.conf]
 [web2.example.com]     state: absent -> present
 [web2.example.com]     mode: 0644
 [web2.example.com]     --- /dev/null
@@ -102,11 +102,11 @@ $ sadame plan site.rb -g web
 [web2.example.com]     notifies: reload service[nginx] (delayed)
 [web2.example.com]
 [web1.example.com] ~ service[nginx]
-[web2.example.com] ~ service[nginx]
 [web1.example.com]     enabled: false -> true
 [web1.example.com]     state: stopped -> running
 [web1.example.com]
 [web1.example.com] Plan: 4 to create, 2 to update, 0 to remove, 0 to run, 0 unchanged.
+[web2.example.com] ~ service[nginx]
 [web2.example.com]     enabled: false -> true
 [web2.example.com]     state: stopped -> running
 [web2.example.com]

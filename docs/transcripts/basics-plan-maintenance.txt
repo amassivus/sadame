@@ -1,5 +1,5 @@
 $ sudo sadame plan examples/basics --var maintenance='Sundays 02:00-03:00 UTC'
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.1.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 + package[curl]
     state: absent -> installed

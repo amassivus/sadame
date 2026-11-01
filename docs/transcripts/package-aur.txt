@@ -1,4 +1,4 @@
 $ sudo sadame plan examples/resources/package/aur.rb
-sadame 0.1.0.dev plan on local (Arch Linux)
+sadame 0.1.0 plan on local (Arch Linux)
 
 Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.

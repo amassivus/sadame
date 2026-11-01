@@ -1,5 +1,5 @@
 $ sudo sadame plan
-sadame 0.1.0.dev plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.1.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 x file[/etc/app.conf]
     error: templates/app.conf.erb:3: undefined method 'port' for Sadame::Template::Scope

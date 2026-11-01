@@ -6,6 +6,10 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-01
+
+The first release.
+
 ### Added
 
 - `sadame plan` and `sadame apply` for the local machine, with a colored
@@ -66,3 +70,12 @@ project uses [Semantic Versioning](https://semver.org/).
   SHA-256 checksum.
 - Release workflow: a `v*` tag publishes the binaries, `SHA256SUMS` and the
   changelog section as a GitHub release.
+- A Homebrew formula and an AUR package (`sadame-bin`) for the release
+  binaries, generated from the release's checksums.
+- Documentation at <https://enderkus.github.io/sadame/>: getting started,
+  concepts, recipes and the inventory, every resource, guides, command
+  line, JSON output and exit code references, and a comparison with
+  Ansible, Itamae, mitamae, Chef and Puppet.
+
+[Unreleased]: https://github.com/enderkus/sadame/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/enderkus/sadame/releases/tag/v0.1.0

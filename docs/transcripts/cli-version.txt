@@ -1,2 +1,2 @@
 $ sadame --version
-sadame 0.1.0.dev
+sadame 0.1.0
