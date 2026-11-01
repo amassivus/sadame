@@ -5,10 +5,15 @@
 Output "/out/demo.gif"
 
 Set Shell "bash"
-Set FontSize 14
-Set Width 1400
-Set Height 700
-Set Padding 18
+# The widest line is 115 characters (a diff line in the apply output) and
+# the apply screen is 29 lines: this holds about 120 columns and 32 lines.
+# Not much wider than that, so the text stays readable when the docs and
+# the README scale the recording down to their column width.
+Set FontSize 17
+Set LetterSpacing 0
+Set Width 1260
+Set Height 760
+Set Padding 14
 Set TypingSpeed 40ms
 Set Theme "Builtin Dark"
 

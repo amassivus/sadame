@@ -15,6 +15,11 @@ project uses [Semantic Versioning](https://semver.org/).
 - Links to the project on X, [@sadame_rb](https://x.com/sadame_rb), in the
   docs' footer and the README.
 
+### Changed
+
+- The terminal recording in the README and on the docs' home page has
+  larger, readable text.
+
 ### Fixed
 
 - The icons on the docs' home page cards were shown as text.
