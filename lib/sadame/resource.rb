@@ -106,6 +106,10 @@ module Sadame
       false
     end
 
+    # Checks what can be checked without the machine, for `sadame
+    # validate`; options were already checked when it was declared.
+    def check_offline; end
+
     # The file that content diffs of this resource are labelled with.
     def content_path
       name

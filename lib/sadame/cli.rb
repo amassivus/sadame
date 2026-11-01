@@ -11,7 +11,7 @@ module Sadame
   #   2 usage or recipe error, a state that could not be read, or a target
   #     that could not be reached
   class CLI
-    COMMANDS = %w[plan apply drift hosts facts].freeze
+    COMMANDS = %w[plan apply drift validate hosts facts].freeze
     DEFAULT_RECIPE = "recipe.rb"
     DEFAULT_INVENTORY = "hosts.rb"
 
@@ -22,6 +22,7 @@ module Sadame
         plan     Show what apply would change, as a diff. Changes nothing.
         apply    Make the hosts match the recipe.
         drift    Like plan, but exit 1 when a host differs from the recipe.
+        validate Check the recipe for every selected host without connecting.
         hosts    Show the selected hosts with their connection options and vars.
         facts    Show the facts recipes see on each host: CPUs, memory, addresses.
 
@@ -41,6 +42,8 @@ module Sadame
                                             batch after another; stop when a batch fails
 
       Options:
+        --platform NAME     validate as on debian, ubuntu, rocky, alpine or arch
+                            (default: debian)
         --tags T,...        Only resources with one of these tags (plan, apply, drift)
         --skip-tags T,...   Leave out resources with one of these tags
         --var KEY=VALUE     Set vars[:KEY]; repeatable, overrides everything else
@@ -93,8 +96,12 @@ module Sadame
           raise UsageError, "#{flag} only applies to plan, apply and drift" unless options[key].empty?
         end
       end
+      if options[:platform] && options[:command] != "validate"
+        raise UsageError, "--platform only applies to validate"
+      end
       return list_hosts(options) if options[:command] == "hosts"
       return show_facts(options) if options[:command] == "facts"
+      return validate(options) if options[:command] == "validate"
 
       recipe_path = resolve_recipe(options[:recipe])
       base_dir = File.dirname(recipe_path)
@@ -130,12 +137,41 @@ module Sadame
       report.exit_status
     end
 
+    def check_remote_options(options)
+      raise UsageError, "--vars-file is for local runs; put the vars in hosts.rb or vars.rb" if options[:vars_file]
+      return unless options[:host_name] || !options[:host_groups].empty?
+
+      raise UsageError, "--host-name and --host-groups are for local runs; targets get them from hosts.rb"
+    end
+
+    # The recipe for each selected host, or for this machine, against a
+    # stand-in machine: nothing is connected to.
+    def validate(options)
+      recipe_path = resolve_recipe(options[:recipe])
+      base_dir = File.dirname(recipe_path)
+      base_vars = Vars.load_file(File.join(base_dir, "vars.rb"))
+      platform = StandIn.platform(options[:platform] || "debian")
+      checks = if remote?(options)
+                 check_remote_options(options)
+                 select_targets(load_inventory(options, base_dir), options, base_vars).map do |target|
+                   [target.name, target.groups, target.vars]
+                 end
+               else
+                 check_local_options(options)
+                 file_vars = options[:vars_file] ? load_vars_file(options[:vars_file]) : {}
+                 [[options[:host_name] || "local", options[:host_groups].map { |group| group.to_sym },
+                   Vars.merge(base_vars, file_vars, options[:vars])]]
+               end
+      validation = Validation.new(recipe_path, platform: platform)
+      results = checks.map { |name, groups, vars| validation.check(name: name, groups: groups, vars: vars) }
+      listing = ValidationListing.new(@stdout, color: color?(options))
+      options[:json] ? listing.render_json(recipe_path, platform, results) : listing.render(recipe_path, platform, results)
+      Validation.exit_status(results)
+    end
+
     # recipe_path is nil for facts, which runs no recipe.
     def run_remote(options, recipe_path, base_dir, base_vars)
-      raise UsageError, "--vars-file is for local runs; put the vars in hosts.rb or vars.rb" if options[:vars_file]
-      if options[:host_name] || !options[:host_groups].empty?
-        raise UsageError, "--host-name and --host-groups are for local runs; targets get them from hosts.rb"
-      end
+      check_remote_options(options)
 
       inventory = load_inventory(options, base_dir)
       targets = select_targets(inventory, options, base_vars)
@@ -215,7 +251,7 @@ module Sadame
     def parse(argv)
       options = { vars: {}, hosts: [], groups: [], limit: nil, inventory: nil, sudo: false, json: false,
                   color: nil, vars_file: nil, host_name: nil, host_groups: [], forks: nil, serial: nil,
-                  tags: [], skip_tags: [],
+                  tags: [], skip_tags: [], platform: nil,
                   help: false, version: false }
       positional = []
       arguments = argv.dup
@@ -235,6 +271,7 @@ module Sadame
         when "-g", "--group" then options[:groups].concat(list_value(name, inline_value || arguments.shift))
         when "--limit" then options[:limit] = value(name, inline_value || arguments.shift)
         when "--inventory" then options[:inventory] = value(name, inline_value || arguments.shift)
+        when "--platform" then options[:platform] = value(name, inline_value || arguments.shift)
         when "--tags" then options[:tags].concat(list_value(name, inline_value || arguments.shift))
         when "--skip-tags" then options[:skip_tags].concat(list_value(name, inline_value || arguments.shift))
         when "--forks" then options[:forks] = positive_integer(name, inline_value || arguments.shift)

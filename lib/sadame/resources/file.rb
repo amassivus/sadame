@@ -69,6 +69,12 @@ module Sadame
       options[:sensitive] == true
     end
 
+    # Renders the template, or reads the source file, so their errors show
+    # up without a machine.
+    def check_offline
+      desired_content if content_managed?
+    end
+
     private
 
     def validate
