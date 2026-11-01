@@ -96,7 +96,10 @@ arm64 packages of each distribution, but not real arm64 hardware; there is
 no arm64 VM in the VM layer yet. On an ARM64 machine (such as a Mac with
 Apple silicon running Docker), `rake test:docker` runs arm64 natively.
 
-Emulation has limits: under Rosetta (Docker Desktop and OrbStack on Apple
+Emulation has limits. QEMU's user mode cannot run iptables or nftables, so
+`04-docker-host` (Docker's daemon) and `07-hardening-baseline` (`ufw`) are
+skipped where the containers are emulated, with that reason in the report;
+they run in the amd64 jobs and natively on ARM64 machines. Under Rosetta (Docker Desktop and OrbStack on Apple
 silicon), an x86_64 Arch Linux container could not boot its systemd
 (version 262) in our tests, so run the amd64 tests in CI or on an x86_64
 machine.

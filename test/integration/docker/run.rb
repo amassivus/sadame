@@ -8,6 +8,7 @@
 #   rake "test:docker[debian,amd64]"   one distribution and architecture
 #   rake "test:docker[all,arm64]"      every distribution, arm64
 #   rake test:docker                   every distribution, this machine's architecture
+#   SADAME_IT_ONLY=03-nginx rake ...   only examples whose path contains the text
 #
 # Containers boot systemd (privileged, with the host's cgroups) so service
 # resources run for real; Alpine uses OpenRC and only runs the examples
@@ -23,6 +24,7 @@ module DockerIntegration
   ROOT = File.expand_path("../../..", __dir__)
   PREFIX = "sadame-it"
   JOBS = Integer(ENV.fetch("SADAME_IT_JOBS", "4"))
+  ONLY = ENV.fetch("SADAME_IT_ONLY", "")
   PEBBLE_IMAGE = "ghcr.io/letsencrypt/pebble:latest"
 
   # distro => [Dockerfile, base image per architecture (for build args), boots systemd]
@@ -37,9 +39,10 @@ module DockerIntegration
   Result = Struct.new(:example, :status, :detail, :seconds)
 
   class Runner
-    def initialize(distro, arch)
+    def initialize(distro, arch, emulated:)
       @distro = distro
       @arch = arch
+      @emulated = emulated
       @platform = "linux/#{arch}"
       @image = "#{PREFIX}-#{distro}-#{arch}"
       @dockerfile, @bases, @systemd = DISTROS.fetch(distro)
@@ -47,15 +50,19 @@ module DockerIntegration
 
     def run
       check_binary
-      puts "== #{@distro} (#{@platform}): building #{@image}"
+      puts "== #{@distro} (#{@platform}#{@emulated ? ", emulated" : ""}): building #{@image}"
       build_image
-      examples = ExampleMatrix::EXAMPLES
       results = Queue.new
-      skipped = examples.reject { |example| example[:distros].include?(@distro) }
-      skipped.each { |example| results << Result.new(example, :skip, ExampleMatrix.skip_reason(example, @distro), 0) }
+      runnable = []
+      ExampleMatrix::EXAMPLES.each do |example|
+        next unless example[:path].include?(ONLY)
+
+        reason = skip_reason(example)
+        reason ? results << Result.new(example, :skip, reason, 0) : runnable << example
+      end
 
       pending = Queue.new
-      examples.select { |example| example[:distros].include?(@distro) }.each_with_index { |example, i| pending << [example, i] }
+      runnable.each_with_index { |example, i| pending << [example, i] }
       workers = Array.new(JOBS) do
         Thread.new do
           loop do
@@ -71,6 +78,12 @@ module DockerIntegration
     end
 
     private
+
+    def skip_reason(example)
+      return ExampleMatrix.skip_reason(example, @distro) unless example[:distros].include?(@distro)
+
+      @emulated ? example[:emulated] : nil
+    end
 
     def check_binary
       binary = File.join(ROOT, "dist", "sadame-linux-#{@arch}")
@@ -101,15 +114,19 @@ module DockerIntegration
     end
 
     def start(example, name, network)
-      if network
-        sh("docker", "network", "create", network)
-        sh("docker", "run", "--detach", "--name", "#{name}-pebble", "--network", network, "--network-alias", "pebble",
-           "--platform", @platform, "--env", "PEBBLE_VA_ALWAYS_VALID=1", "--env", "PEBBLE_WFE_NONCEREJECT=0",
-           PEBBLE_IMAGE)
-      end
       command = ["docker", "run", "--detach", "--name", name, "--platform", @platform,
                  "--volume", "#{ROOT}:/sadame:ro"]
-      command += ["--network", network] if network
+      if network
+        sh("docker", "network", "create", network)
+        sh("docker", "run", "--detach", "--name", "#{name}-pebble", "--network", network,
+           "--platform", @platform, "--env", "PEBBLE_VA_ALWAYS_VALID=1", "--env", "PEBBLE_WFE_NONCEREJECT=0",
+           PEBBLE_IMAGE)
+        # Through /etc/hosts rather than Docker's DNS: some distributions
+        # resolve through systemd-resolved, which ignores single-label names.
+        address = sh("docker", "inspect", "--format", "{{(index .NetworkSettings.Networks \"#{network}\").IPAddress}}",
+                     "#{name}-pebble").strip
+        command += ["--network", network, "--add-host", "pebble:#{address}"]
+      end
       if @systemd
         command += ["--privileged", "--cgroupns=host", "--volume", "/sys/fs/cgroup:/sys/fs/cgroup:rw"]
       end
@@ -212,7 +229,8 @@ module DockerIntegration
     unknown = distros - DISTROS.keys
     abort "unknown distribution: #{unknown.join(", ")} (known: #{DISTROS.keys.join(", ")})" unless unknown.empty?
 
-    passed = distros.map { |distro| Runner.new(distro, arch).run }
+    emulated = arch != native_arch
+    passed = distros.map { |distro| Runner.new(distro, arch, emulated: emulated).run }
     exit(passed.all? ? 0 : 1)
   end
 end

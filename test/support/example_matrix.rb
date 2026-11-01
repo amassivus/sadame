@@ -14,6 +14,8 @@
 #             the containers get from arguments (default: runs)
 #   setup     shell commands that prepare a container before the first run
 #   pebble    true when the container needs the Pebble test ACME server
+#   emulated  why it cannot run where the container's CPU is emulated
+#             (QEMU user mode); it still runs on native machines
 #   drift_demo true for 10-drift-demo, which also breaks the machine
 module ExampleMatrix
   ALL = %w[ubuntu debian rocky alpine arch].freeze
@@ -27,10 +29,12 @@ module ExampleMatrix
     { path: "examples/03-nginx-tls-certbot", distros: SYSTEMD, why: NO_SYSTEMD, pebble: true,
       runs: [["--var", "domain=site.example.test", "--var", "email=admin@example.test",
               "--var", "acme_server=https://pebble:14000/dir", "--var", "certbot_flags=--no-verify-ssl"]] },
-    { path: "examples/04-docker-host", distros: SYSTEMD, why: NO_SYSTEMD },
+    { path: "examples/04-docker-host", distros: SYSTEMD, why: NO_SYSTEMD,
+      emulated: "Docker's daemon needs iptables, which does not work under QEMU user emulation" },
     { path: "examples/05-postgres", distros: SYSTEMD, why: NO_SYSTEMD },
     { path: "examples/06-app-deploy-user", distros: ALL },
-    { path: "examples/07-hardening-baseline", distros: DEBIAN, why: "ufw and unattended-upgrades are Debian's and Ubuntu's" },
+    { path: "examples/07-hardening-baseline", distros: DEBIAN, why: "ufw and unattended-upgrades are Debian's and Ubuntu's",
+      emulated: "ufw needs iptables, which does not work under QEMU user emulation" },
     { path: "examples/08-multi-role-inventory/site.rb", distros: DEBIAN,
       why: "the roles use Debian's package names and paths",
       runs: [["--host-name", "web1.example.com", "--host-groups", "web,all"],
