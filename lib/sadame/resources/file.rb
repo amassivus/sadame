@@ -139,7 +139,8 @@ module Sadame
       if options.key?(:content)
         options[:content].to_s
       elsif options[:template]
-        Template.new(File.read(local_file), local_file).render(vars: vars, locals: options[:locals] || {})
+        Template.new(File.read(local_file), local_file).render(vars: vars, locals: options[:locals] || {},
+                                                               facts: host.facts)
       else
         File.read(local_file)
       end

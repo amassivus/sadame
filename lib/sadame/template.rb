@@ -12,7 +12,7 @@ module Sadame
   #   <%-                at the start of a tag removes indentation before it
   #
   # Templates see `vars` (the run's vars) and `locals` (the file resource's
-  # locals: option), both plain hashes.
+  # locals: option), both plain hashes, and `facts` (see Facts).
   class Template
     attr_reader :path
 
@@ -21,9 +21,9 @@ module Sadame
       @path = path
     end
 
-    def render(vars: {}, locals: {})
+    def render(vars: {}, locals: {}, facts: nil)
       literals, code = compile
-      Scope.new(vars, locals, literals).evaluate(code, path)
+      Scope.new(vars, locals, facts, literals).evaluate(code, path)
     rescue RecipeError => e
       raise e
     rescue ScriptError, StandardError => e
@@ -115,14 +115,21 @@ module Sadame
     end
 
     # The object a template is evaluated in. Its only public names are
-    # vars and locals.
+    # vars, locals and facts.
     class Scope
       attr_reader :vars, :locals
 
-      def initialize(vars, locals, literals)
+      def initialize(vars, locals, facts, literals)
         @vars = vars
         @locals = locals
+        @_sadame_facts = facts
         @_sadame_literals = literals
+      end
+
+      def facts
+        raise RecipeError, "facts are not available here" if @_sadame_facts.nil?
+
+        @_sadame_facts
       end
 
       def evaluate(code, path)

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module Sadame
-  # The machine being configured: its shell plus facts read from it once
-  # and then reused by every resource.
+  # The machine being configured: its shell plus what is read from it once
+  # and then reused by every resource, including the facts recipes see.
   class Host
     attr_reader :shell, :name, :groups
 
@@ -22,6 +22,10 @@ module Sadame
 
     def package_manager
       @package_manager ||= PackageManagers.for(platform, shell)
+    end
+
+    def facts
+      @facts ||= Facts.new(self)
     end
 
     # The service manager running on the host: :systemd, :openrc (Alpine),

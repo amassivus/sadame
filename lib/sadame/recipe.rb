@@ -16,8 +16,8 @@ module Sadame
   #   git "/srv/app", repository: "https://github.com/example/app.git", revision: "v1.4.2"
   #   include_recipe "roles/web"
   #
-  # `vars`, `platform`, `host_name` and `host_groups` are available for
-  # decisions in plain Ruby.
+  # `vars`, `platform`, `facts`, `host_name` and `host_groups` are
+  # available for decisions in plain Ruby.
   class Recipe
     attr_reader :vars
 
@@ -101,6 +101,14 @@ module Sadame
 
     def platform
       @host.platform
+    end
+
+    # What the machine has: CPUs, memory, addresses and more, read from it
+    # when first asked for. See Facts.
+    #
+    #   workers = facts[:cpus] * 2
+    def facts
+      @host.facts
     end
 
     # The name of the host being configured: its name in hosts.rb or -h, or
