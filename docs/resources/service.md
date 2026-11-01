@@ -8,8 +8,8 @@ restart when they change, through `notifies:`.
 
 ## Minimal example
 
-```ruby title="examples/resources/service/minimal.rb"
---8<-- "examples/resources/service/minimal.rb"
+```ruby title="examples/resources/service/recipe.rb"
+--8<-- "examples/resources/service/recipe.rb"
 ```
 
 ## Options
