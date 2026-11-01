@@ -21,6 +21,7 @@ or removes when the answer differs from the recipe.
 | `options` | String or Array of Strings | none | Extra flags for the install or remove command, placed before the package name. A String is used as is; Array elements are each shell-quoted. |
 | `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
 | `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
+| `tags` | Symbol, String, or an Array of them | none | Tags for running part of a recipe with `--tags` and `--skip-tags`. See [Tags](../recipes/tags.md). |
 
 ## Commands per package manager
 

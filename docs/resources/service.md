@@ -22,6 +22,7 @@ or restart when they change, through `notifies:`.
 | `user` | String | none | Manage the unit in this user's systemd instance (`systemctl --user -M USER@`), such as a unit in `~/.config/systemd/user/`. The user must be logged in or have lingering enabled (`loginctl enable-linger USER`). systemd only. |
 | `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
 | `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
+| `tags` | Symbol, String, or an Array of them | none | Tags for running part of a recipe with `--tags` and `--skip-tags`. See [Tags](../recipes/tags.md). |
 
 A service with neither option manages nothing by itself; it is still a valid
 target for notifications.

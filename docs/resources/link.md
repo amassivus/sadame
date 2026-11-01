@@ -23,6 +23,7 @@ link "/etc/nginx/sites-enabled/app", to: "/etc/nginx/sites-available/app"
 | `force` | `true` or `false` | `false` | Replace a regular file that is where the link should be. Without it, a file in the way is an error. |
 | `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
 | `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
+| `tags` | Symbol, String, or an Array of them | none | Tags for running part of a recipe with `--tags` and `--skip-tags`. See [Tags](../recipes/tags.md). |
 
 The link's directory must exist; declare it with a
 [directory](directory.md) resource first if it does not. A directory where

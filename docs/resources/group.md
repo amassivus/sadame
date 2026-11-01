@@ -22,6 +22,7 @@ are set on the user side, with the [user](user.md) resource's `groups:`.
 | `state` | `:present` or `:absent` | `:present` | `:absent` deletes the group with `groupdel`. |
 | `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
 | `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
+| `tags` | Symbol, String, or an Array of them | none | Tags for running part of a recipe with `--tags` and `--skip-tags`. See [Tags](../recipes/tags.md). |
 
 On Alpine without the `shadow` package, sadame uses BusyBox's `addgroup`
 and `delgroup` instead. BusyBox cannot change a gid; declare

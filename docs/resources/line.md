@@ -29,6 +29,7 @@ the package should keep owning it and you only need one setting.
 | `sensitive` | `true` or `false` | `false` | Hide the diff in output and JSON, for lines with secrets. |
 | `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
 | `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
+| `tags` | Symbol, String, or an Array of them | none | Tags for running part of a recipe with `--tags` and `--skip-tags`. See [Tags](../recipes/tags.md). |
 
 Without `match`, the line is appended when no line in the file is exactly
 the same. Lines are compared without their newline; spaces count.

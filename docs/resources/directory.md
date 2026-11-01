@@ -22,6 +22,7 @@ directory, and to keep application directories owned by the right user.
 | `recursive` | `true` or `false` | `false` | With `state: :absent`, remove the directory and everything in it (`rm -rf`). Without it, only an empty directory can be removed (`rmdir`). |
 | `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
 | `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
+| `tags` | Symbol, String, or an Array of them | none | Tags for running part of a recipe with `--tags` and `--skip-tags`. See [Tags](../recipes/tags.md). |
 
 Creating runs `mkdir -p`, then `chmod` and `chown` for the attributes you
 gave. Parents created by `mkdir -p` get default permissions; declare them as

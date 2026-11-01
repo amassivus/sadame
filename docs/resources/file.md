@@ -30,6 +30,7 @@ written.
 | `verify` | String containing `%{path}` | none | A command that checks the new content before it replaces the file, such as `"visudo -cf %{path}"`. `%{path}` is the temporary file. If the command fails, the file is left as it was and the resource fails. |
 | `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
 | `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
+| `tags` | Symbol, String, or an Array of them | none | Tags for running part of a recipe with `--tags` and `--skip-tags`. See [Tags](../recipes/tags.md). |
 
 Use at most one of `content`, `template` and `source`. With none of them,
 sadame manages only the attributes you give and creates an empty file if it

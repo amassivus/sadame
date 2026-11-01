@@ -23,6 +23,7 @@ account with `getent passwd` and `id -nG`, and changes it with `useradd`,
 | `state` | `:present` or `:absent` | `:present` | `:absent` deletes the account with `userdel`; the home directory is kept. |
 | `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
 | `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
+| `tags` | Symbol, String, or an Array of them | none | Tags for running part of a recipe with `--tags` and `--skip-tags`. See [Tags](../recipes/tags.md). |
 
 New users that are not system users get a home directory (`useradd -m`).
 Changing `home` on an existing user updates the account but does not move

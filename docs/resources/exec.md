@@ -26,6 +26,7 @@ only runs during `apply`.
 | `action` | `:run` or `:nothing` | `:run` | `:nothing` never runs the command on its own, only when another resource notifies it. |
 | `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this command runs. See [Notifications](../recipes/notifications.md). |
 | `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
+| `tags` | Symbol, String, or an Array of them | none | Tags for running part of a recipe with `--tags` and `--skip-tags`. See [Tags](../recipes/tags.md). |
 
 The command runs when every guard you gave agrees: the `creates` path is
 missing, `not_if` exits non-zero, and `only_if` exits 0. Guards are checked
