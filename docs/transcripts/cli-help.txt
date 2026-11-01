@@ -6,10 +6,12 @@ Commands:
   apply    Make the hosts match the recipe.
   drift    Like plan, but exit 1 when a host differs from the recipe.
   hosts    Show the selected hosts with their connection options and vars.
+  facts    Show the facts recipes see on each host: CPUs, memory, addresses.
 
 RECIPE is a recipe file or a directory containing recipe.rb
 (default: ./recipe.rb). vars.rb and hosts.rb next to it are loaded if
-present. Without -h, -g or --limit, sadame runs on this machine.
+present; hosts and facts only use those. Without -h, -g or --limit,
+sadame runs on this machine.
 
 Targets:
   -h, --host [USER@]HOST[:PORT],...   Run on these hosts over SSH

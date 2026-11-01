@@ -1,5 +1,5 @@
 $ sadame drift examples/01-hello
-sadame 0.2.0 drift on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.3.0 drift on local (Debian GNU/Linux 12 (bookworm))
 
 ~ file[/tmp/sadame-hello.txt]
     --- /tmp/sadame-hello.txt

@@ -1,7 +1,7 @@
 $ sudo sadame drift examples/10-drift-demo --json
 {
   "format_version": 1,
-  "sadame_version": "0.2.0",
+  "sadame_version": "0.3.0",
   "command": "drift",
   "host": "local",
   "platform": {

@@ -28,13 +28,13 @@ needs `curl` or `wget`, and `sha256sum` or `shasum`.
 
 | Variable | Default | Effect |
 |---|---|---|
-| `SADAME_VERSION` | latest release | Install this release, such as `v0.2.0`. |
+| `SADAME_VERSION` | latest release | Install this release, such as `v0.3.0`. |
 | `SADAME_INSTALL_DIR` | `/usr/local/bin` | Install somewhere else, such as `$HOME/.local/bin`. |
 | `SADAME_DOWNLOAD_URL` | the GitHub release | Download from a mirror that has the same files. |
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh \
-  | SADAME_VERSION=v0.2.0 SADAME_INSTALL_DIR="$HOME/.local/bin" sh
+  | SADAME_VERSION=v0.3.0 SADAME_INSTALL_DIR="$HOME/.local/bin" sh
 ```
 
 Read the script before piping it to a shell if you prefer; it is about 100
@@ -49,7 +49,7 @@ the binary before installing it.
 On Linux:
 
 ```sh
-version=v0.2.0
+version=v0.3.0
 base=https://github.com/enderkus/sadame/releases/download/$version
 curl -fsSLO "$base/sadame-linux-amd64"
 curl -fsSLO "$base/SHA256SUMS"

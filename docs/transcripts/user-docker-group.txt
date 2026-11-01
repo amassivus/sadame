@@ -1,5 +1,5 @@
 $ sudo sadame plan examples/resources/user/docker_group.rb
-sadame 0.2.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 + package[docker.io]
     state: absent -> installed

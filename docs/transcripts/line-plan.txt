@@ -1,5 +1,5 @@
 $ sudo sadame plan examples/resources/line
-sadame 0.2.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 + directory[/run/sshd]
     state: absent -> present

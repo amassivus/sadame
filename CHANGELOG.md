@@ -6,6 +6,26 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-01
+
+Recipes can see the machine they run on.
+
+### Added
+
+- `facts` in recipes and templates: `hostname`, `fqdn`, `arch`, `kernel`,
+  `cpus`, `memory_mb`, `swap_mb`, `root_disk_gb`, `ipv4`,
+  `default_interface`, `ipv4_addresses`, `ipv6_addresses`,
+  `virtualization`, `container`, `service_manager` and `machine_id`, read
+  on the machine when first asked for. What cannot be read is nil; an
+  unknown name is an error that lists the facts.
+- `sadame facts` prints the facts of this machine, or with `-h`, `-g` or
+  `--limit` of each selected host over SSH; `--json` as well.
+
+### Changed
+
+- Example 05 sizes PostgreSQL's `shared_buffers` to a quarter of the
+  machine's memory unless vars set it.
+
 ## [0.2.0] - 2026-11-01
 
 Rolling changes across a fleet, four more resource types, and Alpine
@@ -123,6 +143,7 @@ The first release.
   line, JSON output and exit code references, and a comparison with
   Ansible, Itamae, mitamae, Chef and Puppet.
 
-[Unreleased]: https://github.com/enderkus/sadame/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/enderkus/sadame/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/enderkus/sadame/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/enderkus/sadame/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/enderkus/sadame/releases/tag/v0.1.0

@@ -3,4 +3,4 @@ $ sadame plan site.rb -h nobody@web1.example.com
 Hosts
   web1.example.com  unreachable  connect failed: nobody@web1.example.com: Permission denied (publickey).
 
-plan on 1 host: 1 unreachable. Finished in 0.13s.
+plan on 1 host: 1 unreachable. Finished in 0.12s.

@@ -1,5 +1,5 @@
 $ sadame drift site.rb -g db
-[db1.example.com] sadame 0.2.0 drift on db1.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com] sadame 0.3.0 drift on db1.example.com (Debian GNU/Linux 12 (bookworm))
 [db1.example.com]
 [db1.example.com] No drift: 6 resources match the recipe.
 

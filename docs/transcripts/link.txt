@@ -1,5 +1,5 @@
 $ sudo sadame apply examples/resources/link
-sadame 0.2.0 apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.3.0 apply on local (Debian GNU/Linux 12 (bookworm))
 
 changed    directory[/srv/app/releases/1]
            state: absent -> present
@@ -32,7 +32,7 @@ Summary
   skipped      0
   notified     0
 
-Finished in 0.30s.
+Finished in 0.29s.
 
 $ readlink /srv/app/current /usr/local/bin/app-console
 releases/2
