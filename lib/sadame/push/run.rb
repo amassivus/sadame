@@ -31,7 +31,8 @@ module Sadame
       # recipe_path is nil for facts, which needs no recipe. work_dir and
       # run_id are generated unless given (tests give them).
       def initialize(targets:, command:, recipe_path:, shell:, stdout:, binary_store:, parallel:,
-                     json: false, color: false, forks: nil, serial: nil, clock: nil, work_dir: nil, run_id: nil)
+                     json: false, color: false, forks: nil, serial: nil, arguments: [], clock: nil, work_dir: nil,
+                     run_id: nil)
         @targets = targets
         @command = command
         @recipe_path = recipe_path
@@ -43,6 +44,7 @@ module Sadame
         @color = color
         @forks = forks
         @serial = serial
+        @arguments = arguments
         @found = {}
         @clock = clock || -> { Time.now }
         @work_dir = work_dir || "/tmp/sadame-push-#{Process.pid}-#{Time.now.to_i}"
@@ -176,7 +178,7 @@ module Sadame
 
       def run_target(target, binary, bundle, vars_file, control_dir, print)
         session = Session.new(target, shell: @shell, ssh: SSH.new(target, control_dir: control_dir))
-        arguments = []
+        arguments = @arguments.map { |argument| Shell.escape(argument) }
         arguments << "--json" if @json
         arguments << "--color" if @color && !@json
         status, stdout, stderr = session.run(command: @command, binary: binary, bundle: bundle, vars_file: vars_file,

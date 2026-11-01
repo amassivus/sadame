@@ -83,12 +83,13 @@ module Sadame
     PLAN_STATUSES = (PENDING_STATUSES + [:unchanged, :failed]).freeze
     APPLY_STATUSES = [:changed, :unchanged, :failed, :skipped].freeze
 
-    attr_reader :command, :host, :entries, :notification_runs
+    attr_reader :command, :host, :entries, :notification_runs, :selection
     attr_accessor :duration
 
-    def initialize(command, host)
+    def initialize(command, host, selection: nil)
       @command = command
       @host = host
+      @selection = selection || Selection.new
       @entries = []
       @notification_runs = []
       @duration = nil
@@ -142,6 +143,8 @@ module Sadame
         command: command.to_s,
         host: host.name,
         platform: host.platform.to_h,
+        tags: selection.tags,
+        skip_tags: selection.skip_tags,
         resources: entries.map { |entry| entry.to_h },
         notifications: notification_runs.map { |run| run.to_h },
         summary: counts,

@@ -25,8 +25,10 @@ module Sadame
         @color = color
       end
 
-      def start(command, host)
+      # note says which resources a --tags run covers.
+      def start(command, host, note = nil)
         line(paint("sadame #{VERSION} #{command} on #{host.name} (#{host.platform.description})", :bold))
+        line(paint(note, :cyan)) if note
         line
       end
 
@@ -204,7 +206,7 @@ module Sadame
         @io = io
       end
 
-      def start(_command, _host); end
+      def start(_command, _host, _note = nil); end
 
       def planned(_entry); end
 

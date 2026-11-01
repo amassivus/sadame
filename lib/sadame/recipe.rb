@@ -14,7 +14,7 @@ module Sadame
   #   link "/etc/nginx/sites-enabled/app", to: "/etc/nginx/sites-available/app"
   #   line "PermitRootLogin no", path: "/etc/ssh/sshd_config", match: /^#?\s*PermitRootLogin\s/
   #   git "/srv/app", repository: "https://github.com/example/app.git", revision: "v1.4.2"
-  #   include_recipe "roles/web"
+  #   include_recipe "roles/web", tags: [:web]
   #
   # `vars`, `platform`, `facts`, `host_name` and `host_groups` are
   # available for decisions in plain Ruby.
@@ -29,12 +29,15 @@ module Sadame
       collection
     end
 
-    def initialize(path, host:, vars:, collection:, loaded:)
+    # tags are added to every resource this recipe declares (see
+    # include_recipe).
+    def initialize(path, host:, vars:, collection:, loaded:, tags: [])
       @path = path
       @host = host
       @vars = vars
       @collection = collection
       @loaded = loaded
+      @tags = tags
     end
 
     def evaluate
@@ -89,13 +92,19 @@ module Sadame
 
     # Evaluates another recipe, relative to this recipe's directory. The
     # ".rb" extension is optional. A recipe is only ever included once.
-    def include_recipe(name)
+    # With tags:, every resource it declares (and the recipes it includes)
+    # gets those tags.
+    def include_recipe(name, options = {})
+      unknown = options.keys - [:tags]
+      raise Error, "include_recipe takes only tags:, got #{unknown.first.inspect}" unless unknown.empty?
+
+      tags = @tags + Resource.tag_list(options[:tags], "include_recipe #{name}")
       file_name = name.to_s.end_with?(".rb") ? name.to_s : "#{name}.rb"
       path = recipe_dir == "." ? file_name : File.join(recipe_dir, file_name)
       raise Error, "include_recipe cannot find #{path}" unless File.file?(path)
       return if @loaded.include?(File.expand_path(path))
 
-      Recipe.new(path, host: @host, vars: @vars, collection: @collection, loaded: @loaded).evaluate
+      Recipe.new(path, host: @host, vars: @vars, collection: @collection, loaded: @loaded, tags: tags).evaluate
       nil
     end
 
@@ -132,6 +141,10 @@ module Sadame
     end
 
     def declare(resource_class, name, options)
+      if options.is_a?(Hash) && !@tags.empty?
+        own = options[:tags]
+        options = options.merge(tags: @tags + (own.is_a?(Array) ? own : [own].compact))
+      end
       resource = resource_class.new(name, options, host: @host, source_dir: recipe_dir, vars: @vars)
       @collection.add(resource)
       resource

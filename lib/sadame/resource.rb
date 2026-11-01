@@ -14,9 +14,24 @@ module Sadame
   # diff compares desired and current. Nothing is applied when it is empty,
   # which is what makes every resource idempotent.
   class Resource
-    COMMON_OPTIONS = [:notifies, :subscribes].freeze
+    COMMON_OPTIONS = [:notifies, :subscribes, :tags].freeze
+    # Tags are given on the command line as a comma-separated list.
+    TAG_FORBIDDEN = [",", " ", "\t", "\n"].freeze
 
-    attr_reader :name, :options, :host, :source_dir, :vars, :notifications
+    attr_reader :name, :options, :host, :source_dir, :vars, :notifications, :tags
+
+    # tags: as given (a Symbol, a String or an Array of them) as Strings.
+    def self.tag_list(value, owner)
+      list = value.is_a?(Array) ? value : [value].compact
+      list.map do |tag|
+        text = tag.to_s
+        valid = (tag.is_a?(Symbol) || tag.is_a?(String)) && !text.empty? &&
+                TAG_FORBIDDEN.none? { |character| text.include?(character) }
+        raise ResourceError, "#{owner}: tags must be Symbols or Strings without commas or spaces, got #{tag.inspect}" unless valid
+
+        text
+      end
+    end
 
     def self.type_name
       raise NotImplementedError, "#{self} must define type_name"
@@ -42,6 +57,7 @@ module Sadame
       raise ResourceError, "#{id}: options must be a Hash, got #{options.class}" unless options.is_a?(Hash)
 
       validate_option_names
+      @tags = Resource.tag_list(options[:tags], id).uniq
       @notifications = Notification.from_notifies(options[:notifies], self) +
                        Notification.from_subscribes(options[:subscribes], self)
       validate

@@ -183,6 +183,17 @@ class PushRunTest < SadameTest
     assert_includes @shell.commands, "tar -czf #{WORK}/bundle.tgz -C #{WORK}/recipe ."
   end
 
+  def test_tags_are_passed_to_each_target
+    @shell.on(ssh(@web).ssh("uname -sm"), stdout: "Linux x86_64\n")
+    stdout = FakeIO.new
+    Sadame::Push::Run.new(
+      targets: [@web], command: "drift", recipe_path: "examples/01-hello/recipe.rb", shell: @shell, stdout: stdout,
+      binary_store: FakeBinaryStore.new, parallel: Sadame::Push::Parallel.new(stdout, forking: false),
+      arguments: ["--tags", "web,db"], work_dir: WORK, run_id: "r1"
+    ).call
+    assert_includes @shell.commands, ssh(@web).ssh(remote_script(@web, ["--tags", "web,db"]))
+  end
+
   def test_a_missing_binary_fails_only_that_platform
     store = Object.new
     def store.find(os, arch)

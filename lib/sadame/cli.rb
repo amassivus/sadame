@@ -41,6 +41,8 @@ module Sadame
                                             batch after another; stop when a batch fails
 
       Options:
+        --tags T,...        Only resources with one of these tags (plan, apply, drift)
+        --skip-tags T,...   Leave out resources with one of these tags
         --var KEY=VALUE     Set vars[:KEY]; repeatable, overrides everything else
         --vars-file PATH    Load more vars from a Ruby file (local runs)
         --json              Print a JSON report instead of text
@@ -83,7 +85,14 @@ module Sadame
 
     private
 
+    RECIPE_COMMANDS = %w[plan apply drift].freeze
+
     def execute(options)
+      unless RECIPE_COMMANDS.include?(options[:command])
+        [["--tags", :tags], ["--skip-tags", :skip_tags]].each do |flag, key|
+          raise UsageError, "#{flag} only applies to plan, apply and drift" unless options[key].empty?
+        end
+      end
       return list_hosts(options) if options[:command] == "hosts"
       return show_facts(options) if options[:command] == "facts"
 
@@ -112,7 +121,7 @@ module Sadame
       vars = Vars.merge(base_vars, file_vars, options[:vars])
       host = local_host(options)
       resources = Recipe.load(recipe_path, host: host, vars: vars)
-      runner = Runner.new(host: host, output: build_output(options))
+      runner = Runner.new(host: host, output: build_output(options), selection: selection(options))
       report = case options[:command]
                when "plan" then runner.plan(resources)
                when "drift" then runner.drift(resources)
@@ -135,8 +144,21 @@ module Sadame
         targets: targets, command: options[:command], recipe_path: recipe_path, shell: @shell, stdout: @stdout,
         binary_store: Push::BinaryStore.new(@shell, environment: @environment),
         parallel: Push::Parallel.new(@stdout, color: color, forking: @forking),
-        json: options[:json], color: color, forks: options[:forks], serial: options[:serial]
+        json: options[:json], color: color, forks: options[:forks], serial: options[:serial],
+        arguments: selection_arguments(options)
       ).call
+    end
+
+    def selection(options)
+      Selection.new(tags: options[:tags], skip_tags: options[:skip_tags])
+    end
+
+    # --tags and --skip-tags for the sadame that runs on each target.
+    def selection_arguments(options)
+      arguments = []
+      arguments += ["--tags", options[:tags].join(",")] unless options[:tags].empty?
+      arguments += ["--skip-tags", options[:skip_tags].join(",")] unless options[:skip_tags].empty?
+      arguments
     end
 
     # Facts of this machine, or of the selected hosts, where sadame runs
@@ -193,6 +215,7 @@ module Sadame
     def parse(argv)
       options = { vars: {}, hosts: [], groups: [], limit: nil, inventory: nil, sudo: false, json: false,
                   color: nil, vars_file: nil, host_name: nil, host_groups: [], forks: nil, serial: nil,
+                  tags: [], skip_tags: [],
                   help: false, version: false }
       positional = []
       arguments = argv.dup
@@ -212,6 +235,8 @@ module Sadame
         when "-g", "--group" then options[:groups].concat(list_value(name, inline_value || arguments.shift))
         when "--limit" then options[:limit] = value(name, inline_value || arguments.shift)
         when "--inventory" then options[:inventory] = value(name, inline_value || arguments.shift)
+        when "--tags" then options[:tags].concat(list_value(name, inline_value || arguments.shift))
+        when "--skip-tags" then options[:skip_tags].concat(list_value(name, inline_value || arguments.shift))
         when "--forks" then options[:forks] = positive_integer(name, inline_value || arguments.shift)
         when "--serial" then options[:serial] = batch_size(name, inline_value || arguments.shift)
         when "--vars-file" then options[:vars_file] = value(name, inline_value || arguments.shift)

@@ -10,11 +10,15 @@ module Sadame
   # difference, and stops at the first failure. Notifications marked
   # :immediately run right after the resource that triggered them; the
   # others run once each at the end.
+  #
+  # With a selection (--tags, --skip-tags), only the selected resources are
+  # read, applied and reported; notifications still reach any resource.
   class Runner
-    def initialize(host:, output:, clock: nil)
+    def initialize(host:, output:, clock: nil, selection: nil)
       @host = host
       @output = output
       @clock = clock || -> { Time.now }
+      @selection = selection || Selection.new
     end
 
     def plan(resources)
@@ -26,13 +30,13 @@ module Sadame
     end
 
     def apply(resources)
-      report = Report.new(:apply, @host)
+      report = Report.new(:apply, @host, selection: @selection)
       started = @clock.call
-      @output.start(:apply, @host)
+      selected = start(:apply, resources)
       delayed = []
       stopped = false
 
-      resources.each do |resource|
+      selected.each do |resource|
         entry = stopped ? Report::Entry.new(resource, status: :skipped) : apply_entry(resource, resources)
         report.add(entry)
         @output.applied(entry)
@@ -49,15 +53,24 @@ module Sadame
     private
 
     def check(command, resources)
-      report = Report.new(command, @host)
+      report = Report.new(command, @host, selection: @selection)
       started = @clock.call
-      @output.start(command, @host)
-      resources.each do |resource|
+      selected = start(command, resources)
+      selected.each do |resource|
         entry = check_entry(resource, resources)
         report.add(entry)
         @output.planned(entry)
       end
       finish(report, started)
+    end
+
+    # Prints the header and returns the resources to work on.
+    def start(command, resources)
+      all = resources.to_a
+      selected = all.select { |resource| @selection.include?(resource) }
+      note = @selection.all? ? nil : @selection.description(selected.size, all.size)
+      @output.start(command, @host, note)
+      selected
     end
 
     def finish(report, started)
