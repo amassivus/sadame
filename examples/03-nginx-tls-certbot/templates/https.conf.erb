@@ -1,0 +1,9 @@
+# Managed by sadame.
+server {
+  listen 443 ssl;
+  server_name <%= vars[:domain] %>;
+  ssl_certificate <%= locals[:live] %>/fullchain.pem;
+  ssl_certificate_key <%= locals[:live] %>/privkey.pem;
+  root <%= locals[:webroot] %>;
+  index index.html;
+}
