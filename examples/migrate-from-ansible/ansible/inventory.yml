@@ -1,0 +1,17 @@
+all:
+  vars:
+    env: production
+  children:
+    web:
+      vars:
+        workers: 4
+      hosts:
+        web1.example.com:
+        web2.example.com:
+          workers: 8
+    db:
+      hosts:
+        db1.example.com:
+          ansible_user: admin
+          ansible_port: 2222
+          ansible_become: true

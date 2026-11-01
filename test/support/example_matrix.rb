@@ -6,9 +6,12 @@
 #
 #   path      a recipe file, or a directory containing recipe.rb
 #   distros   where it runs; the others are skipped with why:
-#   why       the reason it does not run on the other distributions
+#   why       why it does not run on the other distributions: one reason,
+#             or a Hash of reasons by distribution
 #   runs      argument lists for sadame; each is applied, then checked with
 #             drift (default: one run without arguments)
+#   vm_runs   the same for the VM layer, where hosts.local.rb provides what
+#             the containers get from arguments (default: runs)
 #   setup     shell commands that prepare a container before the first run
 #   pebble    true when the container needs the Pebble test ACME server
 #   drift_demo true for 10-drift-demo, which also breaks the machine
@@ -31,13 +34,15 @@ module ExampleMatrix
     { path: "examples/08-multi-role-inventory/site.rb", distros: DEBIAN,
       why: "the roles use Debian's package names and paths",
       runs: [["--host-name", "web1.example.com", "--host-groups", "web,all"],
-             ["--host-name", "db1.example.com", "--host-groups", "db,all"]] },
+             ["--host-name", "db1.example.com", "--host-groups", "db,all"]], vm_runs: [[]] },
     { path: "examples/09-cron-and-logrotate", distros: SYSTEMD, why: NO_SYSTEMD },
     { path: "examples/10-drift-demo", distros: DEBIAN, why: "it uses Debian's nginx and nologin paths",
       drift_demo: true },
     { path: "examples/11-dynamic-inventory/recipe.rb", distros: ALL },
     { path: "examples/12-omarchy-workstation", distros: ["arch"], why: "it is for Arch Linux and Omarchy",
-      setup: ["useradd -m alice"], runs: [["--var", "user=alice"]] },
+      setup: ["useradd -m alice"], runs: [["--var", "user=alice"]], vm_runs: [[]] },
+    { path: "examples/migrate-from-ansible", distros: DEBIAN, why: "the playbook it translates uses apt" },
+    { path: "examples/migrate-from-itamae", distros: DEBIAN, why: "it uses Debian's www-data user" },
     { path: "examples/basics", distros: %w[ubuntu debian alpine arch],
       why: "Rocky ships curl-minimal, which conflicts with the curl package" },
     { path: "examples/quickstart", distros: DEBIAN, why: "it writes Debian's default web root" },
@@ -47,16 +52,17 @@ module ExampleMatrix
     { path: "examples/resources/package/minimal.rb", distros: %w[ubuntu debian alpine arch],
       why: "htop needs EPEL on Rocky" },
     { path: "examples/resources/package/by_family.rb", distros: %w[ubuntu debian rocky],
-      why: "Arch calls the package apache, not httpd" },
+      why: { "arch" => "Arch calls the package apache, not httpd",
+             "alpine" => "Alpine calls the package apache2, not httpd" } },
     { path: "examples/resources/package/aur.rb", distros: ["arch"], why: "the AUR is Arch's",
-      runs: [["--var", "aur_user=alice"]] },
+      runs: [["--var", "aur_user=alice"]], vm_runs: [[]] },
     { path: "examples/resources/file/recipe.rb", distros: ALL },
     { path: "examples/resources/file/minimal.rb", distros: ALL },
     { path: "examples/resources/directory/recipe.rb", distros: DEBIAN, why: "it uses Debian's www-data user" },
     { path: "examples/resources/directory/minimal.rb", distros: ALL },
     { path: "examples/resources/service/recipe.rb", distros: SYSTEMD, why: NO_SYSTEMD },
     { path: "examples/resources/service/reload_on_change.rb", distros: %w[ubuntu debian rocky],
-      why: "Arch's nginx.conf does not include conf.d, and Alpine has no systemd" },
+      why: { "arch" => "Arch's nginx.conf does not include conf.d", "alpine" => NO_SYSTEMD } },
     { path: "examples/resources/exec/recipe.rb", distros: ALL },
     { path: "examples/resources/exec/minimal.rb", distros: DEBIAN, why: "/var/backups is Debian's" },
     { path: "examples/resources/user/recipe.rb", distros: SYSTEMD, why: "Alpine needs the shadow package first" },
@@ -71,7 +77,16 @@ module ExampleMatrix
     path.end_with?(".rb") ? path : "#{path}/recipe.rb"
   end
 
+  def self.skip_reason(example, distro)
+    reason = example[:why]
+    reason.is_a?(Hash) ? reason.fetch(distro) : reason
+  end
+
   def self.runs(example)
     example[:runs] || [[]]
+  end
+
+  def self.vm_runs(example)
+    example[:vm_runs] || runs(example)
   end
 end

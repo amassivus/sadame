@@ -1,0 +1,37 @@
+# Applies the recipe to every server after a change is merged, once someone
+# approves the run. The approval comes from the "production" environment:
+# create it under Settings > Environments and add required reviewers.
+#
+# Copy to .github/workflows/apply.yml. It needs the same secrets as
+# github-actions-drift.yml: SSH_PRIVATE_KEY and SSH_KNOWN_HOSTS.
+name: Apply
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**"]
+  workflow_dispatch:
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    environment: production
+    # Never two applies at once; a newer one waits for the running one.
+    concurrency:
+      group: apply
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install sadame
+        run: curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | sh
+
+      - name: Set up SSH
+        run: |
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 0600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Apply to every server
+        run: sadame apply site/site.rb -g all --no-color

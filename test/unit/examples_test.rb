@@ -49,12 +49,14 @@ class ExamplesTest < SadameTest
       ["package[nginx]", "user[demo-app]", "directory[/etc/demo-app]", "file[/etc/demo-app/app.conf]", "service[nginx]"]
     ],
     "examples/08-multi-role-inventory/site.rb" => ["debian", ["file[/etc/motd]"]],
+    "examples/migrate-from-ansible/recipe.rb" => ["debian", ["package[nginx]", "package[openssl]", "package[cron]", "package[curl]", "file[/etc/issue.net]", "file[/usr/local/bin/backup]", "file[/etc/nginx/conf.d/app.conf]", "directory[/srv/app]", "file[/etc/nginx/conf.d/old.conf]", "service[nginx]", "user[deploy]", "exec[openssl req -x509 -newkey rsa:2048 -nodes -days 365 -subj /CN=app.example.com -keyout /etc/ssl/private/app.key -out /etc/ssl/certs/app.crt]", "exec[echo EDITOR=vim >> /etc/environment]", "file[/etc/cron.d/backup]", "exec[curl -fsSL -o /srv/app/example.html https://www.example.com/]"]],
+    "examples/migrate-from-itamae/recipe.rb" => ["debian", ["package[nginx]", "package[openssl]", "file[/etc/nginx/conf.d/app.conf]", "directory[/srv/app]", "file[/usr/local/bin/backup]", "exec[self-signed certificate]", "user[deploy]", "service[nginx]"]],
     "examples/02-nginx-static-site/recipe.rb" => ["debian", ["package[nginx]", "service[nginx]", "file[/etc/nginx/nginx.conf]", "directory[/etc/nginx/conf.d]", "file[/etc/nginx/conf.d/static-site.conf]", "directory[/var/www/static-site]", "file[/var/www/static-site/index.html]"]],
     "examples/03-nginx-tls-certbot/recipe.rb" => ["debian", ["package[nginx]", "package[certbot]", "service[nginx]", "file[/etc/nginx/nginx.conf]", "directory[/etc/nginx/conf.d]", "directory[/var/www/example.com]", "file[/var/www/example.com/index.html]", "file[/etc/nginx/conf.d/example.com.conf]", "exec[request the certificate for example.com]", "file[/etc/nginx/conf.d/example.com-tls.conf]", "directory[/etc/letsencrypt/renewal-hooks/deploy]", "file[/etc/letsencrypt/renewal-hooks/deploy/reload-nginx]", "service[certbot.timer]"]],
     "examples/04-docker-host/recipe.rb" => ["ubuntu", ["package[ca-certificates]", "package[curl]", "directory[/etc/apt/keyrings]", "exec[download Docker's signing key]", "file[/etc/apt/sources.list.d/docker.list]", "exec[apt-get update]", "package[docker-ce]", "package[docker-ce-cli]", "package[containerd.io]", "package[docker-buildx-plugin]", "package[docker-compose-plugin]", "directory[/etc/docker]", "file[/etc/docker/daemon.json]", "service[docker]", "user[deploy]"]],
-    "examples/05-postgres/recipe.rb" => ["rocky", ["package[postgresql-server]", "exec[create the database cluster]", "exec[include conf.d in postgresql.conf]", "service[postgresql]", "directory[/var/lib/pgsql/data/conf.d]", "file[/var/lib/pgsql/data/conf.d/tuning.conf]"]],
+    "examples/05-postgres/recipe.rb" => ["rocky", ["package[postgresql-server]", "exec[create the database cluster]", "directory[/var/lib/pgsql/data/conf.d]", "file[/var/lib/pgsql/data/conf.d/tuning.conf]", "exec[include conf.d in postgresql.conf]", "service[postgresql]"]],
     "examples/06-app-deploy-user/recipe.rb" => ["alpine", ["package[sudo]", "package[shadow]", "package[bash]", "user[deploy]", "directory[/home/deploy/.ssh]", "file[/home/deploy/.ssh/authorized_keys]", "file[/etc/sudoers.d/deploy]"]],
-    "examples/07-hardening-baseline/recipe.rb" => ["debian", ["package[openssh-server]", "package[ufw]", "package[fail2ban]", "package[unattended-upgrades]", "file[/etc/ssh/sshd_config.d/10-hardening.conf]", "service[ssh]", "exec[ufw default deny incoming]", "exec[ufw allow 2222/tcp]", "exec[ufw --force enable]", "file[/etc/fail2ban/jail.d/sshd.local]", "service[fail2ban]", "file[/etc/apt/apt.conf.d/20auto-upgrades]", "service[apt-daily-upgrade.timer]"]],
+    "examples/07-hardening-baseline/recipe.rb" => ["debian", ["package[openssh-server]", "package[ufw]", "package[fail2ban]", "package[unattended-upgrades]", "service[ssh]", "file[/etc/ssh/sshd_config.d/10-hardening.conf]", "exec[ufw default deny incoming]", "exec[ufw allow 2222/tcp]", "exec[ufw --force enable]", "file[/etc/fail2ban/jail.d/sshd.local]", "service[fail2ban]", "file[/etc/apt/apt.conf.d/20auto-upgrades]", "service[apt-daily-upgrade.timer]"]],
     "examples/09-cron-and-logrotate/recipe.rb" => ["arch", ["package[cronie]", "package[logrotate]", "service[cronie]", "user[app]", "directory[/var/lib/app]", "directory[/var/log/app]", "file[/etc/cron.d/app]", "file[/etc/logrotate.d/app]"]],
     "examples/12-omarchy-workstation/recipe.rb" => ["arch", ["package[git]", "package[htop]", "package[ripgrep]", "package[fd]", "package[bat]", "package[starship]", "directory[/home/alice/.config]", "directory[/home/alice/.config/systemd]", "directory[/home/alice/.config/systemd/user]", "directory[/home/alice/.local]", "directory[/home/alice/.local/bin]", "file[/home/alice/.gitconfig]", "file[/home/alice/.config/starship.toml]", "file[/home/alice/.local/bin/update-system]", "exec[enable lingering for alice]", "exec[start alice's systemd instance]", "exec[reload alice's systemd units]", "file[/home/alice/.config/systemd/user/clean-downloads.service]", "file[/home/alice/.config/systemd/user/clean-downloads.timer]", "service[clean-downloads.timer]", "exec[install visual-studio-code-bin from the AUR]"]],
     "examples/11-dynamic-inventory/recipe.rb" => ["debian", ["file[/etc/motd]"]],
@@ -69,6 +71,10 @@ class ExamplesTest < SadameTest
   INVENTORIES = {
     "examples/07-hardening-baseline/hosts.rb" => [nil, { new: ["vps1.example.com"] }],
     "examples/07-hardening-baseline/hosts-after.rb" => [nil, { new: ["vps1.example.com"] }],
+    "examples/migrate-from-ansible/hosts.rb" => [
+      nil, { web: ["web1.example.com", "web2.example.com"], db: ["db1.example.com"],
+             all: ["web1.example.com", "web2.example.com", "db1.example.com"] }
+    ],
     "examples/08-multi-role-inventory/hosts.rb" => [
       nil, { web: ["web1.example.com", "web2.example.com"], db: ["db1.example.com"],
              all: ["web1.example.com", "web2.example.com", "db1.example.com"] }
@@ -95,6 +101,8 @@ class ExamplesTest < SadameTest
   # that are only used through include_recipe.
   SUPPORT_FILE_NAMES = ["vars.rb"].freeze
   INCLUDED_RECIPE_DIRECTORIES = ["parts", "roles"].freeze
+  # Recipes for other tools, kept for comparison in the migration examples.
+  OTHER_TOOLS_DIRECTORIES = ["itamae"].freeze
 
   def test_every_recipe_is_covered
     recipe_files("examples").each do |path|
@@ -112,6 +120,15 @@ class ExamplesTest < SadameTest
   def test_every_recipe_is_in_the_matrix
     matrix_paths = ExampleMatrix::EXAMPLES.map { |example| ExampleMatrix.recipe_path(example) }
     assert_equal EXAMPLES.keys.sort, matrix_paths.sort
+  end
+
+  def test_every_skipped_distribution_has_a_reason
+    ExampleMatrix::EXAMPLES.each do |example|
+      (ExampleMatrix::ALL - example[:distros]).each do |distro|
+        reason = ExampleMatrix.skip_reason(example, distro)
+        assert(reason && !reason.empty?, "#{example[:path]} gives no reason for skipping #{distro}")
+      end
+    end
   end
 
   def test_examples_plan_and_apply_on_every_distribution_they_support
@@ -145,6 +162,17 @@ class ExamplesTest < SadameTest
   def test_every_inventory_is_covered
     walk("examples").select { |path| File.basename(path).start_with?("hosts") && path.end_with?(".rb") }.each do |path|
       assert_includes INVENTORIES.keys, path, "#{path} is not exercised by ExamplesTest"
+    end
+  end
+
+  def test_hardening_opens_ports_given_on_the_command_line
+    path = "examples/07-hardening-baseline/recipe.rb"
+    [["80,443", Sadame::Vars.parse_assignment("open_ports=80,443")[1]], ["80", 80], ["list", [80, 443]]].each do |label, value|
+      vars = Sadame::Vars.merge(Sadame::Vars.load_file("examples/07-hardening-baseline/vars.rb"), { open_ports: value })
+      ids = Sadame::Recipe.load(path, host: host_for(fresh_shell("debian")), vars: vars).to_a.map { |resource| resource.id }
+      assert_includes ids, "exec[ufw allow 2222/tcp]", label
+      assert_includes ids, "exec[ufw allow 80/tcp]", label
+      assert_includes ids, "exec[ufw allow 443/tcp]", label unless value == 80
     end
   end
 
@@ -186,10 +214,23 @@ class ExamplesTest < SadameTest
     assert_includes gitlab, "- drift.json"
   end
 
+  def test_team_workflow_pipelines
+    plan = File.read("examples/ci/github-actions-plan.yml")
+    assert_includes plan, "sadame plan site/site.rb -g all --no-color | tee plan.txt"
+    assert_includes plan, "$GITHUB_STEP_SUMMARY"
+    apply = File.read("examples/ci/github-actions-apply.yml")
+    assert_includes apply, "environment: production"
+    assert_includes apply, "run: sadame apply site/site.rb -g all --no-color"
+  end
+
   def test_ci_examples_are_valid_yaml
     skip "mruby has no YAML parser" unless RUBY_ENGINE == "ruby"
 
     require "yaml"
+    YAML.safe_load(File.read("examples/ci/github-actions-plan.yml"))
+    YAML.safe_load(File.read("examples/ci/github-actions-apply.yml"))
+    YAML.safe_load(File.read("examples/migrate-from-ansible/ansible/playbook.yml"))
+    YAML.safe_load(File.read("examples/migrate-from-ansible/ansible/inventory.yml"))
     github = YAML.safe_load(File.read("examples/ci/github-actions-drift.yml"))
     assert_equal ["drift"], github["jobs"].keys
     gitlab = YAML.safe_load(File.read("examples/ci/gitlab-ci-drift.yml"))
@@ -198,7 +239,8 @@ class ExamplesTest < SadameTest
 
   def test_paths_mentioned_in_the_docs_exist
     (markdown_files("docs") + ["README.md"]).each do |document|
-      File.read(document).scan(%r{examples/[A-Za-z0-9_./-]+}).each do |reference|
+      # Only paths from the repository root: not ../examples/index.md, the docs page.
+      File.read(document).scan(%r{(?<![\w./-])examples/[A-Za-z0-9_./-]+}).each do |reference|
         path = reference.sub(%r{[.]+\z}, "")
         assert File.exist?(path), "#{document} mentions #{path}, which does not exist"
       end
@@ -216,8 +258,10 @@ class ExamplesTest < SadameTest
   def recipe_files(directory)
     walk(directory).select do |path|
       name = File.basename(path)
+      directories = File.dirname(path).split("/")
       path.end_with?(".rb") && !SUPPORT_FILE_NAMES.include?(name) && !name.start_with?("hosts") &&
-        !INCLUDED_RECIPE_DIRECTORIES.include?(File.basename(File.dirname(path)))
+        !INCLUDED_RECIPE_DIRECTORIES.include?(directories.last) &&
+        (directories & OTHER_TOOLS_DIRECTORIES).empty?
     end
   end
 

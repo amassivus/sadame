@@ -1,0 +1,7 @@
+# Managed by sadame.
+server {
+  listen 8080;
+  server_name <%= locals[:server_name] %>;
+  root /srv/app;
+  # workers: <%= locals[:workers] %>
+}

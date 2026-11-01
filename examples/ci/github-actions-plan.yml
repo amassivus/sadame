@@ -1,0 +1,42 @@
+# Shows what a pull request would change on every server: runs `sadame plan`
+# against the inventory and puts the output on the run's summary page, next
+# to the code being reviewed. It changes nothing.
+#
+# Copy to .github/workflows/plan.yml. It needs the same secrets as
+# github-actions-drift.yml: SSH_PRIVATE_KEY and SSH_KNOWN_HOSTS.
+name: Plan
+
+on:
+  pull_request:
+    paths: ["site/**"]
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install sadame
+        run: curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | sh
+
+      - name: Set up SSH
+        run: |
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 0600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Plan every server
+        run: |
+          set -o pipefail
+          sadame plan site/site.rb -g all --no-color | tee plan.txt
+
+      - name: Put the plan on the summary page
+        if: always()
+        run: |
+          {
+            echo '## sadame plan'
+            echo '```'
+            cat plan.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

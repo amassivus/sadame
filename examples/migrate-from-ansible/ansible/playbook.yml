@@ -1,0 +1,115 @@
+# The Ansible playbook that recipe.rb translates, kept for comparison. The
+# --8<-- markers name the matching sections of recipe.rb; the docs show
+# them side by side.
+- name: Web server
+  hosts: web
+  become: true
+  vars:
+    server_name: app.example.com
+    workers: 4
+
+  tasks:
+    # --8<-- [start:package]
+    - name: Install packages
+      ansible.builtin.apt:
+        name: [nginx, openssl, cron, curl]
+        state: present
+        update_cache: true
+    # --8<-- [end:package]
+
+    # --8<-- [start:copy]
+    - name: Login banner
+      ansible.builtin.copy:
+        dest: /etc/issue.net
+        content: "Authorized access only.\n"
+        mode: "0644"
+
+    - name: Backup script
+      ansible.builtin.copy:
+        src: files/backup.sh
+        dest: /usr/local/bin/backup
+        mode: "0755"
+    # --8<-- [end:copy]
+
+    # --8<-- [start:template]
+    - name: Site configuration
+      ansible.builtin.template:
+        src: templates/app.conf.j2
+        dest: /etc/nginx/conf.d/app.conf
+        mode: "0644"
+      notify: Reload nginx
+    # --8<-- [end:template]
+
+    # --8<-- [start:file]
+    - name: Application directory
+      ansible.builtin.file:
+        path: /srv/app
+        state: directory
+        owner: www-data
+        mode: "0755"
+
+    - name: Old configuration is gone
+      ansible.builtin.file:
+        path: /etc/nginx/conf.d/old.conf
+        state: absent
+    # --8<-- [end:file]
+
+    # --8<-- [start:service]
+    - name: nginx runs and starts at boot
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: true
+    # --8<-- [end:service]
+
+    # --8<-- [start:user]
+    - name: Deploy user
+      ansible.builtin.user:
+        name: deploy
+        shell: /bin/bash
+        groups: www-data
+        append: true
+    # --8<-- [end:user]
+
+    # --8<-- [start:command]
+    - name: Self-signed certificate
+      ansible.builtin.command:
+        cmd: >-
+          openssl req -x509 -newkey rsa:2048 -nodes -days 365 -subj /CN=app.example.com
+          -keyout /etc/ssl/private/app.key -out /etc/ssl/certs/app.crt
+        creates: /etc/ssl/private/app.key
+    # --8<-- [end:command]
+
+    # --8<-- [start:lineinfile]
+    - name: Default editor
+      ansible.builtin.lineinfile:
+        path: /etc/environment
+        regexp: "^EDITOR="
+        line: EDITOR=vim
+    # --8<-- [end:lineinfile]
+
+    # --8<-- [start:cron]
+    - name: Nightly backup
+      ansible.builtin.cron:
+        name: backup
+        minute: "30"
+        hour: "2"
+        user: root
+        job: /usr/local/bin/backup
+    # --8<-- [end:cron]
+
+    # --8<-- [start:get_url]
+    - name: A page from another server
+      ansible.builtin.get_url:
+        url: https://www.example.com/
+        dest: /srv/app/example.html
+        mode: "0644"
+    # --8<-- [end:get_url]
+
+  # --8<-- [start:handlers]
+  handlers:
+    - name: Reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
+  # --8<-- [end:handlers]
