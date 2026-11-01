@@ -57,9 +57,15 @@ Copy this to `.github/workflows/drift.yml` and add the two secrets under
 --8<-- "examples/ci/github-actions-drift.yml"
 ```
 
-`if: always()` on the upload step is what keeps the report when the drift
-step fails, which is when you need it. The report appears under the run's
-**Artifacts** as `drift-report`.
+`sadame report drift.json` turns the JSON into Markdown for the run's
+summary page: a table of hosts, and for each host that differs the
+resources with their diffs. `if: always()` on the last two steps is what
+keeps the summary and the report when the drift step fails, which is when
+you need them. The report appears under the run's **Artifacts** as
+`drift-report`.
+
+`sadame init --ci github` writes this workflow, with the path of your
+recipe, to `.github/workflows/sadame-drift.yml`.
 
 ## GitLab CI
 
@@ -70,13 +76,34 @@ and create a pipeline schedule under **Build > Pipeline schedules**:
 --8<-- "examples/ci/gitlab-ci-drift.yml"
 ```
 
+`after_script` turns the JSON into JUnit XML with
+`sadame report drift.json --format junit`, and `reports: junit:` hands it to
+GitLab, which shows each host as a test suite and each drifted resource as a
+failed test, with its diff, on the pipeline's **Tests** tab.
 `artifacts: when: always` keeps `drift.json` on failed jobs too.
+
+`sadame init --ci gitlab` writes this job, with the path of your recipe, to
+`.gitlab/sadame-drift.yml`, to include from `.gitlab-ci.yml`.
 
 ## Reading the report
 
-The report has one entry per host with its status and full report; the
+`sadame report` prints the summary the workflows above put on the run's
+page:
+
+```text
+--8<-- "docs/transcripts/report-markdown.txt"
+```
+
+and with `--format junit`, JUnit XML for any CI system that reads test
+reports (Jenkins, GitLab, Azure Pipelines and others):
+
+```text
+--8<-- "docs/transcripts/report-junit.txt"
+```
+
+The JSON has one entry per host with its status and full report; the
 format is in the [JSON output reference](../reference/json-output.md#push-mode).
-This lists the resources that drifted, per host:
+With `jq`, this lists the resources that drifted, per host:
 
 ```sh
 jq -r '.hosts[] | .name as $host | (.report.resources // [])[]

@@ -1,0 +1,17 @@
+$ sadame init infra
+created infra/recipe.rb
+created infra/vars.rb
+created infra/hosts.rb
+created infra/templates/motd.erb
+
+Next:
+  sadame validate infra        check the recipe without connecting to anything
+  sudo sadame plan infra       see what it would change on this machine
+  sadame plan infra -g all     on your servers, once infra/hosts.rb lists them
+
+$ sadame validate infra
+sadame 0.4.0 validate infra/recipe.rb, as on Debian GNU/Linux 12 (bookworm)
+
+  local  ok     1 resource
+
+validate on 1 host: 1 ok.

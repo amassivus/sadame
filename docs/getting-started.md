@@ -132,6 +132,19 @@ is described in the [JSON output reference](reference/json-output.md):
 | `1` | not used | a resource or notification failed | the machine differs from the recipe |
 | `2` | usage or recipe error, or the state of a resource could not be read | usage or recipe error | usage or recipe error, or the state of a resource could not be read |
 
+## Your own project
+
+`sadame init` writes the files a project starts from: a recipe with one
+resource, `vars.rb`, an inventory with examples to uncomment, and a
+template. `sadame validate` checks the recipe without touching a machine:
+
+```text
+--8<-- "docs/transcripts/init.txt"
+```
+
+Add `--ci github` or `--ci gitlab` to also get a daily
+[drift check](guides/drift-in-ci.md) for your CI.
+
 ## Common mistakes
 
 - **Running without root.** Most real recipes install packages or write

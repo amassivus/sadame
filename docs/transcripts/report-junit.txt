@@ -1,0 +1,28 @@
+$ sadame report drift.json --format junit
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="sadame drift" tests="12" failures="1" errors="0">
+  <testsuite name="web1.example.com" tests="6" failures="0" errors="0">
+    <testcase classname="web1.example.com" name="file[/etc/motd]"/>
+    <testcase classname="web1.example.com" name="package[nginx]"/>
+    <testcase classname="web1.example.com" name="directory[/etc/demo-app]"/>
+    <testcase classname="web1.example.com" name="file[/etc/demo-app/web.conf]"/>
+    <testcase classname="web1.example.com" name="file[/etc/nginx/conf.d/demo-app.conf]"/>
+    <testcase classname="web1.example.com" name="service[nginx]"/>
+  </testsuite>
+  <testsuite name="web2.example.com" tests="6" failures="1" errors="0">
+    <testcase classname="web2.example.com" name="file[/etc/motd]"/>
+    <testcase classname="web2.example.com" name="package[nginx]"/>
+    <testcase classname="web2.example.com" name="directory[/etc/demo-app]"/>
+    <testcase classname="web2.example.com" name="file[/etc/demo-app/web.conf]">
+      <failure message="differs from the recipe" type="update">--- current
++++ desired
+@@ -1,3 +1,3 @@
+ # Managed by sadame.
+ environment = production
+-workers     = 12
++workers     = 8</failure>
+    </testcase>
+    <testcase classname="web2.example.com" name="file[/etc/nginx/conf.d/demo-app.conf]"/>
+    <testcase classname="web2.example.com" name="service[nginx]"/>
+  </testsuite>
+</testsuites>

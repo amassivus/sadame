@@ -50,7 +50,8 @@ module Transcripts
           "printf '# Managed by sadame\\n[server]\\nport = <%%= port %%>\\n' > /tmp/template-typo/templates/app.conf.erb"
         ] },
         { save: "basics-unknown-option", dir: "/tmp/option-typo", commands: ["sudo sadame plan", "echo $?"] },
-        { save: "basics-template-error", dir: "/tmp/template-typo", commands: ["sudo sadame plan", "echo $?"] }
+        { save: "basics-template-error", dir: "/tmp/template-typo", commands: ["sudo sadame plan", "echo $?"] },
+        { save: "validate-error", dir: "/tmp/template-typo", commands: ["sadame validate", "echo $?"] }
       ]
     },
     {
@@ -128,6 +129,15 @@ module Transcripts
         { save: "user",
           commands: ["sudo sadame plan examples/resources/user", "sudo sadame apply examples/resources/user",
                      "id deploy"] }
+      ]
+    },
+    {
+      name: "init",
+      image: "debian",
+      steps: [
+        { save: "init", dir: "/tmp", commands: ["sadame init infra", "sadame validate infra"] },
+        { save: "validate",
+          commands: ["sadame validate examples/08-multi-role-inventory/site.rb -g all --platform ubuntu"] }
       ]
     },
     {
@@ -247,6 +257,10 @@ module Transcripts
         { target: "web2", commands: ["sed -i 's/workers     = 8/workers     = 12/' /etc/demo-app/web.conf"] },
         { save: "remote-drift-limit", dir: EXAMPLE_08, commands: ["sadame drift site.rb --limit 'web*'", "echo $?"] },
         { save: "remote-drift-json", dir: EXAMPLE_08, commands: ["sadame drift site.rb -h web2.example.com --json"] },
+        { controller: true, commands: ["cd #{EXAMPLE_08} && sadame drift site.rb --limit 'web*' --json > /tmp/drift.json"] },
+        { save: "report-markdown", dir: "/tmp", commands: ["sadame report drift.json"] },
+        { save: "report-junit", dir: "/tmp", commands: ["sadame report drift.json --format junit"] },
+        { save: "remote-tags", dir: EXAMPLE_08, commands: ["sadame plan site.rb -g web --tags web"] },
         { save: "remote-host-flag", dir: EXAMPLE_08, commands: ["sadame plan site.rb -h deploy@db1.example.com:2222"] },
         { save: "remote-unreachable", dir: EXAMPLE_08,
           commands: ["sadame plan site.rb -g db -h deploy@db2.example.com", "echo $?"] },

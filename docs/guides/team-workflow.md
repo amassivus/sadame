@@ -31,8 +31,10 @@ them `sensitive: true` so their content does not appear in plans.
 ## Review the plan, not only the code
 
 A recipe change is easier to review with its effect next to it. This
-pipeline runs `sadame plan` against every server on each pull request and
-puts the output on the run's summary page:
+pipeline first checks the recipe for every host with `sadame validate`,
+which connects to nothing and so also works for pull requests that cannot
+read the SSH secrets, then runs `sadame plan` against every server and puts
+the output on the run's summary page:
 
 ```yaml title="examples/ci/github-actions-plan.yml"
 --8<-- "examples/ci/github-actions-plan.yml"

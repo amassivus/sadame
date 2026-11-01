@@ -1,0 +1,24 @@
+$ sadame report drift.json
+### sadame drift on 2 hosts: 1 ok, 1 drift
+
+| Host | Result | Resources |
+|---|---|---|
+| web1.example.com | ok | 6 unchanged |
+| web2.example.com | **drift** | 1 of 6 differ |
+
+<details>
+<summary>web2.example.com: 1 of 6 differ</summary>
+
+**~ file[/etc/demo-app/web.conf]**
+
+```diff
+--- current
++++ desired
+@@ -1,3 +1,3 @@
+ # Managed by sadame.
+ environment = production
+-workers     = 12
++workers     = 8
+```
+
+</details>
