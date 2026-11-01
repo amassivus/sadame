@@ -139,7 +139,11 @@ are private, so the details live in `test/integration/vm/hosts.local.rb`,
 which git ignores. `hosts.example.rb` next to it shows the shape: one group
 per distribution with the VM's address, user, port, sudo, and vars naming
 its libvirt domain and clean snapshot, plus a `hypervisor` group for the
-machine running libvirt.
+machine running libvirt. The VM hosts use
+`StrictHostKeyChecking=accept-new`, because sadame connects with
+`BatchMode=yes` and example 07 moves SSH to a port whose host key is not
+in `known_hosts` yet; accept-new records an unknown key and still refuses
+one that changed.
 
 ```sh
 cp test/integration/vm/hosts.example.rb test/integration/vm/hosts.local.rb   # then edit it

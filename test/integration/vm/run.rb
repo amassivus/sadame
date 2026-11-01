@@ -42,8 +42,8 @@ module VMTests
       The VM tests need #{INVENTORY.delete_prefix("#{ROOT}/")}, which is not there.
       Copy #{EXAMPLE_INVENTORY.delete_prefix("#{ROOT}/")} to that name and fill in:
         - one group per distribution (#{DISTRIBUTIONS.join(", ")}), each with one host:
-          address, user (passwordless sudo), port, and vars domain: (libvirt domain)
-          and snapshot: (the clean snapshot to revert to);
+          address, user (passwordless sudo), port, ssh_opts, and vars libvirt_domain:
+          (the libvirt domain) and snapshot: (the clean snapshot to revert to);
         - a hypervisor group with the libvirt host's SSH details and vars libvirt_uri:.
       Git ignores hosts.local.rb. Nothing was run.
     TEXT
@@ -70,7 +70,7 @@ module VMTests
     end
 
     def reset
-      domain = @target.vars.fetch(:domain)
+      domain = @target.vars.fetch(:libvirt_domain)
       snapshot = @target.vars.fetch(:snapshot)
       uri = @hypervisor.vars.fetch(:libvirt_uri, "qemu:///system")
       puts "== #{@distribution}: reverting #{domain} to snapshot #{snapshot}"
