@@ -27,6 +27,7 @@ written.
 | `group` | String | unmanaged | Group name of the file. |
 | `state` | `:present` or `:absent` | `:present` | `:absent` deletes the file. |
 | `sensitive` | `true` or `false` | `false` | Hide content diffs in output and JSON, for files holding secrets. |
+| `verify` | String containing `%{path}` | none | A command that checks the new content before it replaces the file, such as `"visudo -cf %{path}"`. `%{path}` is the temporary file. If the command fails, the file is left as it was and the resource fails. |
 | `notifies` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on other resources when this one changes. See [Notifications](../recipes/notifications.md). |
 | `subscribes` | `[:action, "type[name]"]`, optionally with `:immediately`, or a list of them | none | Actions to run on this resource when another one changes. |
 
@@ -98,6 +99,9 @@ Only the attribute that differs is reported, and `apply` only runs `chmod`:
   Declare a `directory` resource before it.
 - **Secrets in plan output.** Without `sensitive: true`, the diff of a file
   holding credentials is printed and included in `--json` output.
+- **Unchecked configuration files.** A broken sudoers or sshd file can lock
+  you out of a server. Give such files `verify:`; see
+  `examples/06-app-deploy-user`.
 - **Template next to the wrong recipe.** Templates are found relative to the
   recipe file that declares the resource; see
   [Recipe basics](../recipes/basics.md#templates).
