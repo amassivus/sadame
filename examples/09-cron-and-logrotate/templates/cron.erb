@@ -1,0 +1,6 @@
+# Managed by sadame. Local changes will be overwritten.
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+<% vars[:jobs].each do |job| -%>
+<%= job[:schedule] %> <%= job[:user] %> <%= job[:command] %>
+<% end -%>
