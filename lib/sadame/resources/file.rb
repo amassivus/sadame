@@ -93,14 +93,6 @@ module Sadame
       raise ResourceError, "#{id}: #{given.first}: makes no sense with state: :absent"
     end
 
-    def validate_verify
-      command = options[:verify]
-      return if command.nil?
-      return if command.is_a?(String) && command.include?("%{path}")
-
-      raise ResourceError, "#{id}: verify must be a command containing %{path}, such as \"visudo -cf %{path}\""
-    end
-
     # Finds template: or source: relative to the recipe's directory, then in
     # its templates/ or files/ subdirectory.
     def resolve_local_file
@@ -163,27 +155,9 @@ module Sadame
 
     def replace_content
       existing = read_stat
-      temporary = "#{path}.sadame-new"
-      shell.write_file(temporary, content_managed? ? desired_content : "")
-      mode = desired_mode || existing&.mode
-      owner = options[:owner] || existing&.owner
-      group = options[:group] || existing&.group
-      shell.run!("chmod #{mode} #{quote(temporary)}") if mode
-      shell.run!("chown #{ownership(owner, group)} #{quote(temporary)}") if owner || group
-      verify(temporary) if options[:verify]
-      shell.run!("mv -f #{quote(temporary)} #{quote(path)}")
-    rescue StandardError => e
-      shell.run("rm -f #{quote(temporary)}") if temporary
-      raise e
-    end
-
-    def verify(temporary)
-      command = options[:verify].gsub("%{path}") { quote(temporary) }
-      result = shell.run(command)
-      return if result.success?
-
-      details = (result.stderr.strip.empty? ? result.stdout : result.stderr).strip
-      raise ResourceError, "#{id}: verify failed, #{path} was not changed: #{command}\n#{details}"
+      replace_file(path, content_managed? ? desired_content : "",
+                   mode: desired_mode || existing&.mode, owner: options[:owner] || existing&.owner,
+                   group: options[:group] || existing&.group, verify: options[:verify])
     end
   end
 end

@@ -131,6 +131,39 @@ module Sadame
                            "got #{options[:mode].inspect}"
     end
 
+    def validate_verify
+      command = options[:verify]
+      return if command.nil?
+      return if command.is_a?(String) && command.include?("%{path}")
+
+      raise ResourceError, "#{id}: verify must be a command containing %{path}, such as \"visudo -cf %{path}\""
+    end
+
+    # Writes content to path through a temporary file next to it: the
+    # temporary file gets its mode and ownership first, the verify command
+    # (with %{path}) checks it, and a rename puts it in place, so readers
+    # never see a half-written file and a failed check changes nothing.
+    def replace_file(path, content, mode:, owner:, group:, verify:)
+      temporary = "#{path}.sadame-new"
+      shell.write_file(temporary, content)
+      shell.run!("chmod #{mode} #{quote(temporary)}") if mode
+      shell.run!("chown #{ownership(owner, group)} #{quote(temporary)}") if owner || group
+      verify_file(path, temporary, verify) if verify
+      shell.run!("mv -f #{quote(temporary)} #{quote(path)}")
+    rescue StandardError => e
+      shell.run("rm -f #{quote(temporary)}")
+      raise e
+    end
+
+    def verify_file(path, temporary, verify)
+      command = verify.gsub("%{path}") { quote(temporary) }
+      result = shell.run(command)
+      return if result.success?
+
+      details = (result.stderr.strip.empty? ? result.stdout : result.stderr).strip
+      raise ResourceError, "#{id}: verify failed, #{path} was not changed: #{command}\n#{details}"
+    end
+
     def changed?(changes, attribute)
       changes.any? { |change| change.attribute == attribute }
     end
