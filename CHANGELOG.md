@@ -10,6 +10,8 @@ project uses [Semantic Versioning](https://semver.org/).
 
 - Homebrew tap: `brew install enderkus/sadame/sadame` installs the release
   binary on macOS and Linux.
+- The docs' home page shows the navigation, the terminal recording and what
+  sets sadame apart, with buttons to get started and to star the project.
 - Links to the project on X, [@sadame_rb](https://x.com/sadame_rb), in the
   docs' footer and the README.
 

@@ -1,13 +1,12 @@
 ---
 hide:
-  - navigation
   - toc
 ---
 
-<p align="center" markdown>
-![Sadame](assets/logo-black.png#only-light){ width="180" }
-![Sadame](assets/logo-white.png#only-dark){ width="180" }
-</p>
+<div class="sadame-hero" markdown>
+
+![Sadame](assets/logo-black.png#only-light){ width="160" }
+![Sadame](assets/logo-white.png#only-dark){ width="160" }
 
 # Sadame
 
@@ -15,26 +14,82 @@ hide:
 shows every change as a diff before it happens, and applies it over SSH
 from a single binary.**
 
-## See it work
+[Get started](getting-started.md){ .md-button .md-button--primary }
+[:octicons-mark-github-16: Star on GitHub](https://github.com/enderkus/sadame){ .md-button }
 
-`backup_hour` changed from 3 to 4 in `hosts.rb`; the `db` group gets the
-change, and `drift` confirms the server matches:
+</div>
 
-```text
---8<-- "docs/transcripts/landing-plan.txt:1:1,4:9,11:11"
+![A value changed in hosts.rb rolled out with plan and apply; after a hand edit on the server, drift reports it with exit status 1](assets/demo.gif)
 
---8<-- "docs/transcripts/landing-apply.txt:1:1,9:9,28:28"
+??? quote "A run as text"
 
---8<-- "docs/transcripts/landing-drift.txt:1:1,4:4,9:9,11:12"
-```
+    `backup_hour` changed from 3 to 4 in `hosts.rb`; the `db` group gets
+    the change, and `drift` confirms the server matches:
 
-The recipe and inventory are
-[`examples/08-multi-role-inventory`](./examples/index.md). The server runs
-no agent: on the first run, sadame copied itself there over SSH.
+    ```text
+    --8<-- "docs/transcripts/landing-plan.txt:1:1,4:9,11:11"
+
+    --8<-- "docs/transcripts/landing-apply.txt:1:1,9:9,28:28"
+
+    --8<-- "docs/transcripts/landing-drift.txt:1:1,4:4,9:9,11:12"
+    ```
+
+    The recipe and inventory are
+    [`examples/08-multi-role-inventory`](./examples/index.md). The server
+    runs no agent: on the first run, sadame copied itself there over SSH.
+
+## Why sadame
+
+<div class="grid cards sadame-columns" markdown>
+
+-   :material-language-ruby:{ .lg .middle } **Plain Ruby**
+
+    ---
+
+    Recipes and the inventory are Ruby: loops, conditions and methods
+    instead of YAML and templating rules. No Ruby to install; it is
+    built in.
+
+-   :material-file-compare:{ .lg .middle } **A diff before every change**
+
+    ---
+
+    `plan` shows what would change, line by line, and changes nothing.
+    `apply` changes only what differs.
+
+-   :material-ssh:{ .lg .middle } **No agent on the servers**
+
+    ---
+
+    SSH, a shell, `tar` and `sha256sum` are enough: sadame copies itself
+    to each server for the run, and nothing keeps running afterwards.
+
+-   :material-package-variant-closed:{ .lg .middle } **One small binary**
+
+    ---
+
+    About 1 MB, for Linux (x86_64, ARM64) and macOS. Nothing else to
+    install, on your machine or on the servers.
+
+-   :material-radar:{ .lg .middle } **Drift checks for CI**
+
+    ---
+
+    `drift` exits with status 1 when a machine no longer matches its
+    recipe. Run it on a schedule and hear about hand edits.
+
+-   :material-check-decagram:{ .lg .middle } **Tested on real systems**
+
+    ---
+
+    On every push, CI runs the examples in containers of Ubuntu, Debian,
+    Rocky Linux, Alpine and Arch, on x86_64 and ARM64.
+
+</div>
 
 ## Where to start
 
-<div class="grid cards" markdown>
+<div class="grid cards sadame-columns" markdown>
 
 -   **Users**
 
@@ -73,7 +128,7 @@ curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | s
 
 The script downloads the binary for your system from the latest release,
 checks its SHA-256 checksum and installs it to `/usr/local/bin`. Linux
-(x86_64, ARM64) and macOS; other ways in [Install](install.md).
+(x86_64, ARM64) and macOS; Homebrew and other ways in [Install](install.md).
 
 ## How it compares
 
@@ -81,3 +136,12 @@ Recipes in Ruby like Itamae, push over SSH without an agent like Ansible,
 one binary like mitamae, and a `drift` command for CI. Six resource types
 and Linux targets only, for now: the [comparison](comparison.md) lists
 what the others do that sadame does not.
+
+## Follow the project
+
+Sadame is young, and a star on GitHub helps other people find it. News
+and releases are posted on X as [@sadame_rb](https://x.com/sadame_rb);
+bugs and ideas go to [GitHub issues](https://github.com/enderkus/sadame/issues).
+
+[:octicons-star-16: Star on GitHub](https://github.com/enderkus/sadame){ .md-button .md-button--primary }
+[:fontawesome-brands-x-twitter: Follow @sadame_rb](https://x.com/sadame_rb){ .md-button }

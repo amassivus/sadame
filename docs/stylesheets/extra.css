@@ -15,6 +15,13 @@
   --md-accent-fg-color: #e8798f;
 }
 
+/* White text on the light pink of dark-scheme links is hard to read; the
+   filled buttons keep the darker brand red there. */
+[data-md-color-scheme="slate"] .md-typeset .md-button--primary:not(:hover):not(:focus) {
+  background-color: var(--sadame-red);
+  border-color: var(--sadame-red);
+}
+
 /* theme.logo is logo-black.png, made for light backgrounds. On the dark
    scheme, the header and mobile-nav logos show logo-white.png instead: the
    image is hidden and its link draws the light logo as a background, which
@@ -32,4 +39,27 @@
 .md-header__button.md-logo img,
 .md-header__button.md-logo svg {
   height: 2rem;
+}
+
+/* The top of the home page: logo, pitch and the two buttons, centred. */
+.sadame-hero {
+  text-align: center;
+}
+
+.sadame-hero h1 {
+  margin-bottom: 0.6em;
+}
+
+.sadame-hero .md-button {
+  margin: 0.3em 0.2em;
+}
+
+.md-typeset .md-button .twemoji {
+  vertical-align: -0.15em;
+}
+
+/* Home page cards: three to a row where there is room, so six cards make
+   two rows and three cards one. */
+.md-typeset .grid.sadame-columns {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
 }
