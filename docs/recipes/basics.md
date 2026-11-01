@@ -71,7 +71,7 @@ Besides the resources, a recipe can use:
 | `platform.id`, `platform.version`, `platform.codename`, `platform.name` | `ID`, `VERSION_ID`, `VERSION_CODENAME` and `PRETTY_NAME` from `/etc/os-release` |
 | `facts[:cpus]`, `facts[:memory_mb]`, `facts[:ipv4]` and more | what the machine has, read from it; see [Facts](facts.md) |
 | `host_name`, `host_groups` | the host's name and groups from the inventory; see [Inventory](inventory.md#using-groups-in-recipes) |
-| `include_recipe "path"` | evaluate another recipe file |
+| `include_recipe "path"` | evaluate another recipe file; `tags:` tags everything it declares (see [Tags](tags.md)) |
 
 For example, a package whose name differs between distributions:
 
