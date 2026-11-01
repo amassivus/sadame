@@ -72,6 +72,10 @@ module Sadame
       options[:sensitive] == true
     end
 
+    def content_path
+      path
+    end
+
     private
 
     def validate

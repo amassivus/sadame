@@ -90,6 +90,11 @@ module Sadame
       false
     end
 
+    # The file that content diffs of this resource are labelled with.
+    def content_path
+      name
+    end
+
     private
 
     def shell

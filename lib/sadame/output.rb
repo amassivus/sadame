@@ -95,8 +95,8 @@ module Sadame
           return
         end
 
-        old_label = change.from.nil? ? "/dev/null" : resource.name
-        diff = Diff.unified(change.from, change.to, old_label: old_label, new_label: "#{resource.name} (desired)")
+        old_label = change.from.nil? ? "/dev/null" : resource.content_path
+        diff = Diff.unified(change.from, change.to, old_label: old_label, new_label: "#{resource.content_path} (desired)")
         diff.split("\n").each { |diff_line| line("#{indent}#{paint_diff_line(diff_line)}") }
       end
 

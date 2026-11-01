@@ -211,6 +211,18 @@ class RunnerTest < SadameTest
     assert io.string.end_with?(expected), io.string
   end
 
+  def test_line_diffs_are_labelled_with_the_file
+    shell = linux_shell
+    shell.files["/etc/ssh/sshd_config"] = "#PermitRootLogin yes\n"
+    stub_stat(shell, "/etc/ssh/sshd_config")
+    resources = collection(shell, [Sadame::LineResource, "PermitRootLogin no",
+                                   { path: "/etc/ssh/sshd_config", match: /^#?PermitRootLogin / }])
+    io = FakeIO.new
+    runner(shell, output: Sadame::Output::Human.new(io)).plan(resources)
+    assert_includes io.string, "~ line[PermitRootLogin no]\n    --- /etc/ssh/sshd_config\n" \
+                               "    +++ /etc/ssh/sshd_config (desired)\n"
+  end
+
   def test_duration_is_recorded
     shell = fresh_debian_shell
     report = runner(shell).plan(collection(shell, [Sadame::PackageResource, "nginx", {}]))
