@@ -45,8 +45,9 @@ project uses [Semantic Versioning](https://semver.org/).
   Docker, a multi-role inventory and an Omarchy workstation, plus Ansible
   and Itamae migration examples and CI pipelines for plan, apply and drift.
 - Docker integration tests: every example on Ubuntu, Debian, Rocky, Alpine
-  and Arch, on amd64 and arm64 (QEMU in CI), in containers booting systemd;
-  certbot against Pebble. A local-only VM layer (`rake vm:test`).
+  and Arch, on amd64 and arm64 (native runners in CI), in containers
+  booting systemd; certbot against Pebble. A local-only VM layer
+  (`rake vm:test`) on Ubuntu, Debian, Rocky, Arch and Omarchy VMs.
 - JSON report fields `drift`, `exit_status`, `duration_seconds`, and the
   notifications each resource triggers; documented in the JSON output
   reference.
@@ -60,7 +61,7 @@ project uses [Semantic Versioning](https://semver.org/).
   musl in Docker) and macOS builds for Apple silicon and Intel, each about
   1 MB. CI runs the Linux binaries unmodified in Ubuntu, Debian, Rocky,
   Alpine and Arch images (Arch Linux ARM, a community image, for arm64),
-  the arm64 ones under QEMU, before they can be published.
+  each on a runner of its own architecture, before they can be published.
 - `install.sh`: installs the right binary for the system after checking its
   SHA-256 checksum.
 - Release workflow: a `v*` tag publishes the binaries, `SHA256SUMS` and the

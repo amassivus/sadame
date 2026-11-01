@@ -65,10 +65,22 @@ jobs:
           path: dist/sadame-darwin-*
           if-no-files-found: error
 
+  # Each binary runs in the distribution images on a machine of its own
+  # architecture: GitHub's arm64 runners for arm64.
   verify-linux:
-    name: Verify Linux binaries
+    name: Verify linux-${{ matrix.arch }}
     needs: linux
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+            machine: x86-64
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            machine: aarch64
     steps:
       - uses: actions/checkout@v7
       - uses: ruby/setup-ruby@v1
@@ -77,20 +89,14 @@ jobs:
           bundler-cache: true
       - uses: actions/download-artifact@v8
         with:
-          pattern: sadame-linux-*
+          name: sadame-linux-${{ matrix.arch }}
           path: dist
-          merge-multiple: true
-      - run: chmod 0755 dist/sadame-linux-*
-      - name: Both binaries are static
+      - run: chmod 0755 dist/sadame-linux-${{ matrix.arch }}
+      - name: The binary is static
         run: |
-          file dist/sadame-linux-amd64 dist/sadame-linux-arm64
-          file dist/sadame-linux-amd64 | grep -q "x86-64.*statically linked"
-          file dist/sadame-linux-arm64 | grep -q "aarch64.*statically linked"
-      # The arm64 binary runs on this amd64 runner under QEMU.
-      - name: Register QEMU for arm64
-        run: docker run --privileged --rm tonistiigi/binfmt --install arm64
-      - run: bundle exec rake verify:linux-amd64
-      - run: bundle exec rake verify:linux-arm64
+          file dist/sadame-linux-${{ matrix.arch }}
+          file dist/sadame-linux-${{ matrix.arch }} | grep -q "${{ matrix.machine }}.*statically linked"
+      - run: bundle exec rake verify:linux-${{ matrix.arch }}
 
   installer:
     name: Test install.sh

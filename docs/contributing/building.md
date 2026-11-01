@@ -89,12 +89,11 @@ it is installed.
 
 - **`.github/workflows/build.yml`** builds `linux-amd64` on an x86_64
   runner, `linux-arm64` on an ARM64 runner and both macOS binaries on a
-  macOS runner. A separate job then registers QEMU with
-  `tonistiigi/binfmt`, checks with `file` that both Linux binaries are
-  statically linked, and runs the verification for both architectures on
-  the x86_64 runner: the arm64 binary runs under emulation there. A last
-  job serves the binaries over HTTP and runs `install.sh` against them,
-  once with correct checksums and once with a wrong one, which must fail.
+  macOS runner. Each Linux binary is then verified on a runner of its own
+  architecture: `file` must report it statically linked, and it runs in
+  every distribution image. A last job serves the binaries over HTTP and
+  runs `install.sh` against them, once with correct checksums and once
+  with a wrong one, which must fail.
 - **`ci.yml`** runs that workflow on every push and pull request, after the
   test jobs.
 - **`release.yml`** runs on a `v*` tag. After the build workflow passes, it

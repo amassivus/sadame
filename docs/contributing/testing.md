@@ -99,35 +99,36 @@ parallel run of example 08 on all three hosts, and an unreachable host.
 
 ### What arm64 coverage means
 
-In CI, arm64 runs on x86_64 machines under QEMU, registered with
-`tonistiigi/binfmt`: the arm64 binary and the arm64 distribution images,
-emulated instruction by instruction. That tests the arm64 build and the
-arm64 packages of each distribution, but not real arm64 hardware; there is
-no arm64 VM in the VM layer yet. On an ARM64 machine (such as a Mac with
-Apple silicon running Docker), `rake test:docker` runs arm64 natively.
+In CI, the arm64 jobs run on GitHub's ARM64 runners: the arm64 binary and
+the arm64 distribution images on a real arm64 kernel, with nothing
+emulated, so they run the same examples as the amd64 jobs. That covers the
+arm64 build and each distribution's arm64 packages; there is no arm64 VM in
+the VM layer yet. On an ARM64 machine (such as a Mac with Apple silicon
+running Docker), `rake test:docker` runs arm64 natively too.
 
-Emulation has limits. QEMU's user mode cannot run iptables or nftables, so
-`04-docker-host` (Docker's daemon) and `07-hardening-baseline` (`ufw`) are
-skipped where the containers are emulated, with that reason in the report;
-they run in the amd64 jobs and natively on ARM64 machines.
+You can also run the other architecture locally under emulation (QEMU,
+registered with `docker run --privileged --rm tonistiigi/binfmt --install
+all`; the runner notices and says so). Emulation has limits:
 
-Arch Linux's systemd does not boot under emulation either. Under QEMU, the
-Arch Linux ARM container's systemd (version 262 in our tests) starts and
-then spins at full CPU without making progress, so nothing can talk to it.
-The emulated Arch job therefore starts its containers without systemd,
-like Alpine, and skips the examples marked `systemd: true` in
-`test/support/example_matrix.rb`, with that reason in the report; a unit
-test keeps the mark in step with the recipes. Arch with systemd runs in the
-amd64 job and natively on ARM64 machines. Under Rosetta (Docker Desktop and
-OrbStack on Apple silicon), an x86_64 Arch Linux container could not boot
-its systemd either, so run the amd64 Arch tests in CI or on an x86_64
-machine.
+- QEMU's user mode cannot run iptables or nftables, so `04-docker-host`
+  (Docker's daemon) and `07-hardening-baseline` (`ufw`) are skipped in
+  emulated containers, with that reason in the report.
+- Arch Linux's systemd does not boot under QEMU: the Arch Linux ARM
+  container's systemd (version 262 in our tests) starts and then spins at
+  full CPU without making progress. Emulated Arch containers therefore run
+  without systemd, like Alpine, and skip the examples marked
+  `systemd: true` in `test/support/example_matrix.rb`; a unit test keeps
+  the mark in step with the recipes.
+- Under Rosetta (Docker Desktop and OrbStack on Apple silicon), an x86_64
+  Arch Linux container could not boot its systemd either, so run the amd64
+  Arch tests in CI or on an x86_64 machine.
 
 ### Running the Docker tests in CI
 
 `.github/workflows/ci.yml` runs `rake "test:docker[DISTRO,ARCH]"` for all
-ten combinations, plus `rake test:push`, after the build workflow has made
-and verified the binaries. Each combination is its own job, so one failing
+ten combinations, the amd64 ones on x86_64 runners and the arm64 ones on
+ARM64 runners, plus `rake test:push`, after the build workflow has made and
+verified the binaries. Each combination is its own job, so one failing
 distribution does not hide the others.
 
 ## VM tests

@@ -89,7 +89,8 @@ jobs:
   docker:
     name: Docker ${{ matrix.distro }} (${{ matrix.arch }})
     needs: build
-    runs-on: ubuntu-latest
+    # arm64 runs natively on GitHub's arm64 runners.
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     # A hang fails the job instead of holding a runner for six hours.
     timeout-minutes: 120
     strategy:
@@ -108,8 +109,4 @@ jobs:
           name: sadame-linux-${{ matrix.arch }}
           path: dist
       - run: chmod 0755 dist/sadame-linux-${{ matrix.arch }}
-      # arm64 containers run on this x86_64 runner under QEMU.
-      - name: Register QEMU
-        if: matrix.arch == 'arm64'
-        run: docker run --privileged --rm tonistiigi/binfmt --install arm64
       - run: bundle exec rake "test:docker[${{ matrix.distro }},${{ matrix.arch }}]"
