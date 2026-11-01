@@ -1,23 +1,26 @@
 # Getting started
 
-This page takes you from a source checkout to your first `plan` and
-`apply`: install sadame, write a one-line recipe, look at the plan, apply it,
+This page takes you from installing sadame to your first `plan` and
+`apply`: install it, write a one-line recipe, look at the plan, apply it,
 and learn to read the diff sadame prints when a machine has drifted from its
 recipe.
 
 ## Install
 
-Install the single binary as described on the [Install](install.md) page,
-or run sadame from a checkout of the repository with Ruby 3.2 or newer:
+```sh
+curl -fsSL https://raw.githubusercontent.com/enderkus/sadame/main/install.sh | sh
+sadame --version
+```
+
+The examples on this page are in the repository; clone it to follow along:
 
 ```sh
 git clone https://github.com/enderkus/sadame.git
 cd sadame
-bin/sadame --version
 ```
 
-The rest of this page writes `sadame`; use `bin/sadame` if you run it from
-the checkout.
+The [Install](install.md) page has the other ways to install, including
+running sadame from the checkout with Ruby 3.2 or newer (`bin/sadame`).
 
 ## Your first recipe
 
