@@ -60,7 +60,7 @@ class ExamplesTest < SadameTest
     "examples/09-cron-and-logrotate/recipe.rb" => ["arch", ["package[cronie]", "package[logrotate]", "service[cronie]", "user[app]", "directory[/var/lib/app]", "directory[/var/log/app]", "file[/etc/cron.d/app]", "file[/etc/logrotate.d/app]"]],
     "examples/12-omarchy-workstation/recipe.rb" => ["arch", ["package[git]", "package[htop]", "package[ripgrep]", "package[fd]", "package[bat]", "package[starship]", "directory[/home/alice/.config]", "directory[/home/alice/.config/systemd]", "directory[/home/alice/.config/systemd/user]", "directory[/home/alice/.local]", "directory[/home/alice/.local/bin]", "file[/home/alice/.gitconfig]", "file[/home/alice/.config/starship.toml]", "file[/home/alice/.local/bin/update-system]", "exec[enable lingering for alice]", "exec[start alice's systemd instance]", "exec[reload alice's systemd units]", "file[/home/alice/.config/systemd/user/clean-downloads.service]", "file[/home/alice/.config/systemd/user/clean-downloads.timer]", "service[clean-downloads.timer]", "exec[install visual-studio-code-bin from the AUR]"]],
     "examples/11-dynamic-inventory/recipe.rb" => ["debian", ["file[/etc/motd]"]],
-    "examples/resources/group/recipe.rb" => ["alpine", ["group[app]", "group[backup]", "group[oldteam]"]],
+    "examples/resources/group/recipe.rb" => ["alpine", ["group[app]", "group[metrics]", "group[oldteam]"]],
     "examples/resources/group/minimal.rb" => ["debian", ["group[app]"]],
     "examples/resources/link/recipe.rb" => [
       "debian",
