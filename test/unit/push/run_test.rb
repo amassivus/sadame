@@ -164,6 +164,25 @@ class PushRunTest < SadameTest
                             "      \"error\": \"not run: batch 1 failed\""
   end
 
+  def test_facts_run_without_a_recipe
+    @shell.on(ssh(@web).ssh("uname -sm"), stdout: "Linux x86_64\n")
+    script = "cd .sadame/run/r1 && tar -xzf bundle.tgz && rm -f bundle.tgz && " \
+             "\"$HOME/.sadame/bin/#{SUM}/sadame\" facts --host-name web1.example.com; " \
+             "status=$?; cd && rm -rf .sadame/run/r1; exit $status"
+    @shell.on(ssh(@web).ssh(script), stdout: "cpus               4\n")
+    stdout = FakeIO.new
+    status = Sadame::Push::Run.new(
+      targets: [@web], command: "facts", recipe_path: nil, shell: @shell, stdout: stdout,
+      binary_store: FakeBinaryStore.new, parallel: Sadame::Push::Parallel.new(stdout, forking: false),
+      work_dir: WORK, run_id: "r1"
+    ).call
+    assert_equal 0, status
+    assert_includes stdout.string, "[web1.example.com] cpus               4\n"
+    assert_includes stdout.string, "facts on 1 host: 1 ok."
+    assert_includes @shell.commands, "mkdir -p #{WORK}/recipe"
+    assert_includes @shell.commands, "tar -czf #{WORK}/bundle.tgz -C #{WORK}/recipe ."
+  end
+
   def test_a_missing_binary_fails_only_that_platform
     store = Object.new
     def store.find(os, arch)

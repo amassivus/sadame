@@ -11,7 +11,7 @@ module Sadame
   #   2 usage or recipe error, a state that could not be read, or a target
   #     that could not be reached
   class CLI
-    COMMANDS = %w[plan apply drift hosts].freeze
+    COMMANDS = %w[plan apply drift hosts facts].freeze
     DEFAULT_RECIPE = "recipe.rb"
     DEFAULT_INVENTORY = "hosts.rb"
 
@@ -23,10 +23,12 @@ module Sadame
         apply    Make the hosts match the recipe.
         drift    Like plan, but exit 1 when a host differs from the recipe.
         hosts    Show the selected hosts with their connection options and vars.
+        facts    Show the facts recipes see on each host: CPUs, memory, addresses.
 
       RECIPE is a recipe file or a directory containing recipe.rb
       (default: ./recipe.rb). vars.rb and hosts.rb next to it are loaded if
-      present. Without -h, -g or --limit, sadame runs on this machine.
+      present; hosts and facts only use those. Without -h, -g or --limit,
+      sadame runs on this machine.
 
       Targets:
         -h, --host [USER@]HOST[:PORT],...   Run on these hosts over SSH
@@ -83,23 +85,32 @@ module Sadame
 
     def execute(options)
       return list_hosts(options) if options[:command] == "hosts"
+      return show_facts(options) if options[:command] == "facts"
 
       recipe_path = resolve_recipe(options[:recipe])
-      base_vars = Vars.load_file(File.join(File.dirname(recipe_path), "vars.rb"))
-      return run_remote(options, recipe_path, base_vars) if remote?(options)
+      base_dir = File.dirname(recipe_path)
+      base_vars = Vars.load_file(File.join(base_dir, "vars.rb"))
+      return run_remote(options, recipe_path, base_dir, base_vars) if remote?(options)
 
       run_local(options, recipe_path, base_vars)
     end
 
-    def run_local(options, recipe_path, base_vars)
+    def check_local_options(options)
       raise UsageError, "--sudo only applies to -h, -g and --limit; run `sudo sadame` here instead" if options[:sudo]
       [["--forks", :forks], ["--serial", :serial]].each do |flag, key|
         raise UsageError, "#{flag} only applies to -h, -g and --limit" if options[key]
       end
+    end
 
+    def local_host(options)
+      Host.new(@shell, name: options[:host_name] || "local", groups: options[:host_groups].map { |group| group.to_sym })
+    end
+
+    def run_local(options, recipe_path, base_vars)
+      check_local_options(options)
       file_vars = options[:vars_file] ? load_vars_file(options[:vars_file]) : {}
       vars = Vars.merge(base_vars, file_vars, options[:vars])
-      host = Host.new(@shell, name: options[:host_name] || "local", groups: options[:host_groups].map { |group| group.to_sym })
+      host = local_host(options)
       resources = Recipe.load(recipe_path, host: host, vars: vars)
       runner = Runner.new(host: host, output: build_output(options))
       report = case options[:command]
@@ -110,13 +121,14 @@ module Sadame
       report.exit_status
     end
 
-    def run_remote(options, recipe_path, base_vars)
+    # recipe_path is nil for facts, which runs no recipe.
+    def run_remote(options, recipe_path, base_dir, base_vars)
       raise UsageError, "--vars-file is for local runs; put the vars in hosts.rb or vars.rb" if options[:vars_file]
       if options[:host_name] || !options[:host_groups].empty?
         raise UsageError, "--host-name and --host-groups are for local runs; targets get them from hosts.rb"
       end
 
-      inventory = load_inventory(options, File.dirname(recipe_path))
+      inventory = load_inventory(options, base_dir)
       targets = select_targets(inventory, options, base_vars)
       color = color?(options)
       Push::Run.new(
@@ -125,6 +137,20 @@ module Sadame
         parallel: Push::Parallel.new(@stdout, color: color, forking: @forking),
         json: options[:json], color: color, forks: options[:forks], serial: options[:serial]
       ).call
+    end
+
+    # Facts of this machine, or of the selected hosts, where sadame runs
+    # `sadame facts` over SSH as for plan.
+    def show_facts(options)
+      base_dir = recipe_directory(options[:recipe])
+      if remote?(options)
+        return run_remote(options, nil, base_dir, Vars.load_file(in_directory(base_dir, "vars.rb")))
+      end
+
+      check_local_options(options)
+      listing = FactsListing.new(@stdout, color: color?(options))
+      options[:json] ? listing.render_json(local_host(options)) : listing.render(local_host(options))
+      0
     end
 
     def list_hosts(options)

@@ -28,7 +28,8 @@ module Sadame
       PASSING_STATUSES = ["ok", "drift"].freeze
       STATUS_COLORS = { "ok" => 32, "drift" => 33, "skipped" => 2 }.freeze
 
-      # work_dir and run_id are generated unless given (tests give them).
+      # recipe_path is nil for facts, which needs no recipe. work_dir and
+      # run_id are generated unless given (tests give them).
       def initialize(targets:, command:, recipe_path:, shell:, stdout:, binary_store:, parallel:,
                      json: false, color: false, forks: nil, serial: nil, clock: nil, work_dir: nil, run_id: nil)
         @targets = targets
@@ -179,7 +180,7 @@ module Sadame
         arguments << "--json" if @json
         arguments << "--color" if @color && !@json
         status, stdout, stderr = session.run(command: @command, binary: binary, bundle: bundle, vars_file: vars_file,
-                                             recipe: File.basename(@recipe_path), run_id: @run_id,
+                                             recipe: @recipe_path && File.basename(@recipe_path), run_id: @run_id,
                                              arguments: arguments, capture: @json) { |line| print.call(line) }
         result_for(status, stdout, stderr)
       rescue Failure => e
@@ -217,13 +218,18 @@ module Sadame
       end
 
       # Copies the recipe's directory without the files that are evaluated
-      # here, and packs it with tar options every tar supports.
+      # here, and packs it with tar options every tar supports. Without a
+      # recipe, the bundle is empty.
       def build_bundle(work_dir)
         stage = File.join(work_dir, "recipe")
-        source = File.dirname(@recipe_path)
-        removals = BUNDLE_EXCLUDES.map { |name| Shell.escape(File.join(stage, name)) }.join(" ")
-        @shell.run!("mkdir -p #{Shell.escape(stage)} && cp -R #{Shell.escape(source)}/. #{Shell.escape(stage)}/ && " \
-                    "rm -rf #{removals}")
+        if @recipe_path
+          source = File.dirname(@recipe_path)
+          removals = BUNDLE_EXCLUDES.map { |name| Shell.escape(File.join(stage, name)) }.join(" ")
+          @shell.run!("mkdir -p #{Shell.escape(stage)} && cp -R #{Shell.escape(source)}/. #{Shell.escape(stage)}/ && " \
+                      "rm -rf #{removals}")
+        else
+          @shell.run!("mkdir -p #{Shell.escape(stage)}")
+        end
         bundle = File.join(work_dir, "bundle.tgz")
         @shell.run!("tar -czf #{Shell.escape(bundle)} -C #{Shell.escape(stage)} .")
         bundle
