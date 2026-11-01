@@ -7,23 +7,28 @@
 raise "this example supports Debian and Ubuntu, not #{platform.description}" unless platform.family == "debian"
 
 port = vars[:ssh_port]
+# open_ports is a list in vars.rb; --var open_ports=80,443 gives a string.
+open_ports = vars[:open_ports]
+open_ports = open_ports.to_s.split(",").map { |item| item.strip } unless open_ports.is_a?(Array)
 
 package "openssh-server"
 package "ufw"
 package "fail2ban"
 package "unattended-upgrades"
 
+# sshd runs before its configuration changes: starting it creates
+# /run/sshd, which `sshd -t` needs to check the new file.
+service "ssh", enable: true, state: :running
 file "/etc/ssh/sshd_config.d/10-hardening.conf",
      template: "sshd-hardening.conf.erb",
      mode: "0644",
      verify: "sshd -t -f %{path}",
      notifies: [:restart, "service[ssh]"]
-service "ssh", enable: true, state: :running
 
 # Firewall: allow the SSH port before turning the firewall on, so the
 # connection running this recipe survives.
 exec "ufw default deny incoming", not_if: "ufw status verbose | grep -q 'deny (incoming)'"
-([port] + vars[:open_ports]).each do |open_port|
+([port] + open_ports).each do |open_port|
   exec "ufw allow #{open_port}/tcp", not_if: "ufw show added | grep -qw 'allow #{open_port}/tcp'"
 end
 exec "ufw --force enable", not_if: "ufw status | grep -q 'Status: active'"

@@ -24,3 +24,12 @@ sudo -l -U deploy
 
 `authorized_keys` is managed as a whole: a key added by hand shows up in
 `drift` and is removed by the next `apply`.
+
+One key or one command can also be given on the command line, which is how
+[Provision a new VPS](../../docs/guides/provision-a-new-vps.md) creates an
+administrator:
+
+```sh
+sadame apply examples/06-app-deploy-user -h root@203.0.113.10 \
+  --var "ssh_keys=$(cat ~/.ssh/id_ed25519.pub)" --var sudo_commands=ALL
+```
