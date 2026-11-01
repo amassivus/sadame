@@ -13,12 +13,12 @@
 #   SADAME_IT_TIMEOUT=600              seconds before a command is killed
 #                                      (default 900, doubled under emulation)
 #
-# Containers boot systemd (privileged, with the host's cgroups) so service
-# resources run for real; Alpine uses OpenRC and only runs the examples
-# without services. The other architecture runs under QEMU; register it
-# with: docker run --privileged --rm tonistiigi/binfmt --install all
+# Containers boot their service manager (privileged, with the host's
+# cgroups) so service resources run for real: systemd, or OpenRC on
+# Alpine. The other architecture runs under QEMU; register it with:
+# docker run --privileged --rm tonistiigi/binfmt --install all
 # Arch's systemd does not boot under QEMU, so emulated Arch containers run
-# without it and skip the examples that need it, as Alpine does.
+# without it and skip the examples that need it.
 #
 # Development tooling: CRuby only.
 
@@ -35,13 +35,13 @@ module DockerIntegration
   # example fails; doubled under emulation, where everything is slower.
   TIMEOUT = Integer(ENV.fetch("SADAME_IT_TIMEOUT", "900"))
 
-  # distro => [Dockerfile, base image per architecture (for build args), boots systemd]
+  # distro => [Dockerfile, base image per architecture (for build args), service manager it boots]
   DISTROS = {
-    "ubuntu" => ["ubuntu", {}, true],
-    "debian" => ["debian", {}, true],
-    "rocky" => ["rocky", {}, true],
-    "alpine" => ["alpine", {}, false],
-    "arch" => ["arch", { "amd64" => "archlinux:latest", "arm64" => "menci/archlinuxarm:latest" }, true]
+    "ubuntu" => ["ubuntu", {}, :systemd],
+    "debian" => ["debian", {}, :systemd],
+    "rocky" => ["rocky", {}, :systemd],
+    "alpine" => ["alpine", {}, :openrc],
+    "arch" => ["arch", { "amd64" => "archlinux:latest", "arm64" => "menci/archlinuxarm:latest" }, :systemd]
   }.freeze
 
   # Distributions whose systemd does not boot when the CPU is emulated. Their
@@ -53,8 +53,8 @@ module DockerIntegration
 
   Result = Struct.new(:example, :status, :detail, :seconds)
 
-  # A container of this image did not boot systemd: the others will not
-  # either, so the remaining examples fail without waiting.
+  # A container of this image did not boot its service manager: the others
+  # will not either, so the remaining examples fail without waiting.
   class BootError < StandardError; end
 
   class Runner
@@ -64,9 +64,9 @@ module DockerIntegration
       @emulated = emulated
       @platform = "linux/#{arch}"
       @image = "#{PREFIX}-#{distro}-#{arch}"
-      @dockerfile, @bases, @systemd = DISTROS.fetch(distro)
+      @dockerfile, @bases, @init = DISTROS.fetch(distro)
       @no_systemd = emulated ? NO_SYSTEMD_WHEN_EMULATED[distro] : nil
-      @systemd = false if @no_systemd
+      @init = nil if @no_systemd
       @timeout = emulated ? TIMEOUT * 2 : TIMEOUT
       @printing = Mutex.new
     end
@@ -144,7 +144,7 @@ module DockerIntegration
       detail = exercise(example, name)
       Result.new(example, detail ? :fail : :pass, detail, Time.now - started)
     rescue BootError => e
-      @boot_failure ||= "a container of this image did not boot systemd"
+      @boot_failure ||= "a container of this image did not boot #{@init}"
       Result.new(example, :fail, e.message, Time.now - started)
     rescue StandardError => e
       Result.new(example, :fail, "#{e.class}: #{e.message}", Time.now - started)
@@ -166,12 +166,13 @@ module DockerIntegration
                      "#{name}-pebble").strip
         command += ["--network", network, "--add-host", "pebble:#{address}"]
       end
-      if @systemd
+      if @init
         command += ["--privileged", "--cgroupns=host", "--volume", "/sys/fs/cgroup:/sys/fs/cgroup:rw"]
       end
-      # The image starts systemd; without it the container just waits.
+      # The image starts its service manager; without it the container just waits.
       sh(*command, @image, *(@no_systemd ? ["sleep", "infinity"] : []))
-      wait_for_systemd(name) if @systemd
+      wait_for_systemd(name) if @init == :systemd
+      wait_for_openrc(name) if @init == :openrc
       exec_in(name, "ln -s /sadame/dist/sadame-linux-#{@arch} /usr/local/bin/sadame")
       (example[:setup] || []).each { |command_line| exec_in(name, command_line) }
     end
@@ -214,6 +215,18 @@ module DockerIntegration
           jobs, = capture("docker", "exec", name, "systemctl", "list-jobs", "--no-pager", timeout: 60)
           raise BootError, "systemd did not finish booting in #{name} (#{output.strip}); pending jobs:\n#{jobs}"
         end
+        sleep 2
+      end
+    end
+
+    # OpenRC writes the runlevel it reached to /run/openrc/softlevel.
+    def wait_for_openrc(name)
+      deadline = Time.now + (@emulated ? 600 : 180)
+      loop do
+        output, status = capture("docker", "exec", name, "cat", "/run/openrc/softlevel", timeout: 60)
+        return if status == 0 && output.strip == "default"
+        raise BootError, "OpenRC did not reach the default runlevel in #{name} (#{output.strip})" if Time.now > deadline
+
         sleep 2
       end
     end

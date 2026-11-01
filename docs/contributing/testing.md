@@ -60,10 +60,9 @@ rake test:push                                 # push mode over SSH
 `test/integration/docker/images/` built with `docker buildx`: Ubuntu 24.04,
 Debian 12, Rocky Linux 9, Alpine 3.20 and Arch Linux (`archlinux:latest` on
 amd64; the community image `menci/archlinuxarm` on arm64, where Arch has no
-official image). The containers boot systemd as PID 1 (privileged, with the
-host's cgroups), so `service` resources start and stop real units. Alpine
-uses OpenRC, not systemd, so the examples with `service` resources are
-skipped there, with that reason in the report. The binary under test is
+official image). The containers boot their service manager as PID 1
+(privileged, with the host's cgroups): systemd, and OpenRC on Alpine, so
+`service` resources start and stop real services. The binary under test is
 `dist/sadame-linux-ARCH`, mounted unmodified.
 
 For each example the test runs its setup (for example creating the user
@@ -160,6 +159,7 @@ rake build:linux-amd64
 rake "vm:reset[debian]"     # revert the debian VM to its clean snapshot (virsh over SSH)
 rake "vm:test[debian]"      # reset, push every example that applies, check drift after each
 rake vm:test:all            # every VM in hosts.local.rb
+SADAME_VM_ONLY=resources/git,05-postgres rake "vm:test[debian]"   # only these examples
 ```
 
 `vm:test` reverts the VM to its clean snapshot before each applicable

@@ -9,6 +9,9 @@
 #                              a freshly reverted VM, and check that drift
 #                              exits 0 after each
 #   rake vm:test:all           every VM in hosts.local.rb
+#   SADAME_VM_ONLY=resources/git,05-postgres rake ...
+#                              only examples whose path contains one of the
+#                              comma-separated texts
 #
 # Each example is applied with push mode, through the inventory, from this
 # machine; the binaries come from dist/ (SADAME_BINARY_DIR). The VMs are
@@ -28,6 +31,7 @@ module VMTests
   EXAMPLE_INVENTORY = File.join(__dir__, "hosts.example.rb")
   DISTRIBUTIONS = %w[ubuntu debian rocky arch omarchy].freeze
   PEBBLE_VERSION = "v2.10.1"
+  ONLY = ENV.fetch("SADAME_VM_ONLY", "").split(",").map(&:strip).reject(&:empty?)
 
   # On the Omarchy VM only the workstation examples run; example 12 runs
   # nowhere else among the VMs.
@@ -103,7 +107,9 @@ module VMTests
           example[:distros].include?(matrix_distro) && example[:path] != "examples/12-omarchy-workstation"
         end
       end
-      selected
+      return selected if ONLY.empty?
+
+      selected.select { |example| ONLY.any? { |text| example[:path].include?(text) } }
     end
 
     def exercise(example)
