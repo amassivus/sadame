@@ -1,7 +1,7 @@
 $ sadame drift site.rb -h web2.example.com --json
 {
   "format_version": 1,
-  "sadame_version": "0.3.0",
+  "sadame_version": "0.4.0",
   "command": "drift",
   "hosts": [
     {
@@ -11,7 +11,7 @@ $ sadame drift site.rb -h web2.example.com --json
       "error": null,
       "report": {
         "format_version": 1,
-        "sadame_version": "0.3.0",
+        "sadame_version": "0.4.0",
         "command": "drift",
         "host": "web2.example.com",
         "platform": {
@@ -19,6 +19,8 @@ $ sadame drift site.rb -h web2.example.com --json
           "family": "debian",
           "package_manager": "apt"
         },
+        "tags": [],
+        "skip_tags": [],
         "resources": [
           {
             "id": "file[/etc/motd]",
@@ -98,5 +100,5 @@ $ sadame drift site.rb -h web2.example.com --json
     }
   ],
   "exit_status": 1,
-  "duration_seconds": 0.21
+  "duration_seconds": 0.22
 }

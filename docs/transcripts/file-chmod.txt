@@ -1,7 +1,7 @@
 $ sudo chmod 0644 /etc/hello/hello.conf
 
 $ sudo sadame plan examples/resources/file
-sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 ~ file[/etc/hello/hello.conf]
     mode: 0644 -> 0640

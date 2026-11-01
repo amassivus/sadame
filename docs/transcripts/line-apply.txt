@@ -1,5 +1,5 @@
 $ sudo sadame apply examples/resources/line
-sadame 0.3.0 apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 apply on local (Debian GNU/Linux 12 (bookworm))
 
 unchanged  package[openssh-server]
 unchanged  exec[ssh-keygen -A]
@@ -55,6 +55,6 @@ Summary
 Finished in 0.57s.
 
 $ sudo sadame plan examples/resources/line
-sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 6 unchanged.

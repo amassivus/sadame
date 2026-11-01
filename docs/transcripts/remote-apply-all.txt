@@ -1,8 +1,8 @@
 $ sadame apply site.rb -g all
-[db1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/ddb29d93cbdcb51d6948ec5edbe5b185e97db7595d559e7e5a5b687bf0353276/
-[web1.example.com] sadame 0.3.0 apply on web1.example.com (Debian GNU/Linux 12 (bookworm))
-[web2.example.com] sadame 0.3.0 apply on web2.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/b3ee017faf9f137c63a3b6ea1698fea0fe70bb0f9b7223fbf2bdf9e2c3356f20/
+[web2.example.com] sadame 0.4.0 apply on web2.example.com (Debian GNU/Linux 12 (bookworm))
 [web2.example.com]
+[web1.example.com] sadame 0.4.0 apply on web1.example.com (Debian GNU/Linux 12 (bookworm))
 [web1.example.com]
 [web2.example.com] changed    file[/etc/motd]
 [web2.example.com]            --- /etc/motd
@@ -32,7 +32,7 @@ $ sadame apply site.rb -g all
 [web1.example.com]            +web1.example.com (production)
 [web1.example.com]            +Groups: web, all
 [web1.example.com]            +Managed by sadame. Local changes will be overwritten.
-[db1.example.com] sadame 0.3.0 apply on db1.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com] sadame 0.4.0 apply on db1.example.com (Debian GNU/Linux 12 (bookworm))
 [db1.example.com]
 [db1.example.com] changed    file[/etc/motd]
 [db1.example.com]            --- /etc/motd
@@ -48,8 +48,6 @@ $ sadame apply site.rb -g all
 [db1.example.com]            +db1.example.com (production)
 [db1.example.com]            +Groups: db, all
 [db1.example.com]            +Managed by sadame. Local changes will be overwritten.
-[db1.example.com] changed    package[sqlite3]
-[db1.example.com]            state: absent -> installed
 [web2.example.com] changed    package[nginx]
 [web2.example.com]            state: absent -> installed
 [web2.example.com] changed    directory[/etc/demo-app]
@@ -94,7 +92,9 @@ $ sadame apply site.rb -g all
 [web2.example.com]   skipped      0
 [web2.example.com]   notified     1  service[nginx]: reload
 [web2.example.com]
-[web2.example.com] Finished in 7.23s.
+[web2.example.com] Finished in 5.37s.
+[db1.example.com] changed    package[sqlite3]
+[db1.example.com]            state: absent -> installed
 [db1.example.com] changed    package[cron]
 [db1.example.com]            state: absent -> installed
 [db1.example.com] changed    user[demo-db]
@@ -126,7 +126,7 @@ $ sadame apply site.rb -g all
 [db1.example.com]   skipped      0
 [db1.example.com]   notified     0
 [db1.example.com]
-[db1.example.com] Finished in 10.37s.
+[db1.example.com] Finished in 8.92s.
 [web1.example.com] changed    package[nginx]
 [web1.example.com]            state: absent -> installed
 [web1.example.com] changed    directory[/etc/demo-app]
@@ -171,11 +171,11 @@ $ sadame apply site.rb -g all
 [web1.example.com]   skipped      0
 [web1.example.com]   notified     1  service[nginx]: reload
 [web1.example.com]
-[web1.example.com] Finished in 11.43s.
+[web1.example.com] Finished in 15.41s.
 
 Hosts
   web1.example.com  ok
   web2.example.com  ok
   db1.example.com   ok
 
-apply on 3 hosts: 3 ok. Finished in 11.64s.
+apply on 3 hosts: 3 ok. Finished in 15.64s.

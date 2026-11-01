@@ -1,12 +1,19 @@
 $ sadame --help
 Usage: sadame COMMAND [RECIPE] [options]
+       sadame init [DIRECTORY] [--ci github|gitlab]
+       sadame report FILE [--format markdown|junit]
 
 Commands:
+  init     Start a project: recipe.rb, vars.rb, hosts.rb, a template, and
+           with --ci a daily drift check for GitHub Actions or GitLab CI.
   plan     Show what apply would change, as a diff. Changes nothing.
   apply    Make the hosts match the recipe.
   drift    Like plan, but exit 1 when a host differs from the recipe.
+  validate Check the recipe for every selected host without connecting.
   hosts    Show the selected hosts with their connection options and vars.
   facts    Show the facts recipes see on each host: CPUs, memory, addresses.
+  report   Turn the --json output of plan, apply or drift into Markdown
+           (for a CI summary page) or JUnit XML (for test reports).
 
 RECIPE is a recipe file or a directory containing recipe.rb
 (default: ./recipe.rb). vars.rb and hosts.rb next to it are loaded if
@@ -24,9 +31,15 @@ Targets:
                                       batch after another; stop when a batch fails
 
 Options:
+  --platform NAME     validate as on debian, ubuntu, rocky, alpine or arch
+                      (default: debian)
+  --tags T,...        Only resources with one of these tags (plan, apply, drift)
+  --skip-tags T,...   Leave out resources with one of these tags
   --var KEY=VALUE     Set vars[:KEY]; repeatable, overrides everything else
   --vars-file PATH    Load more vars from a Ruby file (local runs)
   --json              Print a JSON report instead of text
+  --format FORMAT     report: markdown (default) or junit
+  --ci SYSTEM         init: also write a drift check for github or gitlab
   --color             Always use colors
   --no-color          Never use colors (also: NO_COLOR environment variable)
   --host-name NAME    host_name in recipes and reports for local runs (default: local)

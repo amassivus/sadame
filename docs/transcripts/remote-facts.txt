@@ -1,5 +1,5 @@
 $ sadame facts -h web1.example.com
-[web1.example.com] sadame 0.3.0 facts on web1.example.com (Debian GNU/Linux 12 (bookworm))
+[web1.example.com] sadame 0.4.0 facts on web1.example.com (Debian GNU/Linux 12 (bookworm))
 [web1.example.com]
 [web1.example.com] hostname           web1
 [web1.example.com] fqdn               web1
@@ -8,7 +8,7 @@ $ sadame facts -h web1.example.com
 [web1.example.com] cpus               10
 [web1.example.com] memory_mb          8003
 [web1.example.com] swap_mb            9027
-[web1.example.com] root_disk_gb       140
+[web1.example.com] root_disk_gb       139
 [web1.example.com] ipv4               192.168.107.3
 [web1.example.com] default_interface  eth0
 [web1.example.com] ipv4_addresses     192.168.107.3
@@ -21,4 +21,4 @@ $ sadame facts -h web1.example.com
 Hosts
   web1.example.com  ok
 
-facts on 1 host: 1 ok. Finished in 0.21s.
+facts on 1 host: 1 ok. Finished in 0.23s.

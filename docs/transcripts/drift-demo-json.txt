@@ -1,7 +1,7 @@
 $ sudo sadame drift examples/10-drift-demo --json
 {
   "format_version": 1,
-  "sadame_version": "0.3.0",
+  "sadame_version": "0.4.0",
   "command": "drift",
   "host": "local",
   "platform": {
@@ -9,6 +9,8 @@ $ sudo sadame drift examples/10-drift-demo --json
     "family": "debian",
     "package_manager": "apt"
   },
+  "tags": [],
+  "skip_tags": [],
   "resources": [
     {
       "id": "package[nginx]",

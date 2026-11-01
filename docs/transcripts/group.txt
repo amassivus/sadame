@@ -1,5 +1,5 @@
 $ sudo sadame plan examples/resources/group
-sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 + group[app]
     state: absent -> present
@@ -11,7 +11,7 @@ sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
 Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
 
 $ sudo sadame apply examples/resources/group
-sadame 0.3.0 apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 apply on local (Debian GNU/Linux 12 (bookworm))
 
 changed    group[app]
            state: absent -> present

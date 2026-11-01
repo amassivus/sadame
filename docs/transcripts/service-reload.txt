@@ -1,5 +1,5 @@
 $ sudo sadame apply examples/resources/service/reload_on_change.rb
-sadame 0.3.0 apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 apply on local (Debian GNU/Linux 12 (bookworm))
 
 changed    package[nginx]
            state: absent -> installed
@@ -26,4 +26,4 @@ Summary
   skipped      0
   notified     1  service[nginx]: reload
 
-Finished in 30.26s.
+Finished in 5.76s.

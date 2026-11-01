@@ -1,5 +1,5 @@
 $ sadame apply site.rb -g db
-[db1.example.com] sadame 0.3.0 apply on db1.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com] sadame 0.4.0 apply on db1.example.com (Debian GNU/Linux 12 (bookworm))
 [db1.example.com]
 [db1.example.com] unchanged  file[/etc/motd]
 [db1.example.com] unchanged  package[sqlite3]

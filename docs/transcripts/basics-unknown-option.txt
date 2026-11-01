@@ -1,5 +1,5 @@
 $ sudo sadame plan
-sadame: recipe.rb:2: file[/etc/motd]: unknown option :contents (valid options: content, group, locals, mode, notifies, owner, sensitive, source, state, subscribes, template, verify)
+sadame: recipe.rb:2: file[/etc/motd]: unknown option :contents (valid options: content, group, locals, mode, notifies, owner, sensitive, source, state, subscribes, tags, template, verify)
 
 $ echo $?
 2

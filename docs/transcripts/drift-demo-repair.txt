@@ -1,5 +1,5 @@
 $ sudo sadame apply examples/10-drift-demo
-sadame 0.3.0 apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 apply on local (Debian GNU/Linux 12 (bookworm))
 
 unchanged  package[nginx]
 unchanged  user[demo-app]
@@ -25,10 +25,10 @@ Summary
   skipped      0
   notified     0
 
-Finished in 0.02s.
+Finished in 0.01s.
 
 $ sudo sadame drift examples/10-drift-demo
-sadame 0.3.0 drift on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 drift on local (Debian GNU/Linux 12 (bookworm))
 
 No drift: 5 resources match the recipe.
 

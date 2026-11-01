@@ -6,6 +6,34 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-01
+
+Checking recipes without servers, running part of a recipe, and reports
+for CI.
+
+### Added
+
+- `sadame validate` evaluates the recipe for each selected host, with its
+  name, groups and vars, against a stand-in machine (`--platform debian`,
+  `ubuntu`, `rocky`, `alpine` or `arch`), renders its templates, and
+  connects to nothing.
+- Tags: resources take `tags:`, `include_recipe "roles/web", tags: [:web]`
+  tags everything a file declares, and `--tags` and `--skip-tags` run part
+  of a recipe with `plan`, `apply` and `drift`. Reports list the tags used.
+- `sadame report` turns the `--json` output of `plan`, `apply` and `drift`
+  into Markdown for a CI summary page, or JUnit XML (`--format junit`) for
+  test reports.
+- `sadame init` writes a recipe, `vars.rb`, `hosts.rb` and a template, and
+  with `--ci github` or `--ci gitlab` a daily drift check.
+
+### Changed
+
+- The CI examples put a drift summary on the GitHub Actions run page and a
+  JUnit report in GitLab; the pull request pipeline validates the recipe
+  before planning.
+- Example 08 tags each role.
+- `sadame hosts` says when `hosts.rb` exists but declares no hosts.
+
 ## [0.3.0] - 2026-11-01
 
 Recipes can see the machine they run on.
@@ -143,7 +171,8 @@ The first release.
   line, JSON output and exit code references, and a comparison with
   Ansible, Itamae, mitamae, Chef and Puppet.
 
-[Unreleased]: https://github.com/enderkus/sadame/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/enderkus/sadame/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/enderkus/sadame/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/enderkus/sadame/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/enderkus/sadame/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/enderkus/sadame/releases/tag/v0.1.0

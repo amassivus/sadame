@@ -1,5 +1,5 @@
 $ sudo sadame plan examples/resources/user
-sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 + user[deploy]
     state: absent -> present
@@ -14,7 +14,7 @@ sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
 Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 0 unchanged.
 
 $ sudo sadame apply examples/resources/user
-sadame 0.3.0 apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 apply on local (Debian GNU/Linux 12 (bookworm))
 
 changed    user[deploy]
            state: absent -> present
@@ -33,7 +33,7 @@ Summary
   skipped      0
   notified     0
 
-Finished in 0.19s.
+Finished in 0.20s.
 
 $ id deploy
 uid=1000(deploy) gid=1000(deploy) groups=1000(deploy),4(adm)

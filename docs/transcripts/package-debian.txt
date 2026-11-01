@@ -1,5 +1,5 @@
 $ sudo sadame plan examples/resources/package
-sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 + package[tree]
     state: absent -> installed
@@ -10,7 +10,7 @@ sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
 Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
 
 $ sudo sadame apply examples/resources/package
-sadame 0.3.0 apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 apply on local (Debian GNU/Linux 12 (bookworm))
 
 changed    package[tree]
            state: absent -> installed
@@ -26,9 +26,9 @@ Summary
   skipped      0
   notified     0
 
-Finished in 6.44s.
+Finished in 5.68s.
 
 $ sudo sadame plan examples/resources/package
-sadame 0.3.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.4.0 plan on local (Debian GNU/Linux 12 (bookworm))
 
 Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 3 unchanged.
