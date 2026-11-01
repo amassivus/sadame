@@ -39,7 +39,7 @@ every change as a diff, and `drift` gives CI a yes-or-no answer. Ansible
 has far more modules, a large ecosystem, Windows and network device
 support, and years of production use. See
 [Migrate from Ansible](guides/migrate-from-ansible.md) and the
-[comparison table](https://github.com/enderkus/sadame#compared-with-similar-tools).
+[comparison](comparison.md).
 
 ### How is this different from Itamae and mitamae?
 

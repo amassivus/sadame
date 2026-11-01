@@ -224,4 +224,4 @@ Things Ansible does that sadame 0.1 does not:
 
 - [Inventory](../recipes/inventory.md)
 - [Notifications](../recipes/notifications.md)
-- [Comparison with other tools](https://github.com/enderkus/sadame#compared-with-similar-tools)
+- [Comparison with other tools](../comparison.md)
