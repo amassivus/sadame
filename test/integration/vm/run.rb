@@ -5,8 +5,9 @@
 # (git ignores it; hosts.example.rb shows the shape).
 #
 #   rake "vm:reset[ubuntu]"    revert the ubuntu VM to its clean snapshot
-#   rake "vm:test[ubuntu]"     reset, then push every example that applies to
-#                              it, and check that drift exits 0 after each
+#   rake "vm:test[ubuntu]"     push every example that applies to it, each on
+#                              a freshly reverted VM, and check that drift
+#                              exits 0 after each
 #   rake vm:test:all           every VM in hosts.local.rb
 #
 # Each example is applied with push mode, through the inventory, from this
@@ -31,8 +32,8 @@ module VMTests
   # On the Omarchy VM only the workstation examples run; example 12 runs
   # nowhere else among the VMs.
   OMARCHY_EXAMPLES = ["examples/01-hello", "examples/12-omarchy-workstation"].freeze
-  # 07 moves SSH to port 2222, so it runs last.
-  LAST = "examples/07-hardening-baseline"
+  # 07 moves SSH to port 2222.
+  HARDENING = "examples/07-hardening-baseline"
 
   Result = Struct.new(:example, :status, :detail)
 
@@ -77,11 +78,17 @@ module VMTests
       virsh("snapshot-revert", domain, snapshot, "--running", "--force")
       add_forwards(domain)
       wait_for_ssh(@target.port)
+      set_clock
     end
 
+    # Each example starts from the clean snapshot, as each starts in a
+    # fresh container in the Docker tests: examples conflict with each
+    # other (04 installs docker-ce, another example docker.io).
     def test
-      reset
-      results = examples.map { |example| exercise(example) }
+      results = examples.map do |example|
+        reset
+        exercise(example)
+      end
       report(results)
     end
 
@@ -96,7 +103,7 @@ module VMTests
           example[:distros].include?(matrix_distro) && example[:path] != "examples/12-omarchy-workstation"
         end
       end
-      selected.partition { |example| example[:path] != LAST }.flatten
+      selected
     end
 
     def exercise(example)
@@ -117,7 +124,7 @@ module VMTests
     # After 07, SSH listens on 2222 inside the VM: drift connects there, or
     # to the hypervisor port forwarded to it.
     def drift_target(example)
-      return ["-g", @distribution] unless example[:path] == LAST
+      return ["-g", @distribution] unless example[:path] == HARDENING
 
       ["-h", "#{@target.name}:#{@target.vars.fetch(:ssh_port_after_07, 2222)}"]
     end
@@ -135,6 +142,13 @@ module VMTests
 
     # Retried when ssh itself fails (exit status 255), as on a flaky home
     # network; reverting and adding forwards can safely run twice.
+    # A snapshot taken while the VM ran (needed where the disk is
+    # encrypted, as on Omarchy, so the VM comes back unlocked) resumes with
+    # the time it was taken; package signatures and TLS need the real time.
+    def set_clock
+      run!(ssh(@target, "sudo -n date -u -s @#{Time.now.to_i} >/dev/null"), retries: 3)
+    end
+
     def virsh(*arguments)
       uri = @hypervisor.vars.fetch(:libvirt_uri, "qemu:///system")
       run!(ssh(@hypervisor, Shellwords.join(["virsh", "-c", uri] + arguments)), retries: 3)
@@ -157,13 +171,20 @@ module VMTests
       script = <<~SCRIPT
         set -e
         mkdir -p /opt/pebble/test/certs/localhost /opt/pebble/test/config && cd /opt/pebble
-        curl -fsSL #{base}/releases/download/#{PEBBLE_VERSION}/pebble-linux-amd64.tar.gz | tar -xzf - --strip-components=3
+        curl -fsSL #{base}/releases/download/#{PEBBLE_VERSION}/pebble-linux-amd64.tar.gz |
+          tar -xzf - --strip-components=3 --no-same-owner
+        chmod 0755 pebble
         curl -fsSL -o test/certs/localhost/cert.pem #{raw}/test/certs/localhost/cert.pem
         curl -fsSL -o test/certs/localhost/key.pem #{raw}/test/certs/localhost/key.pem
         curl -fsSL -o test/config/pebble-config.json #{raw}/test/config/pebble-config.json
         PEBBLE_VA_ALWAYS_VALID=1 PEBBLE_WFE_NONCEREJECT=0 nohup ./pebble -config test/config/pebble-config.json \
           < /dev/null > pebble.log 2>&1 &
-        sleep 2
+        for i in 1 2 3 4 5 6 7 8 9 10; do
+          curl -fsk https://localhost:14000/dir > /dev/null && exit 0
+          sleep 1
+        done
+        cat pebble.log
+        exit 1
       SCRIPT
       run!("#{ssh(@target, "sudo sh -s")} <<'SCRIPT'\n#{script}SCRIPT")
     end

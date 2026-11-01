@@ -161,13 +161,19 @@ rake "vm:test[debian]"      # reset, push every example that applies, check drif
 rake vm:test:all            # every VM in hosts.local.rb
 ```
 
-`vm:test` reverts the VM, then pushes each applicable example to it from
-the machine running the tests, through the inventory, and checks that
-`drift` exits `0`. `07-hardening-baseline` runs last, because it moves SSH
-to port 2222, and its drift check connects to the new port. For example 03,
-Pebble is started on the VM first. On the Omarchy VM only examples 01 and
-12 run; example 12 runs on no other VM. Without `hosts.local.rb`, the `vm:`
-tasks print what is missing and exit `0`.
+`vm:test` reverts the VM to its clean snapshot before each applicable
+example, as the Docker tests start each example in a fresh container, then
+pushes the example to it from the machine running the tests, through the
+inventory, and checks that `drift` exits `0`. After each revert the VM's
+clock is set from the machine running the tests: a snapshot taken while
+the VM was running resumes with the time it was taken. Take snapshots with
+the VM shut off where you can, so each test starts with a real boot; a VM
+with an encrypted disk, such as a default Omarchy install, needs a
+snapshot taken while it runs, or it waits for the passphrase. The drift
+check of `07-hardening-baseline` connects to the port SSH moved to. For
+example 03, Pebble is started on the VM first. On the Omarchy VM only
+examples 01 and 12 run; example 12 runs on no other VM. Without
+`hosts.local.rb`, the `vm:` tasks print what is missing and exit `0`.
 
 ## Common mistakes
 
