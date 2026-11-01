@@ -82,6 +82,9 @@ class ExamplesTest < SadameTest
       ["file[/etc/motd]", "directory[/etc/demo-app]", "file[/etc/demo-app/app.conf]",
        "file[/etc/demo-app/nightly.schedule]", "directory[/etc/sysctl.d]", "file[/etc/sysctl.d/90-demo-app.conf]"]
     ],
+    "examples/shared-recipes/site.rb" => [
+      "debian", ["file[/etc/motd]", "directory[/etc/demo-shared]", "file[/etc/demo-shared/owner]"]
+    ],
     "examples/notifications/recipe.rb" => [
       "debian",
       ["exec[systemctl daemon-reload]", "file[/etc/systemd/system/ticker.service]", "file[/etc/default/ticker]",
@@ -133,6 +136,8 @@ class ExamplesTest < SadameTest
   # that are only used through include_recipe.
   SUPPORT_FILE_NAMES = ["vars.rb"].freeze
   INCLUDED_RECIPE_DIRECTORIES = ["parts", "roles"].freeze
+  # Recipes shared from other repositories, included from under vendor/.
+  VENDOR_DIRECTORY = "vendor"
   # Recipes for other tools, kept for comparison in the migration examples.
   OTHER_TOOLS_DIRECTORIES = ["itamae"].freeze
 
@@ -352,7 +357,7 @@ class ExamplesTest < SadameTest
       name = File.basename(path)
       directories = File.dirname(path).split("/")
       path.end_with?(".rb") && !SUPPORT_FILE_NAMES.include?(name) && !name.start_with?("hosts") &&
-        !INCLUDED_RECIPE_DIRECTORIES.include?(directories.last) &&
+        !INCLUDED_RECIPE_DIRECTORIES.include?(directories.last) && !directories.include?(VENDOR_DIRECTORY) &&
         (directories & OTHER_TOOLS_DIRECTORIES).empty?
     end
   end

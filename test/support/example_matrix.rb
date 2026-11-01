@@ -87,7 +87,8 @@ module ExampleMatrix
     { path: "examples/resources/line/minimal.rb", distros: ALL },
     { path: "examples/resources/git/recipe.rb", distros: ALL },
     { path: "examples/resources/git/minimal.rb", distros: ALL },
-    { path: "examples/facts", distros: ALL }
+    { path: "examples/facts", distros: ALL },
+    { path: "examples/shared-recipes/site.rb", distros: ALL }
   ].freeze
 
   # The recipe file of an example.
