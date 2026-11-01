@@ -14,6 +14,7 @@ project uses [Semantic Versioning](https://semver.org/).
 ### Fixed
 
 - The icons on the docs' home page cards were shown as text.
+- Links in the docs' dark color scheme were blue instead of the brand pink.
 
 ## [0.1.0] - 2026-11-01
 

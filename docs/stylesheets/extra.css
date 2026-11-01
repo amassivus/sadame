@@ -3,12 +3,14 @@
   --sadame-red: #bd304c;
 }
 
-[data-md-color-scheme="default"] {
+/* Two attribute selectors, like the theme's own rule for black and white
+   primaries on the slate scheme; with one, the theme's blue links win. */
+[data-md-color-scheme="default"][data-md-color-primary] {
   --md-typeset-a-color: var(--sadame-red);
   --md-accent-fg-color: var(--sadame-red);
 }
 
-[data-md-color-scheme="slate"] {
+[data-md-color-scheme="slate"][data-md-color-primary] {
   --md-typeset-a-color: #e8798f;
   --md-accent-fg-color: #e8798f;
 }
