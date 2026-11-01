@@ -57,9 +57,56 @@ class ServiceResourceTest < SadameTest
   end
 
   def test_requires_systemd
-    shell = linux_shell.on("test -d /run/systemd/system", exit_status: 1)
+    shell = linux_shell.on("test -d /run/systemd/system", exit_status: 1).on("test -e /run/openrc/softlevel", exit_status: 1)
     error = assert_raises(Sadame::ResourceError) { service_resource({ state: :running }, shell).diff }
-    assert_includes error.message, "systemd is not running on this host"
+    assert_includes error.message, "no service manager is running on this host"
+  end
+
+  def openrc_shell(runlevels: nil, started: false)
+    shell = linux_shell("alpine")
+    shell.on("test -d /run/systemd/system", exit_status: 1)
+    shell.on("test -e /run/openrc/softlevel")
+    show = "             crond | default\n"
+    show += "             nginx | #{runlevels}\n" if runlevels
+    shell.on("rc-update show", stdout: show)
+    shell.on("rc-service nginx status", stdout: started ? " * status: started\n" : " * status: stopped\n",
+                                        exit_status: started ? 0 : 3)
+  end
+
+  def test_openrc_enables_and_starts
+    shell = openrc_shell
+    service = service_resource({ enable: true, state: :running }, shell)
+    changes = service.diff
+    assert_equal [:enabled, :state], change_attributes(changes)
+    service.apply(changes)
+    assert_equal ["rc-update add nginx default", "rc-service nginx start"], shell.commands.last(2)
+  end
+
+  def test_openrc_running_and_enabled_service_has_no_changes
+    assert_empty service_resource({ enable: true, state: :running }, openrc_shell(runlevels: "default", started: true)).diff
+  end
+
+  def test_openrc_disable_removes_the_service_from_every_runlevel
+    shell = openrc_shell(runlevels: "boot default", started: true)
+    service = service_resource({ enable: false, state: :stopped }, shell)
+    service.apply(service.diff)
+    assert_equal ["rc-update del nginx boot && rc-update del nginx default", "rc-service nginx stop"],
+                 shell.commands.last(2)
+  end
+
+  def test_openrc_notification_actions
+    shell = openrc_shell(runlevels: "default", started: true)
+    service_resource({}, shell).run_action(:reload)
+    assert_equal "rc-service nginx reload", shell.commands.last
+    service_resource({}, shell).run_action(:disable)
+    assert_equal "rc-update del nginx default", shell.commands.last
+  end
+
+  def test_openrc_has_no_user_services
+    shell = openrc_shell
+    service = build_resource(Sadame::ServiceResource, "backup.timer", { user: "alice", enable: true }, shell: shell)
+    error = assert_raises(Sadame::ResourceError) { service.diff }
+    assert_includes error.message, "user: needs systemd; this host runs OpenRC"
   end
 
   def test_validation

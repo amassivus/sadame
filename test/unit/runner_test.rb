@@ -41,7 +41,7 @@ class RunnerTest < SadameTest
     resources = collection(shell, [Sadame::ServiceResource, "nginx", { state: :running }], [Sadame::PackageResource, "git", {}])
     report = runner(shell).plan(resources)
     assert_equal [:failed, :create], report.entries.map { |entry| entry.status }
-    assert_includes report.entries.first.error, "systemd is not running"
+    assert_includes report.entries.first.error, "no service manager is running"
     assert report.failed?
   end
 

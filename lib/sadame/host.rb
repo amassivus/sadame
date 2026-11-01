@@ -13,7 +13,7 @@ module Sadame
       @groups = groups
       @platform = nil
       @package_manager = nil
-      @systemd = nil
+      @init_system = nil
     end
 
     def platform
@@ -24,9 +24,24 @@ module Sadame
       @package_manager ||= PackageManagers.for(platform, shell)
     end
 
+    # The service manager running on the host: :systemd, :openrc (Alpine),
+    # or nil when neither runs, as in most containers.
+    def init_system
+      @init_system ||= detect_init_system
+      @init_system == :none ? nil : @init_system
+    end
+
     def systemd?
-      @systemd = shell.run("test -d /run/systemd/system").success? if @systemd.nil?
-      @systemd
+      init_system == :systemd
+    end
+
+    private
+
+    def detect_init_system
+      return :systemd if shell.run("test -d /run/systemd/system").success?
+      return :openrc if shell.run("test -e /run/openrc/softlevel").success?
+
+      :none
     end
   end
 end
