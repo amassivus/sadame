@@ -1,0 +1,16 @@
+$ sadame plan site.rb -g db
+[db1.example.com] sadame 0.1.0.dev plan on db1.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com]
+[db1.example.com] ~ file[/etc/cron.d/demo-db-backup]
+[db1.example.com]     --- /etc/cron.d/demo-db-backup
+[db1.example.com]     +++ /etc/cron.d/demo-db-backup (desired)
+[db1.example.com]     @@ -1 +1 @@
+[db1.example.com]     -0 3 * * * demo-db sqlite3 /var/lib/demo-db/app.db .dump > /var/lib/demo-db/backup.sql
+[db1.example.com]     +0 4 * * * demo-db sqlite3 /var/lib/demo-db/app.db .dump > /var/lib/demo-db/backup.sql
+[db1.example.com]
+[db1.example.com] Plan: 0 to create, 1 to update, 0 to remove, 0 to run, 5 unchanged.
+
+Hosts
+  db1.example.com  ok
+
+plan on 1 host: 1 ok. Finished in 0.21s.

@@ -7,6 +7,15 @@
 module Transcripts
   SCENARIOS = [
     {
+      name: "reference",
+      image: "debian",
+      steps: [
+        { save: "cli-help", commands: ["sadame --help"] },
+        { save: "cli-version", commands: ["sadame --version"] },
+        { save: "cli-usage-error", commands: ["sadame plan examples/01-hello --colour", "echo $?"] }
+      ]
+    },
+    {
       name: "getting-started",
       image: "debian",
       steps: [
@@ -218,6 +227,23 @@ module Transcripts
                      "ssh-keygen -R web1.example.com",
                      "echo \"web1.example.com $(cut -d ' ' -f 1,2 /root/.ssh/id_ed25519.pub)\" >> /root/.ssh/known_hosts"] },
         { save: "trouble-host-key", dir: EXAMPLE_08, commands: ["sadame plan site.rb -h web1.example.com"] }
+      ]
+    },
+    # The "see it work" block on the docs' home page: a var changed in
+    # hosts.rb, rolled out to the db group. db1 is the group's only host,
+    # so the output's line order does not change between captures, and the
+    # page can quote line ranges of it. Last, so that the scenarios above
+    # start from fresh servers.
+    {
+      name: "landing",
+      steps: [
+        { controller: true, commands: ["cd #{EXAMPLE_08} && sadame apply site.rb -g db >/dev/null"] },
+        { controller: true,
+          commands: ["rm -rf /tmp/fleet && cp -r #{EXAMPLE_08} /tmp/fleet",
+                     "sed -i 's/backup_hour: 3/backup_hour: 4/' /tmp/fleet/hosts.rb"] },
+        { save: "landing-plan", dir: "/tmp/fleet", commands: ["sadame plan site.rb -g db"] },
+        { save: "landing-apply", dir: "/tmp/fleet", commands: ["sadame apply site.rb -g db"] },
+        { save: "landing-drift", dir: "/tmp/fleet", commands: ["sadame drift site.rb -g db", "echo $?"] }
       ]
     }
   ].freeze

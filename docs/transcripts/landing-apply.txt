@@ -1,0 +1,28 @@
+$ sadame apply site.rb -g db
+[db1.example.com] sadame 0.1.0.dev apply on db1.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com]
+[db1.example.com] unchanged  file[/etc/motd]
+[db1.example.com] unchanged  package[sqlite3]
+[db1.example.com] unchanged  package[cron]
+[db1.example.com] unchanged  user[demo-db]
+[db1.example.com] unchanged  directory[/var/lib/demo-db]
+[db1.example.com] changed    file[/etc/cron.d/demo-db-backup]
+[db1.example.com]            --- /etc/cron.d/demo-db-backup
+[db1.example.com]            +++ /etc/cron.d/demo-db-backup (desired)
+[db1.example.com]            @@ -1 +1 @@
+[db1.example.com]            -0 3 * * * demo-db sqlite3 /var/lib/demo-db/app.db .dump > /var/lib/demo-db/backup.sql
+[db1.example.com]            +0 4 * * * demo-db sqlite3 /var/lib/demo-db/app.db .dump > /var/lib/demo-db/backup.sql
+[db1.example.com]
+[db1.example.com] Summary
+[db1.example.com]   changed      1  file[/etc/cron.d/demo-db-backup]
+[db1.example.com]   unchanged    5
+[db1.example.com]   failed       0
+[db1.example.com]   skipped      0
+[db1.example.com]   notified     0
+[db1.example.com]
+[db1.example.com] Finished in 0.01s.
+
+Hosts
+  db1.example.com  ok
+
+apply on 1 host: 1 ok. Finished in 0.21s.

@@ -1,0 +1,6 @@
+$ sadame plan examples/01-hello --colour
+sadame: unknown option --colour
+Run 'sadame --help' for usage.
+
+$ echo $?
+2
