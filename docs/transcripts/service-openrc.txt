@@ -1,0 +1,24 @@
+$ sudo sadame apply examples/resources/service
+sadame 0.2.0 apply on local (Alpine Linux v3.20)
+
+changed    package[nginx]
+           state: absent -> installed
+changed    service[nginx]
+           enabled: false -> true
+           state: stopped -> running
+
+Summary
+  changed      2  package[nginx]
+                  service[nginx]
+  unchanged    0
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 0.99s.
+
+$ rc-update show default
+                nginx | default
+
+$ rc-service nginx status
+ * status: started

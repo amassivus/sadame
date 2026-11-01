@@ -101,10 +101,14 @@ nav:
   - Resources:
       - package: resources/package.md
       - file: resources/file.md
+      - line: resources/line.md
       - directory: resources/directory.md
+      - link: resources/link.md
       - service: resources/service.md
       - exec: resources/exec.md
       - user: resources/user.md
+      - group: resources/group.md
+      - git: resources/git.md
   - Guides:
       - Provision a new VPS: guides/provision-a-new-vps.md
       - Remote hosts: guides/remote-hosts.md

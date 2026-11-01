@@ -1,0 +1,35 @@
+$ sudo sadame plan examples/resources/group
+sadame 0.2.0 plan on local (Debian GNU/Linux 12 (bookworm))
+
++ group[app]
+    state: absent -> present
+    gid: 1500
+
++ group[metrics]
+    state: absent -> present
+
+Plan: 2 to create, 0 to update, 0 to remove, 0 to run, 1 unchanged.
+
+$ sudo sadame apply examples/resources/group
+sadame 0.2.0 apply on local (Debian GNU/Linux 12 (bookworm))
+
+changed    group[app]
+           state: absent -> present
+           gid: 1500
+changed    group[metrics]
+           state: absent -> present
+unchanged  group[oldteam]
+
+Summary
+  changed      2  group[app]
+                  group[metrics]
+  unchanged    1
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 0.18s.
+
+$ getent group app metrics
+app:x:1500:
+metrics:x:999:

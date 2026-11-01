@@ -1,0 +1,42 @@
+$ sudo sadame apply examples/resources/link
+sadame 0.2.0 apply on local (Debian GNU/Linux 12 (bookworm))
+
+changed    directory[/srv/app/releases/1]
+           state: absent -> present
+changed    directory[/srv/app/releases/2]
+           state: absent -> present
+changed    file[/srv/app/releases/2/console]
+           state: absent -> present
+           mode: 0755
+           --- /dev/null
+           +++ /srv/app/releases/2/console (desired)
+           @@ -0,0 +1,2 @@
+           +#!/bin/sh
+           +echo "release 2"
+changed    link[/srv/app/current]
+           state: absent -> present
+           to: releases/2
+changed    link[/usr/local/bin/app-console]
+           state: absent -> present
+           to: /srv/app/current/console
+unchanged  link[/usr/local/bin/old-console]
+
+Summary
+  changed      5  directory[/srv/app/releases/1]
+                  directory[/srv/app/releases/2]
+                  file[/srv/app/releases/2/console]
+                  link[/srv/app/current]
+                  link[/usr/local/bin/app-console]
+  unchanged    1
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 0.30s.
+
+$ readlink /srv/app/current /usr/local/bin/app-console
+releases/2
+/srv/app/current/console
+
+$ app-console
+release 2

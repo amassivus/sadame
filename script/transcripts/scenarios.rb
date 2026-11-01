@@ -131,6 +131,55 @@ module Transcripts
       ]
     },
     {
+      name: "service-openrc",
+      image: "alpine-openrc",
+      steps: [
+        { save: "service-openrc",
+          commands: ["sudo sadame apply examples/resources/service", "rc-update show default", "rc-service nginx status"] }
+      ]
+    },
+    {
+      name: "group",
+      image: "debian",
+      steps: [
+        { save: "group",
+          commands: ["sudo sadame plan examples/resources/group", "sudo sadame apply examples/resources/group",
+                     "getent group app metrics"] }
+      ]
+    },
+    {
+      name: "link",
+      image: "debian",
+      steps: [
+        { save: "link",
+          commands: ["sudo sadame apply examples/resources/link", "readlink /srv/app/current /usr/local/bin/app-console",
+                     "app-console"] },
+        { save: "link-repoint",
+          commands: ["sudo ln -sfn releases/1 /srv/app/current", "sudo sadame drift examples/resources/link",
+                     "sudo sadame apply examples/resources/link"] }
+      ]
+    },
+    {
+      name: "line",
+      image: "debian",
+      steps: [
+        { commands: ["sudo apt-get update -qq",
+                     "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq openssh-server >/dev/null"] },
+        { save: "line-plan", commands: ["sudo sadame plan examples/resources/line"] },
+        { save: "line-apply",
+          commands: ["sudo sadame apply examples/resources/line", "sudo sadame plan examples/resources/line"] }
+      ]
+    },
+    {
+      name: "git",
+      image: "debian",
+      steps: [
+        { save: "git",
+          commands: ["sudo sadame apply examples/resources/git", "sudo sadame plan examples/resources/git",
+                     "sudo -u deploy git -C /srv/sadame describe --tags"] }
+      ]
+    },
+    {
       name: "notifications",
       image: "debian-systemd",
       steps: [
@@ -227,6 +276,19 @@ module Transcripts
                      "ssh-keygen -R web1.example.com",
                      "echo \"web1.example.com $(cut -d ' ' -f 1,2 /root/.ssh/id_ed25519.pub)\" >> /root/.ssh/known_hosts"] },
         { save: "trouble-host-key", dir: EXAMPLE_08, commands: ["sadame plan site.rb -h web1.example.com"] }
+      ]
+    },
+    # --serial stopping a rollout: web2 has a file where the recipe wants a
+    # directory, so its apply fails and db1, in the last batch, is skipped.
+    # remote-troubleshooting leaves a wrong host key for web1 behind.
+    {
+      name: "rolling",
+      steps: [
+        { controller: true, commands: ["ssh-keygen -R web1.example.com",
+                                       "cd #{EXAMPLE_08} && sadame apply site.rb -g all >/dev/null"] },
+        { target: "web2", commands: ["rm -rf /etc/demo-app && touch /etc/demo-app"] },
+        { save: "remote-serial", dir: EXAMPLE_08, commands: ["sadame apply site.rb -g all --serial 1", "echo $?"] },
+        { target: "web2", commands: ["rm -f /etc/demo-app"] }
       ]
     },
     # The "see it work" block on the docs' home page: a var changed in

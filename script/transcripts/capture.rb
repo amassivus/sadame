@@ -19,14 +19,16 @@ module Transcripts
   ROOT = File.expand_path("../..", __dir__)
   OUTPUT_DIR = File.join(ROOT, "docs", "transcripts")
 
-  # The systemd image runs natively: systemd does not boot under every
-  # emulator. The others are amd64, the most common server architecture.
+  # The images that boot a service manager run natively: systemd does not
+  # boot under every emulator. The others are amd64, the most common server
+  # architecture.
   IMAGES = {
-    "debian" => { platform: "linux/amd64", systemd: false },
-    "debian-systemd" => { platform: nil, systemd: true },
-    "arch" => { platform: "linux/amd64", systemd: false },
-    "arch-systemd" => { platform: nil, systemd: true,
-                        base: { "amd64" => "archlinux:latest", "arm64" => "menci/archlinuxarm:latest" } }
+    "debian" => { platform: "linux/amd64", init: nil },
+    "debian-systemd" => { platform: nil, init: :systemd },
+    "arch" => { platform: "linux/amd64", init: nil },
+    "arch-systemd" => { platform: nil, init: :systemd,
+                        base: { "amd64" => "archlinux:latest", "arm64" => "menci/archlinuxarm:latest" } },
+    "alpine-openrc" => { platform: nil, init: :openrc }
   }.freeze
 
   module_function
@@ -106,16 +108,30 @@ module Transcripts
     settings = IMAGES.fetch(image)
     command = ["docker", "run", "--detach", "--name", container, "--volume", "#{ROOT}:/sadame:ro", "--workdir", "/sadame"]
     command += ["--platform", settings[:platform]] if settings[:platform]
-    if settings[:systemd]
+    if settings[:init]
       command += ["--privileged", "--cgroupns=host", "--volume", "/sys/fs/cgroup:/sys/fs/cgroup:rw", tag(image)]
     else
       command += [tag(image), "sleep", "infinity"]
     end
     system(*command, out: File::NULL, exception: true)
     install_binary(container)
-    return unless settings[:systemd]
+    case settings[:init]
+    when :systemd
+      system("docker", "exec", container, "systemctl", "is-system-running", "--wait", out: File::NULL, err: File::NULL)
+    when :openrc
+      wait_for_openrc(container)
+    end
+  end
 
-    system("docker", "exec", container, "systemctl", "is-system-running", "--wait", out: File::NULL, err: File::NULL)
+  # OpenRC writes the runlevel it reached to /run/openrc/softlevel.
+  def wait_for_openrc(container)
+    60.times do
+      level, = Open3.capture2("docker", "exec", container, "cat", "/run/openrc/softlevel", err: File::NULL)
+      return if level.strip == "default"
+
+      sleep 1
+    end
+    abort "OpenRC did not reach the default runlevel in #{container}"
   end
 
   def install_binary(container)

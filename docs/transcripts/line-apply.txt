@@ -1,0 +1,60 @@
+$ sudo sadame apply examples/resources/line
+sadame 0.2.0 apply on local (Debian GNU/Linux 12 (bookworm))
+
+unchanged  package[openssh-server]
+unchanged  exec[ssh-keygen -A]
+changed    directory[/run/sshd]
+           state: absent -> present
+           mode: 0755
+changed    line[PermitRootLogin no]
+           --- /etc/ssh/sshd_config
+           +++ /etc/ssh/sshd_config (desired)
+           @@ -30,7 +30,7 @@
+            # Authentication:
+            
+            #LoginGraceTime 2m
+           -#PermitRootLogin prohibit-password
+           +PermitRootLogin no
+            #StrictModes yes
+            #MaxAuthTries 6
+            #MaxSessions 10
+changed    line[PasswordAuthentication no]
+           --- /etc/ssh/sshd_config
+           +++ /etc/ssh/sshd_config (desired)
+           @@ -54,7 +54,7 @@
+            #IgnoreRhosts yes
+            
+            # To disable tunneled clear text passwords, change to no here!
+           -#PasswordAuthentication yes
+           +PasswordAuthentication no
+            #PermitEmptyPasswords no
+            
+            # Change to yes to enable challenge-response passwords (beware issues with
+changed    line[no X11 forwarding]
+           --- /etc/ssh/sshd_config
+           +++ /etc/ssh/sshd_config (desired)
+           @@ -87,7 +87,6 @@
+            #AllowAgentForwarding yes
+            #AllowTcpForwarding yes
+            #GatewayPorts no
+           -X11Forwarding yes
+            #X11DisplayOffset 10
+            #X11UseLocalhost yes
+            #PermitTTY yes
+
+Summary
+  changed      4  directory[/run/sshd]
+                  line[PermitRootLogin no]
+                  line[PasswordAuthentication no]
+                  line[no X11 forwarding]
+  unchanged    2
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 0.59s.
+
+$ sudo sadame plan examples/resources/line
+sadame 0.2.0 plan on local (Debian GNU/Linux 12 (bookworm))
+
+Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 6 unchanged.

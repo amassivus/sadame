@@ -1,0 +1,36 @@
+$ sudo sadame apply examples/resources/git
+sadame 0.2.0 apply on local (Debian GNU/Linux 12 (bookworm))
+
+changed    package[git]
+           state: absent -> installed
+changed    user[deploy]
+           state: absent -> present
+           shell: /bin/sh
+changed    directory[/srv/sadame]
+           state: absent -> present
+           mode: 0755
+           owner: deploy
+changed    git[/srv/sadame]
+           state: absent -> present
+           repository: https://github.com/enderkus/sadame.git
+           revision: d082e432ecc99ef03cf8f30fa4ecebb80defb5c3
+
+Summary
+  changed      4  package[git]
+                  user[deploy]
+                  directory[/srv/sadame]
+                  git[/srv/sadame]
+  unchanged    0
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 38.73s.
+
+$ sudo sadame plan examples/resources/git
+sadame 0.2.0 plan on local (Debian GNU/Linux 12 (bookworm))
+
+Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 4 unchanged.
+
+$ sudo -u deploy git -C /srv/sadame describe --tags
+v0.1.0

@@ -1,0 +1,29 @@
+$ sudo ln -sfn releases/1 /srv/app/current
+
+$ sudo sadame drift examples/resources/link
+sadame 0.2.0 drift on local (Debian GNU/Linux 12 (bookworm))
+
+~ link[/srv/app/current]
+    to: releases/1 -> releases/2
+
+Drift: 1 of 6 resources differs from the recipe.
+
+$ sudo sadame apply examples/resources/link
+sadame 0.2.0 apply on local (Debian GNU/Linux 12 (bookworm))
+
+unchanged  directory[/srv/app/releases/1]
+unchanged  directory[/srv/app/releases/2]
+unchanged  file[/srv/app/releases/2/console]
+changed    link[/srv/app/current]
+           to: releases/1 -> releases/2
+unchanged  link[/usr/local/bin/app-console]
+unchanged  link[/usr/local/bin/old-console]
+
+Summary
+  changed      1  link[/srv/app/current]
+  unchanged    5
+  failed       0
+  skipped      0
+  notified     0
+
+Finished in 0.25s.
