@@ -15,6 +15,18 @@ project uses [Semantic Versioning](https://semver.org/).
 
 - The README shows a real plan, many servers, how push mode works, every
   command and resource, and where sadame stands.
+- The Docker, push and VM tests, and the docs' transcript capture, stop
+  before they start when a binary they need in `dist/` is older than the
+  source, and name the task that rebuilds it.
+
+### Fixed
+
+- With sudo, push mode checks that sudo works without a password before it
+  copies anything to a server, as the Remote hosts guide says. It used to
+  copy the binary first, then fail.
+- A misspelled option in a call that spans several lines is reported on
+  its own line by `validate`, `plan`, `apply` and `drift`, as the language
+  server already did. The binary used to name the call's last line.
 
 ## [0.5.0] - 2026-11-02
 
