@@ -6,6 +6,11 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- The README and the docs link to the beginner's guide, *Sadame:
+  Configuration Management Made Simple*, a free book.
+
 ## [0.5.1] - 2026-11-02
 
 Push mode checks sudo before it copies anything, and misspelled options
