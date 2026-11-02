@@ -19,6 +19,7 @@ Linux マシンのあるべき姿を Ruby で記述し、すべての変更を�
 <p align="center">
   <a href="https://enderkus.github.io/sadame/">ドキュメント（英語）</a> ·
   <a href="https://enderkus.github.io/sadame/getting-started/">はじめに</a> ·
+  <a href="https://enderkus.github.io/sadame-beginner-guide/">入門書（英語）</a> ·
   <a href="https://enderkus.github.io/sadame/examples/">例</a> ·
   <a href="CHANGELOG.md">変更履歴</a>
 </p>
@@ -173,6 +174,7 @@ sadame は Linux と macOS で動作します。管理できるのは Debian、U
 **<https://enderkus.github.io/sadame/>**（英語）
 
 - [はじめに](https://enderkus.github.io/sadame/getting-started/)：インストール、最初のレシピ、plan の読み方。
+- 入門書 [Sadame: Configuration Management Made Simple](https://enderkus.github.io/sadame-beginner-guide/)（英語）：最初のレシピからサーバー群全体までを、手元で動かせる練習用ラボとともに解説する無料の本。Web 版のほか、[PDF](https://enderkus.github.io/sadame-beginner-guide/sadame-beginner-guide.pdf) と [EPUB](https://enderkus.github.io/sadame-beginner-guide/sadame-beginner-guide.epub) もあります。
 - レシピ：[基本](https://enderkus.github.io/sadame/recipes/basics/)、[インベントリ](https://enderkus.github.io/sadame/recipes/inventory/)、[ファクト](https://enderkus.github.io/sadame/recipes/facts/)、[タグ](https://enderkus.github.io/sadame/recipes/tags/)、[通知](https://enderkus.github.io/sadame/recipes/notifications/)。
 - ガイド：[新しい VPS の構築](https://enderkus.github.io/sadame/guides/provision-a-new-vps/)、[CI でのドリフト検出](https://enderkus.github.io/sadame/guides/drift-in-ci/)、[チームでの運用](https://enderkus.github.io/sadame/guides/team-workflow/)、[Omarchy ワークステーション](https://enderkus.github.io/sadame/guides/omarchy-workstation/)、[エディタ対応](https://enderkus.github.io/sadame/guides/editors/)、[レシピの共有](https://enderkus.github.io/sadame/guides/sharing-recipes/)、[Ansible](https://enderkus.github.io/sadame/guides/migrate-from-ansible/) や [Itamae](https://enderkus.github.io/sadame/guides/migrate-from-itamae/) からの移行。
 - [例](https://enderkus.github.io/sadame/examples/)：1 つのファイルだけの例から、堅牢化した VPS、PostgreSQL、ワークステーションまで、12 のプロジェクト。

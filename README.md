@@ -20,6 +20,7 @@ as a diff before it happens, and apply it over SSH, with nothing to install on t
 <p align="center">
   <a href="https://enderkus.github.io/sadame/">Documentation</a> ·
   <a href="https://enderkus.github.io/sadame/getting-started/">Getting started</a> ·
+  <a href="https://enderkus.github.io/sadame-beginner-guide/">Beginner's guide</a> ·
   <a href="https://enderkus.github.io/sadame/examples/">Examples</a> ·
   <a href="CHANGELOG.md">Changelog</a>
 </p>
@@ -197,6 +198,7 @@ Chef and Puppet, and lists what sadame does not do yet.
 **<https://enderkus.github.io/sadame/>**
 
 - [Getting started](https://enderkus.github.io/sadame/getting-started/): install, a first recipe, reading a plan.
+- [Sadame: Configuration Management Made Simple](https://enderkus.github.io/sadame-beginner-guide/), the beginner's guide: a free book that goes from a first recipe to a whole fleet, with a practice lab to follow along. Online, as a [PDF](https://enderkus.github.io/sadame-beginner-guide/sadame-beginner-guide.pdf) and as an [EPUB](https://enderkus.github.io/sadame-beginner-guide/sadame-beginner-guide.epub).
 - Recipes: [basics](https://enderkus.github.io/sadame/recipes/basics/), the [inventory](https://enderkus.github.io/sadame/recipes/inventory/), [facts](https://enderkus.github.io/sadame/recipes/facts/), [tags](https://enderkus.github.io/sadame/recipes/tags/), [notifications](https://enderkus.github.io/sadame/recipes/notifications/).
 - Guides: [a new VPS](https://enderkus.github.io/sadame/guides/provision-a-new-vps/), [drift in CI](https://enderkus.github.io/sadame/guides/drift-in-ci/), [team workflow](https://enderkus.github.io/sadame/guides/team-workflow/), [an Omarchy workstation](https://enderkus.github.io/sadame/guides/omarchy-workstation/), [editor support](https://enderkus.github.io/sadame/guides/editors/), [sharing recipes](https://enderkus.github.io/sadame/guides/sharing-recipes/), migrating from [Ansible](https://enderkus.github.io/sadame/guides/migrate-from-ansible/) or [Itamae](https://enderkus.github.io/sadame/guides/migrate-from-itamae/).
 - [Examples](https://enderkus.github.io/sadame/examples/): twelve projects, from one file to a hardened VPS, PostgreSQL and a workstation.
