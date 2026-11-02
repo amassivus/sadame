@@ -64,6 +64,13 @@ class RecipeTest < SadameTest
     assert_includes error.message, "unknown option :contents"
   end
 
+  # CRuby reports a call over several lines on its first line and mruby on
+  # its last; the misspelled option is on neither.
+  def test_a_misspelled_option_points_at_its_own_line
+    error = assert_raises(Sadame::RecipeError) { load_recipe("test/fixtures/recipes/unknown_option_multiline/recipe.rb") }
+    assert_includes error.message, "test/fixtures/recipes/unknown_option_multiline/recipe.rb:3: file[/etc/motd]: unknown option :contents"
+  end
+
   def test_missing_include
     error = assert_raises(Sadame::RecipeError) { load_recipe("test/fixtures/recipes/missing_include/recipe.rb") }
     assert_includes error.message, "recipe.rb:2"

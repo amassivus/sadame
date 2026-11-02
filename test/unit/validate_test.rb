@@ -29,6 +29,12 @@ class ValidateTest < SadameTest
     assert_includes stdout, "validate on 1 host: 0 ok, 1 error.\n"
   end
 
+  def test_a_misspelled_option_is_reported_on_its_own_line
+    status, stdout, = run_cli(["validate", "test/fixtures/recipes/unknown_option_multiline"])
+    assert_equal 2, status
+    assert_includes stdout, "recipe.rb:3: file[/etc/motd]: unknown option :contents"
+  end
+
   def test_json
     status, stdout, = run_cli(["validate", "examples/01-hello", "--json", "--platform", "alpine"])
     assert_equal 0, status

@@ -51,13 +51,14 @@ module Sadame
 
     def self.load(path, shell:)
       inventory = new(path)
-      Builder.new(inventory, shell).evaluate(File.read(path), path)
+      source = File.read(path)
+      Builder.new(inventory, shell).evaluate(source, path)
       inventory.check_includes
       inventory
     rescue RecipeError, UsageError => e
       raise e
     rescue ScriptError, StandardError => e
-      raise RecipeError, Sadame.located_message(e, path)
+      raise RecipeError, Sadame.located_message(e, path, source)
     end
 
     def self.empty

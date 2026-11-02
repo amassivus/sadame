@@ -47,12 +47,13 @@ module Sadame
     def evaluate
       expanded = File.expand_path(@path)
       @loaded << expanded
-      instance_eval(@sources[expanded] || File.read(@path), @path, 1)
+      source = @sources[expanded] || File.read(@path)
+      instance_eval(source, @path, 1)
       self
     rescue RecipeError => e
       raise e
     rescue ScriptError, StandardError => e
-      raise RecipeError, Sadame.located_message(e, @path)
+      raise RecipeError, Sadame.located_message(e, @path, source)
     end
 
     def package(name, options = {})

@@ -20,9 +20,6 @@ module Sadame
       MARKERS = ["recipe.rb", "site.rb", "vars.rb", "hosts.rb"].freeze
       LOCATED = /\A(.+?):(\d+):(?:\d+:)? ?(.*)\z/m
       RESOURCE_ID = /([a-z_]+)\[([^\]]+)\]/
-      UNKNOWN_OPTION = /unknown option :(\w+)/
-      # How far below the reported line an option of the same call can be.
-      CALL_LINES = 20
 
       # root is the editor's workspace: the search for vars.rb and hosts.rb
       # stops there.
@@ -137,24 +134,12 @@ module Sadame
         # The file being edited may not be saved yet.
         if match && (File.file?(match[1]) || File.expand_path(match[1]) == File.expand_path(path))
           file = File.expand_path(match[1])
-          message = match[3].strip
-          source = file == File.expand_path(path) ? text : File.read(file)
-          return [file, option_line(message, source, match[2].to_i - 1), message]
+          # The line is already the one the user wrote, misspelled options
+          # included (see Sadame.located_message).
+          return [file, match[2].to_i - 1, match[3].strip]
         end
 
         [File.expand_path(path), declaration_line(error, text), error]
-      end
-
-      # A misspelled option is marked on its own line. Runtimes report a
-      # call that spans lines on its first or its last line.
-      def option_line(message, source, line)
-        option = UNKNOWN_OPTION.match(message)
-        return line if option.nil?
-
-        lines = source.split("\n")
-        first = line - CALL_LINES < 0 ? 0 : line - CALL_LINES
-        candidates = (first..(line + CALL_LINES)).select { |index| lines[index].to_s.include?("#{option[1]}:") }
-        candidates.min_by { |index| (index - line).abs } || line
       end
 
       def declaration_line(error, text)
