@@ -161,6 +161,9 @@ with [`sadame lsp`](guides/editors.md) to see mistakes as you type.
 
 ## See also
 
+- [Sadame: Configuration Management Made Simple](https://enderkus.github.io/sadame-beginner-guide/), the
+  beginner's guide: a free book that goes from a first recipe to a whole
+  fleet, with a practice lab to follow along.
 - [Plan, apply, drift](concepts/plan-apply-drift.md): the three commands
   and their exit statuses.
 - [Recipe basics](recipes/basics.md): vars, `include_recipe` and templates.

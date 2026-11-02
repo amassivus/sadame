@@ -91,6 +91,15 @@ from a single binary.**
 
 <div class="grid cards sadame-columns" markdown>
 
+-   **New to configuration management**
+
+    ---
+
+    A free book, from a first recipe to a whole fleet, with a practice
+    lab to follow along. Online, as a PDF and as an EPUB.
+
+    [:octicons-book-24: The beginner's guide](https://enderkus.github.io/sadame-beginner-guide/)
+
 -   **Users**
 
     ---
