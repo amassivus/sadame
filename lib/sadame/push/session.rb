@@ -17,11 +17,13 @@ module Sadame
     # Runs one command on one target over SSH:
     #
     # 1. detect the target's system with `uname -sm`;
-    # 2. make sure ~/.sadame/bin/SHA256/sadame holds the right binary,
+    # 2. with sudo, check that it works without a password, before
+    #    anything is copied;
+    # 3. make sure ~/.sadame/bin/SHA256/sadame holds the right binary,
     #    copying it only when that checksum is not there yet;
-    # 3. copy the recipe bundle and the target's vars into
+    # 4. copy the recipe bundle and the target's vars into
     #    ~/.sadame/run/RUN_ID/, unpack them there;
-    # 4. run sadame from that directory, with sudo when asked to, and
+    # 5. run sadame from that directory, with sudo when asked to, and
     #    remove the directory afterwards.
     class Session
       SSH_CONNECTION_FAILED = 255
@@ -43,13 +45,13 @@ module Sadame
         raise Failure.new(:error, e.message)
       end
 
-      # Copies the binary if needed, then runs `sadame COMMAND`. Output
+      # Checks sudo, copies the binary if needed, then runs `sadame COMMAND`. Output
       # lines are passed to the block as they arrive, unless capture is set
       # (for --json), in which case stdout is returned instead. Returns
       # [exit_status, captured_stdout, captured_stderr].
       def run(command:, binary:, bundle:, vars_file:, recipe:, run_id:, arguments: [], capture: false, &on_line)
-        install_binary(binary, &on_line)
         remote!("sudo -n true", "sudo") if target.sudo
+        install_binary(binary, &on_line)
         run_dir = ".sadame/run/#{run_id}"
         remote!("mkdir -p #{run_dir}", "prepare #{run_dir}")
         copy!(bundle, "#{run_dir}/bundle.tgz")

@@ -61,9 +61,13 @@ class PushSessionTest < SadameTest
     target = @target.with(sudo: true)
     ssh = Sadame::Push::SSH.new(target)
     @shell.on(ssh.ssh("sudo -n true"), stderr: "sudo: a password is required\n", exit_status: 1)
-    failure = assert_raises(Sadame::Push::Failure) { run_session(target) }
+    @shell.on(ssh.ssh("test -x .sadame/bin/#{SUM}/sadame"), exit_status: 1)
+    lines = []
+    failure = assert_raises(Sadame::Push::Failure) { run_session(target) { |line| lines << line } }
     assert_equal :error, failure.kind
     assert_equal "sudo failed: sudo: a password is required", failure.message
+    assert_equal [ssh.ssh("sudo -n true")], @shell.commands, "nothing may be copied when sudo fails"
+    assert_empty lines
 
     @shell = linux_shell
     run_session(target)
