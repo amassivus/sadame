@@ -1,5 +1,5 @@
 $ sudo sadame plan examples/resources/package/by_family.rb
-sadame 0.5.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.5.1 plan on local (Debian GNU/Linux 12 (bookworm))
 
 + package[apache2]
     state: absent -> installed

@@ -1,5 +1,5 @@
 $ sadame apply examples/01-hello
-sadame 0.5.0 apply on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.5.1 apply on local (Debian GNU/Linux 12 (bookworm))
 
 changed    file[/tmp/sadame-hello.txt]
            state: absent -> present
@@ -15,4 +15,4 @@ Summary
   skipped      0
   notified     0
 
-Finished in 0.08s.
+Finished in 0.09s.

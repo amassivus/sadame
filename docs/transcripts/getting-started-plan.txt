@@ -1,5 +1,5 @@
 $ sadame plan examples/01-hello
-sadame 0.5.0 plan on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.5.1 plan on local (Debian GNU/Linux 12 (bookworm))
 
 + file[/tmp/sadame-hello.txt]
     state: absent -> present

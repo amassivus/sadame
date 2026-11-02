@@ -6,6 +6,11 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-02
+
+Push mode checks sudo before it copies anything, and misspelled options
+are reported on their own line everywhere.
+
 ### Added
 
 - A Japanese README, `README.ja.md`; a test keeps its code and output the
@@ -217,7 +222,8 @@ The first release.
   line, JSON output and exit code references, and a comparison with
   Ansible, Itamae, mitamae, Chef and Puppet.
 
-[Unreleased]: https://github.com/enderkus/sadame/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/enderkus/sadame/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/enderkus/sadame/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/enderkus/sadame/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/enderkus/sadame/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/enderkus/sadame/compare/v0.2.0...v0.3.0

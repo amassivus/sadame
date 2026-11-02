@@ -1,8 +1,8 @@
 $ sadame plan site.rb -g web --tags web
-[web1.example.com] sadame 0.5.0 plan on web1.example.com (Debian GNU/Linux 12 (bookworm))
+[web1.example.com] sadame 0.5.1 plan on web1.example.com (Debian GNU/Linux 12 (bookworm))
 [web1.example.com] Only resources tagged web: 5 of 6.
 [web1.example.com]
-[web2.example.com] sadame 0.5.0 plan on web2.example.com (Debian GNU/Linux 12 (bookworm))
+[web2.example.com] sadame 0.5.1 plan on web2.example.com (Debian GNU/Linux 12 (bookworm))
 [web2.example.com] Only resources tagged web: 5 of 6.
 [web2.example.com]
 [web2.example.com] ~ file[/etc/demo-app/web.conf]
@@ -21,4 +21,4 @@ Hosts
   web1.example.com  ok
   web2.example.com  ok
 
-plan on 2 hosts: 2 ok. Finished in 0.24s.
+plan on 2 hosts: 2 ok. Finished in 0.22s.

@@ -187,7 +187,7 @@ those five distributions and checks them for drift.
 | Rolling changes | `--serial` | `serial:` | no | no |
 | JSON output | `--json` | callback plugins | no | no |
 | Distributed as | one static binary | Python package | Ruby gem | one binary |
-| Maturity | 0.5.0, ten resource types | since 2012, thousands of modules | since 2013 | since 2016 |
+| Maturity | 0.5.1, ten resource types | since 2012, thousands of modules | since 2013 | since 2016 |
 
 The [full comparison](https://enderkus.github.io/sadame/comparison/) adds
 Chef and Puppet, and lists what sadame does not do yet.

@@ -1,14 +1,14 @@
 $ sadame facts
-sadame 0.5.0 facts on local (Debian GNU/Linux 12 (bookworm))
+sadame 0.5.1 facts on local (Debian GNU/Linux 12 (bookworm))
 
-hostname           76237023158c
-fqdn               76237023158c
+hostname           3207ad2a2e73
+fqdn               3207ad2a2e73
 arch               x86_64
 kernel             7.2.12-orbstack-00394-gbecdd6130068
 cpus               10
 memory_mb          8003
 swap_mb            9027
-root_disk_gb       139
+root_disk_gb       140
 ipv4               192.168.215.2
 default_interface  eth0
 ipv4_addresses     192.168.215.2

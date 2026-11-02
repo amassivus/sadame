@@ -1,5 +1,5 @@
 $ sadame facts -h web1.example.com
-[web1.example.com] sadame 0.5.0 facts on web1.example.com (Debian GNU/Linux 12 (bookworm))
+[web1.example.com] sadame 0.5.1 facts on web1.example.com (Debian GNU/Linux 12 (bookworm))
 [web1.example.com]
 [web1.example.com] hostname           web1
 [web1.example.com] fqdn               web1
@@ -8,7 +8,7 @@ $ sadame facts -h web1.example.com
 [web1.example.com] cpus               10
 [web1.example.com] memory_mb          8003
 [web1.example.com] swap_mb            9027
-[web1.example.com] root_disk_gb       139
+[web1.example.com] root_disk_gb       140
 [web1.example.com] ipv4               192.168.107.3
 [web1.example.com] default_interface  eth0
 [web1.example.com] ipv4_addresses     192.168.107.3
@@ -16,9 +16,9 @@ $ sadame facts -h web1.example.com
 [web1.example.com] virtualization     docker
 [web1.example.com] container          true
 [web1.example.com] service_manager    systemd
-[web1.example.com] machine_id         b48db360bd6242eeabecfbd99fa246b1
+[web1.example.com] machine_id         d9eb31414e07441d850ab7344644b841
 
 Hosts
   web1.example.com  ok
 
-facts on 1 host: 1 ok. Finished in 0.23s.
+facts on 1 host: 1 ok. Finished in 0.22s.

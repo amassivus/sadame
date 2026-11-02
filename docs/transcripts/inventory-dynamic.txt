@@ -1,5 +1,5 @@
 $ sadame hosts -g db
-sadame 0.5.0 hosts: 1 host from hosts.rb
+sadame 0.5.1 hosts: 1 host from hosts.rb
 
 db1.example.com
   address   203.0.113.21

@@ -1,12 +1,12 @@
 $ sadame drift examples/07-hardening-baseline -h deploy@vps1.example.com:2222 --sudo --var open_ports=80,443
-[vps1.example.com] sadame 0.5.0 drift on vps1.example.com (Debian GNU/Linux 12 (bookworm))
+[vps1.example.com] sadame 0.5.1 drift on vps1.example.com (Debian GNU/Linux 12 (bookworm))
 [vps1.example.com]
 [vps1.example.com] No drift: 16 resources match the recipe.
 
 Hosts
   vps1.example.com  ok
 
-drift on 1 host: 1 ok. Finished in 0.32s.
+drift on 1 host: 1 ok. Finished in 0.31s.
 
 $ echo $?
 0

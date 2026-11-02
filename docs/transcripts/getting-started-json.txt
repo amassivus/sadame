@@ -1,7 +1,7 @@
 $ sadame plan examples/01-hello --json
 {
   "format_version": 1,
-  "sadame_version": "0.5.0",
+  "sadame_version": "0.5.1",
   "command": "plan",
   "host": "local",
   "platform": {
@@ -40,5 +40,5 @@ $ sadame plan examples/01-hello --json
   "drift": true,
   "failed": false,
   "exit_status": 0,
-  "duration_seconds": 0.04
+  "duration_seconds": 0.05
 }

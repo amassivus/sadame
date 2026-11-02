@@ -1,6 +1,6 @@
 $ sadame apply examples/07-hardening-baseline -h deploy@vps1.example.com --sudo --var open_ports=80,443
-[vps1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/ece591ef1ad7c86c353b92a84994d189b4281e9e30bf6652d53b13764900c032/
-[vps1.example.com] sadame 0.5.0 apply on vps1.example.com (Debian GNU/Linux 12 (bookworm))
+[vps1.example.com] copying sadame-linux-arm64 to ~/.sadame/bin/dcf637ae7d2f79587cd36cc4fb47eff845444424933647a5e75565917475c21d/
+[vps1.example.com] sadame 0.5.1 apply on vps1.example.com (Debian GNU/Linux 12 (bookworm))
 [vps1.example.com]
 [vps1.example.com] unchanged  package[openssh-server]
 [vps1.example.com] changed    package[ufw]
@@ -79,9 +79,9 @@ $ sadame apply examples/07-hardening-baseline -h deploy@vps1.example.com --sudo 
 [vps1.example.com]                   exec[move ssh.socket to the new port]: run
 [vps1.example.com]                   service[fail2ban]: restart
 [vps1.example.com]
-[vps1.example.com] Finished in 13.59s.
+[vps1.example.com] Finished in 20.58s.
 
 Hosts
   vps1.example.com  ok
 
-apply on 1 host: 1 ok. Finished in 13.83s.
+apply on 1 host: 1 ok. Finished in 20.82s.

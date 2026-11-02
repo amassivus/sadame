@@ -1,5 +1,5 @@
 $ sadame plan site.rb -g db -h deploy@db2.example.com
-[db1.example.com] sadame 0.5.0 plan on db1.example.com (Debian GNU/Linux 12 (bookworm))
+[db1.example.com] sadame 0.5.1 plan on db1.example.com (Debian GNU/Linux 12 (bookworm))
 [db1.example.com]
 [db1.example.com] Plan: 0 to create, 0 to update, 0 to remove, 0 to run, 6 unchanged.
 

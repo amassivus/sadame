@@ -21,7 +21,7 @@ add-ons can do more.
 | **JSON output** | `--json`: one document per run, per host and resource | callback plugins, such as `ansible.posix.json` | no | no | report handlers, such as the built-in JSON file handler | run reports (YAML on the agent, JSON from PuppetDB) |
 | **Single binary** | yes, about 1.5 MB, static on Linux | no: a Python package | no: a Ruby gem | yes, built with mruby | no: an installer package with an embedded Ruby | no: packages with an embedded Ruby |
 | **Package managers** | apt, dnf, apk, pacman; the AUR through `exec` | modules for most, from apt and dnf to zypper and Homebrew | through Specinfra: apt, yum and dnf, apk, pacman, zypper and others | as Itamae, through Specinfra | built-in resources for Linux, BSD, macOS and Windows | built-in providers for Linux, BSD, macOS and Windows |
-| **Maturity** | 0.5.0, November 2026: ten resource types, one maintainer | since 2012, maintained by Red Hat, thousands of modules | since 2013, community maintained | since 2016, community maintained | since 2009, maintained by Progress | since 2005, maintained by Perforce |
+| **Maturity** | 0.5.1, November 2026: ten resource types, one maintainer | since 2012, maintained by Red Hat, thousands of modules | since 2013, community maintained | since 2016, community maintained | since 2009, maintained by Progress | since 2005, maintained by Perforce |
 
 ## Where Sadame falls short
 
