@@ -24,6 +24,7 @@
 
 require "open3"
 require_relative "../../support/example_matrix"
+require_relative "../../support/dist_binaries"
 
 module DockerIntegration
   ROOT = File.expand_path("../../..", __dir__)
@@ -122,10 +123,7 @@ module DockerIntegration
     end
 
     def check_binary
-      binary = File.join(ROOT, "dist", "sadame-linux-#{@arch}")
-      return if File.exist?(binary)
-
-      abort "#{binary} is missing; build it with rake build:linux-#{@arch}"
+      DistBinaries.check!("sadame-linux-#{@arch}")
     end
 
     def build_image

@@ -14,6 +14,7 @@
 
 require "open3"
 require_relative "scenarios"
+require_relative "../../test/support/dist_binaries"
 
 module Transcripts
   ROOT = File.expand_path("../..", __dir__)
@@ -39,8 +40,7 @@ module Transcripts
     scenarios = names.empty? ? SCENARIOS : SCENARIOS.select { |scenario| names.include?(scenario[:name]) }
     lab_scenarios = names.empty? ? LAB_SCENARIOS : LAB_SCENARIOS.select { |scenario| names.include?(scenario[:name]) }
     abort "unknown scenario: #{names.join(", ")}" if scenarios.empty? && lab_scenarios.empty?
-    missing = BINARIES.reject { |binary| File.exist?(File.join(ROOT, "dist", binary)) }
-    abort "missing dist/#{missing.join(", dist/")}; run rake build:linux-amd64 build:linux-arm64" unless missing.empty?
+    DistBinaries.check!(*BINARIES)
 
     scenarios.map { |scenario| scenario[:image] }.uniq.each { |image| build_image(image) }
     scenarios.each { |scenario| capture(scenario) }

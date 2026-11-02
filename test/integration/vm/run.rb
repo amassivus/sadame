@@ -15,7 +15,9 @@
 #
 # Each example is applied with push mode, through the inventory, from this
 # machine; the binaries come from dist/ (SADAME_BINARY_DIR). The VMs are
-# x86_64, so dist/sadame-linux-amd64 must exist.
+# x86_64, so dist/sadame-linux-amd64 must exist; the run stops before it
+# starts when that binary, or this machine's in dist/, is older than the
+# source.
 #
 # Development tooling: CRuby only.
 
@@ -24,6 +26,7 @@ require "open3"
 require "shellwords"
 require_relative "../../../lib/sadame"
 require_relative "../../support/example_matrix"
+require_relative "../../support/dist_binaries"
 
 module VMTests
   ROOT = File.expand_path("../../..", __dir__)
@@ -209,9 +212,7 @@ module VMTests
 
     # The binary for this machine when it was built, else sadame from source.
     def sadame
-      machine = `uname -sm`.strip
-      name = { "Darwin arm64" => "sadame-darwin-arm64", "Darwin x86_64" => "sadame-darwin-amd64",
-               "Linux x86_64" => "sadame-linux-amd64", "Linux aarch64" => "sadame-linux-arm64" }[machine]
+      name = VMTests.local_binary
       binary = name && File.join(ROOT, "dist", name)
       binary && File.exist?(binary) ? binary : File.join(ROOT, "bin", "sadame")
     end
@@ -254,8 +255,26 @@ module VMTests
     end
   end
 
+  # dist/'s name for a binary that runs on this machine.
+  def self.local_binary
+    { "Darwin arm64" => "sadame-darwin-arm64", "Darwin x86_64" => "sadame-darwin-amd64",
+      "Linux x86_64" => "sadame-linux-amd64", "Linux aarch64" => "sadame-linux-arm64" }[`uname -sm`.strip]
+  end
+
+  # The VMs get dist/sadame-linux-amd64; this machine runs its own binary
+  # from dist/ when there is one. Both must be built from the current
+  # source, or the run tests old code.
+  def self.check_binaries
+    names = ["sadame-linux-amd64"]
+    local = local_binary
+    names << local if local && File.exist?(File.join(ROOT, "dist", local))
+    DistBinaries.check!(*names.uniq)
+  end
+
   def self.main(command, distribution)
     return if missing_inventory?
+
+    check_binaries if command == "test"
 
     distributions = distribution.nil? || distribution == "all" ? self.distributions : [distribution]
     unknown = distributions - self.distributions

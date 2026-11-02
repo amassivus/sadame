@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "open3"
+require_relative "../../support/dist_binaries"
 
 # A small network of SSH targets for testing push mode for real, used by
 # `rake test:push` (test/integration/push/run.rb) and by the docs
@@ -90,10 +91,7 @@ module Lab
     end
 
     def check_binary
-      path = File.join(ROOT, "dist", binary)
-      return if File.exist?(path)
-
-      abort "#{path} is missing; build it first with rake build:linux-#{architecture}"
+      DistBinaries.check!(binary)
     end
 
     def build_images

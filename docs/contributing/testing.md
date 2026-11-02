@@ -178,8 +178,11 @@ examples 01 and 12 run; example 12 runs on no other VM. Without
 
 ## Common mistakes
 
-- **Stale binaries.** The Docker and VM tests run whatever is in `dist/`.
-  Rebuild after changing `lib/`.
+- **Stale binaries.** The Docker, push and VM tests run the binaries in
+  `dist/`, which git does not track. They stop before they start when a
+  binary they need is older than the source (`lib/`, `tools/sadame/`,
+  `mrbgem.rake`, `build_config.rb`) and name the `rake build:...` task that
+  rebuilds it.
 - **A new example without a matrix entry.** The unit tests fail until the
   example is listed in `test/support/example_matrix.rb`, with a reason for
   each distribution it skips.
