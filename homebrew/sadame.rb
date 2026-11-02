@@ -6,28 +6,28 @@
 class Sadame < Formula
   desc "Configuration management in plain Ruby, in one binary"
   homepage "https://enderkus.github.io/sadame/"
-  version "0.5.0"
+  version "0.5.1"
   license "MIT"
 
   on_macos do
     on_arm do
-      url "https://github.com/enderkus/sadame/releases/download/v0.5.0/sadame-darwin-arm64"
-      sha256 "385aae9b8bc83653c91d7bb7fb0cb977d9d235e2c719e4ea78afddb79e6f749e"
+      url "https://github.com/enderkus/sadame/releases/download/v0.5.1/sadame-darwin-arm64"
+      sha256 "0f53def806b2ae313676c26e239db64f341c41a00288c2dfab1682d2053bf30c"
     end
     on_intel do
-      url "https://github.com/enderkus/sadame/releases/download/v0.5.0/sadame-darwin-amd64"
-      sha256 "9f67d3b2301c3cc7764ee1909ff0192aa4146fee844be016138a81967f528ac2"
+      url "https://github.com/enderkus/sadame/releases/download/v0.5.1/sadame-darwin-amd64"
+      sha256 "24c3b4148f73bf05770a51908d2bd6f94654883baa93d6b983d30ee16138b3dd"
     end
   end
 
   on_linux do
     on_arm do
-      url "https://github.com/enderkus/sadame/releases/download/v0.5.0/sadame-linux-arm64"
-      sha256 "ece591ef1ad7c86c353b92a84994d189b4281e9e30bf6652d53b13764900c032"
+      url "https://github.com/enderkus/sadame/releases/download/v0.5.1/sadame-linux-arm64"
+      sha256 "dcf637ae7d2f79587cd36cc4fb47eff845444424933647a5e75565917475c21d"
     end
     on_intel do
-      url "https://github.com/enderkus/sadame/releases/download/v0.5.0/sadame-linux-amd64"
-      sha256 "236026bd8872d16ab658465fdbd9d59a69c7634f2f206426c0835785e1c3d650"
+      url "https://github.com/enderkus/sadame/releases/download/v0.5.1/sadame-linux-amd64"
+      sha256 "33c88ad9d3071dc1288a314d396a88e301ee1aff048cc80a213281f353d0ddee"
     end
   end
 

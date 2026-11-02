@@ -4,7 +4,7 @@
 # sadame-bin. Written by script/build/packaging.rb: regenerate it and
 # .SRCINFO for each release.
 pkgname=sadame-bin
-pkgver=0.5.0
+pkgver=0.5.1
 pkgrel=1
 pkgdesc="Configuration management in plain Ruby, in one binary"
 arch=('x86_64' 'aarch64')
@@ -17,8 +17,8 @@ source=("LICENSE-$pkgver::https://raw.githubusercontent.com/enderkus/sadame/v$pk
 source_x86_64=("sadame-$pkgver-x86_64::https://github.com/enderkus/sadame/releases/download/v$pkgver/sadame-linux-amd64")
 source_aarch64=("sadame-$pkgver-aarch64::https://github.com/enderkus/sadame/releases/download/v$pkgver/sadame-linux-arm64")
 sha256sums=('b4800ebfb21284a8d00af5dcf5523c503eff4e9046bd53f352aed5ac6e43fda1')
-sha256sums_x86_64=('236026bd8872d16ab658465fdbd9d59a69c7634f2f206426c0835785e1c3d650')
-sha256sums_aarch64=('ece591ef1ad7c86c353b92a84994d189b4281e9e30bf6652d53b13764900c032')
+sha256sums_x86_64=('33c88ad9d3071dc1288a314d396a88e301ee1aff048cc80a213281f353d0ddee')
+sha256sums_aarch64=('dcf637ae7d2f79587cd36cc4fb47eff845444424933647a5e75565917475c21d')
 
 package() {
   install -Dm755 "sadame-$pkgver-$CARCH" "$pkgdir/usr/bin/sadame"
