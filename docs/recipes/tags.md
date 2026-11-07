@@ -2,16 +2,16 @@
 
 Tags let you plan, apply or check part of a recipe: only nginx's
 configuration, only the database role, everything but the slow package
-installs. Give resources `tags:`, or tag everything an included file
+installs. Give resources `#:tags`, or tag everything an included file
 declares, then run with `--tags` or `--skip-tags`.
 
 !!! note "New in 0.4.0"
 
 ## Minimal example
 
-```ruby
-package "nginx", tags: [:nginx]
-file "/etc/nginx/conf.d/app.conf", template: "app.conf.erb", tags: [:nginx, :config]
+```scheme
+(package "nginx" #:tags '(nginx))
+(file "/etc/nginx/conf.d/app.conf" #:template "app.conf.tmpl" #:tags '(nginx config))
 ```
 
 ```sh
@@ -22,12 +22,12 @@ sudo sadame apply --tags config        # only the configuration file
 
 | Where | Example | Tags |
 |---|---|---|
-| a resource | `package "nginx", tags: [:web]` | `web` |
-| one tag | `user "deploy", tags: :users` | `users` |
-| an included file | `include_recipe "roles/web", tags: [:web]` | `web` on every resource `roles/web.rb` declares, and on the files it includes |
+| a resource | `(package "nginx" #:tags '(web))` | `web` |
+| one tag | `(user "deploy" #:tags 'users)` | `users` |
+| an included file | `(include-recipe "roles/web" #:tags '(web))` | `web` on every resource `roles/web.scm` declares, and on the files it includes |
 
-Tags are Symbols or Strings without commas or spaces. A resource has its
-own tags and those of every `include_recipe` it came through.
+Tags are symbols or strings without commas or spaces. A resource has its
+own tags and those of every `include-recipe` it came through.
 
 ## Running part of a recipe
 
@@ -44,8 +44,8 @@ tags under `tags` and `skip_tags`.
 
 `examples/08-multi-role-inventory` tags each role:
 
-```ruby title="examples/08-multi-role-inventory/site.rb"
---8<-- "examples/08-multi-role-inventory/site.rb"
+```scheme title="examples/08-multi-role-inventory/site.scm"
+--8<-- "examples/08-multi-role-inventory/site.scm"
 ```
 
 so the web role can be planned on its own:
@@ -53,6 +53,11 @@ so the web role can be planned on its own:
 ```text
 --8<-- "docs/transcripts/remote-tags.txt"
 ```
+
+!!! warning "Remote runs are not yet available in the C++/Guile rewrite"
+    That transcript runs `plan` on remote hosts (`-g`), which is not yet
+    available in the C++/Guile rewrite. `--tags` and `--skip-tags` work
+    the same way for local runs.
 
 ## Notifications
 
@@ -73,11 +78,11 @@ is part of changing the file.
   because a tag can exist on some hosts and not on others. The header shows
   "0 of N"; check the spelling when you see it.
 - **Including a file twice with different tags.** A file is evaluated once,
-  the first time it is included; later `include_recipe` calls and their
+  the first time it is included; later `include-recipe` calls and their
   tags are ignored.
 
 ## See also
 
-- [Recipe basics](basics.md) for `include_recipe`.
+- [Recipe basics](basics.md) for `include-recipe`.
 - [Notifications](notifications.md) for what runs when a resource changes.
 - [Command line](../reference/cli.md) for every option.

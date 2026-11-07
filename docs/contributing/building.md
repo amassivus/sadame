@@ -1,146 +1,67 @@
 # Building sadame
 
-Sadame's Ruby code in `lib/` is compiled together with
-[mruby](https://mruby.org) into one executable. This page explains the
-build targets, what each produces, how the release binaries are checked
-before they are published, and how to fix common build problems.
+Sadame is a C++17 program with [GNU Guile](https://www.gnu.org/software/guile/)
+embedded. The core lives in `lib/sadame/*.cpp`; the languages users write
+recipes, `hosts.scm` and `vars.scm` in are Guile Scheme, and the Scheme
+parts of sadame itself (`lib/sadame/*.scm`) are compiled into the
+executable as string literals, so the binary runs without the source tree.
+This page explains how to build it, what the build produces, and what is
+not covered yet.
 
-## Overview
+## What you need
 
-| Task | Runs on | Produces | Used for |
-|---|---|---|---|
-| `rake build:native` | any Unix | `build/host/bin/sadame` and `build/host/bin/mruby` | development; `rake test:mruby` |
-| `rake build:linux-amd64` | any machine with Docker | `dist/sadame-linux-amd64` | releases |
-| `rake build:linux-arm64` | any machine with Docker | `dist/sadame-linux-arm64` | releases |
-| `rake build:macos` | macOS with Xcode command line tools | `dist/sadame-darwin-arm64`, `dist/sadame-darwin-amd64` | releases |
-| `rake verify:linux-amd64`, `verify:linux-arm64` | Docker | runs the binary in several distributions | releases |
-| `rake verify:macos` | macOS | runs both macOS binaries | releases |
-| `rake checksums` | any | `dist/SHA256SUMS` | releases |
+- a C++17 compiler (`g++` or `clang++`) and `make`
+- Guile 3.0 with its development files: `guile-3.0-dev` on Debian and
+  Ubuntu, `guile` on Arch and Alpine (`guile-dev`), `guile30-devel` on
+  Fedora and Rocky, `guile` with Homebrew on macOS
+- `pkg-config`, which finds Guile's compiler and linker flags
 
-The first build clones mruby 3.4.0 into `vendor/` and the third-party gems
-into `build/*/repos/`. Both directories are ignored by git.
+## Targets
+
+| Command | Produces | Used for |
+|---|---|---|
+| `make` | `build/sadame` | everything |
+| `make test` | `build/test_runner`, and runs it | the unit tests |
+| `make clean` | removes `build/` | a fresh start |
+
+`bin/sadame` is a small script that runs `build/sadame`, building it first
+when it is missing, so `bin/sadame plan examples/01-hello` works from a
+checkout.
+
+When `pkg-config` cannot find Guile, give the flags yourself:
+
+```sh
+make GUILE_CFLAGS=-I/opt/guile/include/guile/3.0 \
+     GUILE_LIBS="-L/opt/guile/lib -lguile-3.0 -lgc"
+```
 
 ## How the build is put together
 
-- **`build_config.rb`** is mruby's build configuration. `sadame_gems`
-  lists every mruby gem in the binary; adding one needs a reason in the
-  commit message. The `SADAME_TARGET` environment variable selects one of
-  four configurations: `development` (debug information, plus an mruby
-  interpreter with mruby-mtest for the tests), `linux-static`,
-  `darwin-arm64` and `darwin-amd64`. The Rakefile sets it.
-- **`build_config.rb.lock`** pins each third-party gem to a commit. mruby
-  writes it on the first build and reads it afterwards, so every build uses
-  the same code. Commit it when it changes.
-- **`mrbgem.rake`** turns sadame into an mruby gem. It reads the
-  `require_relative` lines of `lib/sadame.rb` and compiles those files in
-  that order, so CRuby and mruby load the same code the same way.
-- **`tools/sadame/sadame.c`** is the `main` function: it builds `ARGV`,
-  calls `Sadame.main` and turns the returned Integer into the exit status.
+- **`Makefile`** compiles every `lib/**/*.cpp` and `tools/sadame/sadame.cpp`
+  into `build/`, with header dependencies, and links them with Guile. The
+  tests are built from `test/**/*_test.cpp` and linked with the same
+  objects.
+- **`build/embedded_scheme.cpp`** is generated from `lib/sadame/*.scm`:
+  each file becomes a raw string literal, and `lib/sadame/scheme.cpp`
+  evaluates them when it starts Guile. There is no other copy of the Scheme
+  code, so editing a `.scm` file and running `make` is the whole loop.
+- **`tools/sadame/sadame.cpp`** is `main`: it builds the argument list,
+  starts Guile with `scm_with_guile`, runs the `CLI` and turns its return
+  value into the exit status.
 
-## Static Linux binaries
+## Releases
 
-`rake build:linux-amd64` and `rake build:linux-arm64` build inside an
-Alpine Linux container of the target architecture
-(`script/build/alpine.Dockerfile`). Alpine uses musl libc, which links
-statically without the problems glibc has with static binaries, so the
-result runs on any Linux distribution of that architecture. The container
-runs as your user, so the files in `build/` and `dist/` stay yours, and the
-binary is stripped with the container's `strip`.
+The Ruby version shipped one statically linked mruby binary per platform.
+A binary with Guile embedded depends on `libguile` and `libgc` (and their
+dependencies) at run time unless Guile is linked statically, which needs a
+Guile built for it. Producing and verifying release binaries, the
+Homebrew formula, the AUR package and `install.sh` for the new build is not
+done yet; the files `.github/workflows/build.yml`, `release.yml`,
+`packaging/` and `script/build/` still describe the Ruby build.
 
-Building for the other architecture than your machine's needs an emulator
-registered with Docker. Docker Desktop and OrbStack include one; on a Linux
-machine, register QEMU once:
+## Not ported yet
 
-```sh
-docker run --privileged --rm tonistiigi/binfmt --install arm64
-```
-
-Emulated builds are slower, especially under QEMU.
-
-## macOS binaries
-
-`rake build:macos` compiles both macOS binaries on one Mac with clang's
-`-arch` flag, targeting macOS 11 and newer. It uses mruby's cross-build
-support, so the `mrbc` compiler used during the build runs natively.
-
-## Verification
-
-Before a binary is published, it has to run unmodified in the systems it is
-meant for. `rake verify:linux-amd64` and `rake verify:linux-arm64` start
-each of these images with the binary mounted, and run
-`script/build/smoke-test.sh` inside it:
-
-| Image | amd64 | arm64 |
-|---|---|---|
-| `ubuntu:24.04` | yes | yes |
-| `debian:12` | yes | yes |
-| `rockylinux/rockylinux:9` | yes | yes |
-| `alpine:3.20` | yes | yes |
-| `archlinux:latest` | yes | no arm64 image exists |
-| `menci/archlinuxarm:latest` | no | yes (community image of Arch Linux ARM) |
-
-The smoke test runs `--version`, then `plan`, `apply` and `drift` on
-`examples/01-hello`, edits the managed file, and checks that `drift` now
-exits `1` and reports `"drift": true` in JSON. `rake verify:macos` runs the
-same test with both macOS binaries; the Intel one runs through Rosetta when
-it is installed.
-
-## Continuous integration and releases
-
-- **`.github/workflows/build.yml`** builds `linux-amd64` on an x86_64
-  runner, `linux-arm64` on an ARM64 runner and both macOS binaries on a
-  macOS runner. Each Linux binary is then verified on a runner of its own
-  architecture: `file` must report it statically linked, and it runs in
-  every distribution image. A last job serves the binaries over HTTP and
-  runs `install.sh` against them, once with correct checksums and once
-  with a wrong one, which must fail.
-- **`ci.yml`** runs that workflow on every push and pull request, after the
-  test jobs.
-- **`release.yml`** runs on a `v*` tag. After the build workflow passes, it
-  checks that the tag matches `Sadame::VERSION`, writes `SHA256SUMS`, takes
-  the release notes from the matching section of `CHANGELOG.md`, and
-  creates the GitHub release with all files attached. Started by hand from
-  the Actions tab, it does everything except publishing and keeps the
-  assembled files as a workflow artifact instead.
-
-To publish a release:
-
-1. Set `VERSION` in `lib/sadame/version.rb` and move the `Unreleased`
-   entries of `CHANGELOG.md` under a heading such as
-   `## [0.1.0] - 2026-11-15`.
-2. Regenerate the docs' terminal sessions and the README recording, which
-   show the version: `rake docs:transcripts docs:recording`.
-3. Commit, then tag and push: `git tag v0.1.0 && git push origin v0.1.0`.
-4. When the release is published, write the packages with its checksums,
-   `rake "packaging[0.1.0]"`, and commit them: the Homebrew formula in
-   `homebrew/sadame.rb` and the AUR package (`PKGBUILD` and `.SRCINFO`)
-   in `packaging/aur/`.
-5. Copy `homebrew/sadame.rb` to `Formula/sadame.rb` in the
-   [enderkus/homebrew-sadame](https://github.com/enderkus/homebrew-sadame)
-   tap and push it there; `brew upgrade sadame` then finds the release.
-
-## Building a release locally
-
-```sh
-rake build:linux-amd64 build:linux-arm64 verify:linux-amd64 verify:linux-arm64
-rake build:macos verify:macos      # on a Mac
-rake checksums
-script/build/test-install.sh       # install.sh against dist/
-```
-
-## Common problems
-
-- **`exec format error` while building the other architecture.** No
-  emulator is registered; run the `tonistiigi/binfmt` command above.
-- **A gem fails to clone.** Builds need network access to GitHub on the
-  first run. After that the gems in `build/*/repos/` are reused.
-- **The lock file changed unexpectedly.** A new build target or a new gem
-  adds entries to `build_config.rb.lock`. Check the diff and commit it.
-- **Stale objects after changing `build_config.rb`.** Delete the target's
-  directory under `build/` and build again.
-
-## See also
-
-- [Architecture](architecture.md) for how the code is organized and the
-  rules for code that must run on mruby.
-- [Install](../install.md) for the user side of the release files.
+These parts of the Ruby version are still in the tree as Ruby files and are
+not built: push mode over SSH (`lib/sadame/push/`), the language server
+(`lib/sadame/lsp/`) and `sadame report` (`lib/sadame/report_formats.rb`).
+The commands that need them say so instead of running.

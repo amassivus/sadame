@@ -6,13 +6,13 @@ changed: reload nginx after its configuration file changed, run
 its settings changed. Nothing is triggered when the watched resource was
 already as the recipe wants it, so a service is only restarted when there is
 a reason to. By default a notified action runs once, at the end of `apply`,
-however many resources asked for it; marked `:immediately`, it runs right
+however many resources asked for it; marked `immediately`, it runs right
 after the change that triggered it.
 
 ## Minimal example
 
-```ruby title="examples/resources/service/reload_on_change.rb"
---8<-- "examples/resources/service/reload_on_change.rb"
+```scheme title="examples/resources/service/reload_on_change.scm"
+--8<-- "examples/resources/service/reload_on_change.scm"
 ```
 
 ## Options
@@ -21,22 +21,23 @@ Both options are available on every resource.
 
 | Option | Form | Meaning |
 |---|---|---|
-| `notifies` | `[:action, "type[name]"]` | When this resource changes, run `action` on the named resource. |
-| `subscribes` | `[:action, "type[name]"]` | When the named resource changes, run `action` on this resource. |
-| either | `[:action, "type[name]", :immediately]` | Run the action right after the change instead of at the end. |
-| either | `[:action, "type[name]", :delayed]` | The default, written out. |
-| either | `[[...], [...]]` | Several notifications from one resource. |
+| `#:notifies` | `'(action "type[name]")` | When this resource changes, run `action` on the named resource. |
+| `#:subscribes` | `'(action "type[name]")` | When the named resource changes, run `action` on this resource. |
+| either | `'(action "type[name]" immediately)` | Run the action right after the change instead of at the end. |
+| either | `'(action "type[name]" delayed)` | The default, written out. |
+| either | `'((...) (...))` | Several notifications from one resource: `'((reload "service[a]") (restart "service[b]" immediately))`. |
 
-`subscribes` is `notifies` declared from the other side; use whichever
-reads better. Actions each resource type accepts:
+Actions and timings are symbols, so the list is quoted. `#:subscribes` is
+`#:notifies` declared from the other side; use whichever reads better.
+Actions each resource type accepts:
 
 | Resource | Actions |
 |---|---|
-| `service` | `:start`, `:stop`, `:restart`, `:reload`, `:enable`, `:disable` |
-| `exec` | `:run` |
+| `service` | `start`, `stop`, `restart`, `reload`, `enable`, `disable` |
+| `exec` | `run` |
 | `package`, `file`, `directory`, `user` | none |
 
-`exec` also takes `action: :nothing`: the command then never runs on its
+`exec` also takes `#:action 'nothing`: the command then never runs on its
 own, only when notified. That is the usual way to write "run this after
 that changed".
 
@@ -64,16 +65,16 @@ that changed".
 The example below manages a small systemd service together with its unit
 file and settings:
 
-```ruby title="examples/notifications/recipe.rb"
---8<-- "examples/notifications/recipe.rb"
+```scheme title="examples/notifications/recipe.scm"
+--8<-- "examples/notifications/recipe.scm"
 ```
 
-```erb title="examples/notifications/templates/ticker.service.erb"
---8<-- "examples/notifications/templates/ticker.service.erb"
+```text title="examples/notifications/templates/ticker.service.tmpl"
+--8<-- "examples/notifications/templates/ticker.service.tmpl"
 ```
 
-```ruby title="examples/notifications/vars.rb"
---8<-- "examples/notifications/vars.rb"
+```scheme title="examples/notifications/vars.scm"
+--8<-- "examples/notifications/vars.scm"
 ```
 
 ### First apply
@@ -113,12 +114,12 @@ at the end.
 
 - **Delayed daemon-reload.** `systemctl daemon-reload` after a unit file
   change must happen before the service is started or restarted. Mark it
-  `:immediately`; a delayed reload runs after the restart it was meant to
+  `immediately`; a delayed reload runs after the restart it was meant to
   prepare.
-- **An `exec` without `action: :nothing`.** A notified `exec` that also
+- **An `exec` without `#:action 'nothing`.** A notified `exec` that also
   has no guard runs on every apply anyway, and `drift` always reports it.
 - **Reloading a unit that cannot reload.** `systemctl reload` fails for
-  units without `ExecReload=`; notify `:restart` instead.
+  units without `ExecReload=`; notify `restart` instead.
 - **Expecting a notification after a failed run.** Delayed notifications
   are skipped when a resource fails. Fix the failure and apply again; the
   resource that changed earlier is now unchanged and will not notify again,
@@ -130,6 +131,6 @@ at the end.
 ## See also
 
 - [service](../resources/service.md) for the service actions.
-- [exec](../resources/exec.md) for `action: :nothing`.
+- [exec](../resources/exec.md) for `#:action 'nothing`.
 - [Plan, apply, drift](../concepts/plan-apply-drift.md) for what each
   command does with notifications.

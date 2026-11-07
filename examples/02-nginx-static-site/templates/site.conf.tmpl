@@ -1,0 +1,7 @@
+# Managed by sadame.
+server {
+  listen 80 default_server;
+  server_name ~{(vars 'server_name)};
+  root ~{(locals 'root)};
+  index index.html;
+}

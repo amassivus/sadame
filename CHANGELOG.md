@@ -6,6 +6,31 @@ project uses [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Sadame is rewritten as C++17 with GNU Guile Scheme embedded, keeping the
+  module layout under `lib/sadame/`. Recipes, `hosts.scm` and `vars.scm` are
+  Guile Scheme: `(package "nginx")`, `(file "/etc/motd" #:content "hi\n")`,
+  `(vars 'name)`. Templates use the new `.tmpl` format: `~{expression}`,
+  `~(if ...)`, `~(each ...)`. The Ruby/mruby build, `Rakefile` and
+  `build_config.rb` are gone; `make` builds `build/sadame` and `make test`
+  runs the unit tests.
+- Option, variable and fact names accept dashes or underscores
+  (`#:not-if`, `(facts 'memory-mb)`), and an `association list` replaces the
+  Ruby hash everywhere. `#:match` for the `line` resource is a regular
+  expression string.
+- `sadame init` writes `recipe.scm`, `vars.scm`, `hosts.scm` and
+  `templates/motd.tmpl`.
+
+### Not yet ported
+
+- Push mode over SSH (`-h`, `-g` and `--limit` with `plan`, `apply`, `drift`
+  and `facts`), `sadame lsp` and `sadame report` print that they are not
+  available yet. `hosts` and `validate` work with the inventory. The Ruby
+  sources of these three stay in the tree as the reference for porting them.
+- Release binaries, the Homebrew formula, the AUR package and `install.sh`
+  still describe the mruby build.
+
 ### Added
 
 - The README and the docs link to the beginner's guide, *Sadame:

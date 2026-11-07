@@ -1,82 +1,67 @@
 # Contributing to Sadame
 
 Thank you for helping. This guide covers setting up a development checkout,
-running the tests on both Ruby runtimes, the rules that keep the code
-working under mruby, and what a pull request needs.
+running the tests, the rules for the C++ and Scheme code, and what a pull
+request needs.
 
 ## Development setup
 
 You need:
 
-- Ruby 3.2 or newer and Bundler, for running sadame from source and for the
-  test suite;
-- a C compiler, `git` and `bison`, for building the mruby binary.
+- a C++17 compiler, `make`, `pkg-config` and `git`;
+- GNU Guile 3.0 with its development files (`guile-3.0-dev` on Debian and
+  Ubuntu).
 
 ```sh
 git clone https://github.com/enderkus/sadame.git
 cd sadame
-bundle install
+make                      # builds build/sadame
+bin/sadame --version
 ```
 
 ## Running the tests
 
-The same test files run under CRuby (with minitest) and inside the mruby
-build (with mruby-mtest). CI requires both to pass.
-
 ```sh
-bundle exec rake test:cruby   # fast, no compiler needed
-bundle exec rake test:mruby   # builds mruby with sadame into build/, then runs the suite
-bundle exec rake test         # both
+make test                      # builds build/test_runner and runs every test
+build/test_runner Template     # only the tests whose "Suite.name" contains this
 ```
 
-`rake build:native` builds a development binary into
-`build/host/bin/sadame`. Release binaries, static Linux builds through
-Docker and the macOS builds, are described in
+`make` builds `build/sadame`, the single executable with Guile embedded.
+Releases are described in
 [Building sadame](https://enderkus.github.io/sadame/contributing/building/).
 
 Tests never need root: resources are tested against `FakeShell`
-(`test/support/fake_shell.rb`), which records commands and returns stubbed
+(`test/support/fake_shell.hpp`), which records commands and returns stubbed
 results.
 
-Two more layers run sadame for real, with Docker:
+The Docker, push-mode and VM test layers are Ruby scripts written for the
+earlier mruby build and have not been adapted yet.
+[Testing](https://enderkus.github.io/sadame/contributing/testing/)
+explains all three layers.
 
-```sh
-rake build:linux-arm64                  # or linux-amd64: the binary under test
-rake "test:docker[debian,arm64]"        # every example in fresh containers booting systemd
-rake test:push                          # push mode against SSH servers in containers
-```
+## Writing C++ and Scheme code
 
-CI runs both on every pull request, for five distributions and two
-architectures. A third layer runs on the maintainer's virtual machines and
-is not part of CI. [Testing](https://enderkus.github.io/sadame/contributing/testing/)
-explains all three.
+The logic is C++17 under `lib/sadame/`; the recipe, hosts, vars and
+template languages are Guile Scheme, and the Scheme modules
+(`lib/sadame/*.scm`) are compiled into the binary. Two rules keep the
+boundary safe:
 
-## Writing code for mruby
+- Everything Scheme can call lives in `lib/sadame/scheme.cpp`. A new
+  primitive runs its body inside `guarded()`, so a C++ exception becomes a
+  Scheme error after its frames are gone and never unwinds through Guile.
+- Run commands and read or write files of the managed machine only through
+  `Shell`, so tests can swap it and `sadame validate` can refuse it.
 
-Release builds are a single mruby binary, so everything under `lib/` must
-run on mruby with only the gems listed in `build_config.rb`:
-
-- Never call `require` in `lib/`. To add a file, list it with
-  `require_relative` in `lib/sadame.rb`; the mruby build reads that list to
-  compile the same files in the same order.
-- No standard library (JSON, YAML, ERB, Open3, FileUtils, ...). Sadame has
-  small replacements: `Sadame::JsonWriter`, `Sadame::Template`,
-  `Sadame::Shell.escape`.
-- Run commands and read files only through `Sadame::Shell`.
-- In a `rescue` clause, re-raise with `raise e`, not a bare `raise`.
-
-The full list of pitfalls, with what to use instead, is in
-[Architecture](https://enderkus.github.io/sadame/contributing/architecture/#code-that-must-run-on-mruby).
-If you think a new mruby gem is needed, explain why in the commit that adds
-it to `build_config.rb`.
+The rest is in
+[Architecture](https://enderkus.github.io/sadame/contributing/architecture/#where-c-and-scheme-meet).
 
 ## Style
 
-- Clear names, small methods, plain classes. No metaprogramming beyond what
-  the recipe DSL needs.
+- Clear names, small functions, plain classes. Comments only where the code
+  needs a word of explanation.
 - Every resource reads the current state before acting and does nothing when
   it matches the desired state.
-- Errors meant for users are `Sadame::Error` subclasses with a message that
+- Errors meant for users are `sadame::Error` subclasses with a message that
   says what to do.
 
 ## Documentation and examples
@@ -87,16 +72,15 @@ Documentation is part of every change:
   feature page shape: what and why, a minimal example, an option table,
   realistic scenarios with real output, common mistakes, see also.
 - Every recipe shown in the docs lives under `examples/` and is embedded
-  with `--8<-- "examples/..."`. `test/unit/examples_test.rb` loads, plans
-  and applies every example against a fake machine and checks that every
-  `examples/` path mentioned in the docs exists.
+  with `--8<-- "examples/..."`. `test/unit/examples_test.cpp` loads and
+  validates every example for every distribution it supports and checks
+  that every `examples/` path mentioned in the docs exists.
 - Terminal sessions in the docs are captured, not typed. Each one is
-  defined in `script/transcripts/scenarios.rb`, run in a fresh Docker
-  container by `rake docs:transcripts` (or `SCENARIO=name rake
-  docs:transcripts` for one), written to `docs/transcripts/`, and embedded
-  with `--8<-- "docs/transcripts/NAME.txt"`. Short excerpts, such as a diff
-  shown on its own, are copied from those files. When a change alters
-  output, regenerate the transcripts and commit them with the change.
+  defined in `script/transcripts/scenarios.rb`, written to
+  `docs/transcripts/`, and embedded with
+  `--8<-- "docs/transcripts/NAME.txt"`. The capture scripts are Ruby tooling
+  for the earlier build and have not been adapted yet; when a change alters
+  output, update the affected transcripts by hand from a real run.
 
 Build the site locally with:
 
@@ -130,8 +114,8 @@ to the maintainer through the contact on their GitHub profile.
   `feat(resource): add cron resource`, `fix(file): keep owner on rewrite`,
   `docs(exec): explain guard order`.
 - Keep the history as it is; do not rewrite published commits.
-- A pull request passes `rake test` on both runtimes and
-  `mkdocs build --strict`, and updates `CHANGELOG.md` under "Unreleased".
+- A pull request passes `make test` and `mkdocs build --strict`, and updates
+  `CHANGELOG.md` under "Unreleased".
 - A new feature or resource comes with its docs page and a tested example
   under `examples/`; the pull request template lists what that means.
 

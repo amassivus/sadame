@@ -1,0 +1,11 @@
+listen ~{(vars 'port)};
+~(each u (vars 'upstreams))
+server ~{u}:9000;
+~(end)
+~(if (vars 'maintenance))
+return 503;
+~(else)
+return 200;
+~(end)
+~;comment
+a ~~ b ~ c ~{(string-join (vars 'upstreams) ", ")} ~{(ref (car (vars 'jobs)) 'name)} ~{(or (facts 'virtualization) "none")}

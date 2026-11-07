@@ -1,8 +1,0 @@
-# Managed by sadame.
-server {
-  listen 8080;
-  server_name <%= vars[:server_name] %>;
-  location / {
-    return 200 "<%= vars[:env] %>\n";
-  }
-}

@@ -1,0 +1,6 @@
+# Managed by sadame. Local changes will be overwritten.
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+~(each job (vars 'jobs))
+~{(ref job 'schedule)} ~{(ref job 'user)} ~{(ref job 'command)}
+~(end)

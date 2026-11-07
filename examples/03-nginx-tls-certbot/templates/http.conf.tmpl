@@ -1,0 +1,13 @@
+# Managed by sadame.
+server {
+  listen 80;
+  server_name ~{(vars 'domain)};
+
+  location /.well-known/acme-challenge/ {
+    root ~{(locals 'webroot)};
+  }
+
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}

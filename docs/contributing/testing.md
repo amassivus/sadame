@@ -10,15 +10,22 @@ after it exits `0`.
 
 | Layer | Where | Runs | Needs |
 |---|---|---|---|
-| Unit | `test/unit/` | every commit, in CI, on CRuby 3.2 to 3.4 and inside the mruby build | Ruby; a C compiler for mruby |
-| Docker | `test/integration/docker/`, `test/integration/push/` | every push and pull request, in CI, on amd64 and arm64 | Docker; the static binaries |
+| Unit | `test/unit/` | every commit, in CI | a C++17 compiler, `make` and Guile 3.0 with its development files |
+| Docker | `test/integration/docker/`, `test/integration/push/` | not yet adapted to the C++ and Guile binary | Docker; a binary for each architecture |
 | VM | `test/integration/vm/` | by hand, on the maintainer's machines, never in CI | libvirt VMs and `hosts.local.rb` |
+
+The Docker and VM layers are Ruby scripts written for the mruby build: they
+expect `rake` tasks and static binaries in `dist/` that the new build does
+not produce yet (see [Building sadame](building.md)). The descriptions below
+are what they check and what they will check again once they are adapted.
 
 ## Which example runs where
 
-`test/support/example_matrix.rb` lists every example, the distributions it
-supports and why it skips the others. The unit tests and the Docker tests
-both read it, so they cannot disagree. Some examples only count as passing
+`test/support/example_matrix.hpp` lists every example, the distributions it
+supports and why it skips the others, for the unit tests;
+`test/support/example_matrix.rb` is the same list for the Docker and VM
+tests, which keep the Ruby original until they are adapted. Keep the two in
+step. Some examples only count as passing
 after the VM layer, because they need a real kernel and boot to be trusted:
 `03-nginx-tls-certbot` (certificates, a public endpoint),
 `07-hardening-baseline` (firewall and sshd) and `12-omarchy-workstation`
@@ -28,21 +35,30 @@ so.
 ## Unit tests
 
 ```sh
-bundle exec rake test:cruby   # minitest on CRuby
-bundle exec rake test:mruby   # the same files with mruby-mtest, inside the mruby build
-bundle exec rake test         # both
+make test                      # build and run every test
+build/test_runner Template     # only the tests whose "Suite.name" contains this text
+build/test_runner File Link    # several filters
 ```
 
-Resources are tested against `FakeShell` (`test/support/fake_shell.rb`),
+The tests are `TEST(Suite, name)` cases with `EXPECT_*` checks from
+`test/support/test_framework.hpp`, linked into one runner
+(`test/support/test_main.cpp`) that starts Guile once and runs them in
+order; run it from the repository root, where the fixtures are.
+
+Resources are tested against `FakeShell` (`test/support/fake_shell.hpp`),
 which records the commands a resource runs and returns stubbed results, so
 the tests need no root and change nothing. `FreshHostShell` stands in for a
-machine where nothing is configured yet. Among the unit tests:
+machine where nothing is configured yet. `test/support/test_helpers.hpp`
+has the builders: `linux_machine`, `fresh_machine`, `build_resource`,
+`stub_stat`, `run_cli`. Among the unit tests:
 
 - every resource, including the exact command lines of each package
   manager (pacman's included);
 - every example, planned and applied on a fake machine of every
   distribution the matrix lists for it, and every inventory under
   `examples/` (the cloud ones against recorded CLI output);
+- the template engine, the recipe language (keywords, includes, tags,
+  error lines), the inventory language and the command line;
 - the tutorials' code in `docs/contributing/architecture.md`;
 - that every `examples/` path the docs mention exists.
 
@@ -180,12 +196,13 @@ examples 01 and 12 run; example 12 runs on no other VM. Without
 
 - **Stale binaries.** The Docker, push and VM tests run the binaries in
   `dist/`, which git does not track. They stop before they start when a
-  binary they need is older than the source (`lib/`, `tools/sadame/`,
-  `mrbgem.rake`, `build_config.rb`) and name the `rake build:...` task that
+  binary they need is older than the source and name the task that
   rebuilds it.
 - **A new example without a matrix entry.** The unit tests fail until the
-  example is listed in `test/support/example_matrix.rb`, with a reason for
+  example is listed in `test/support/example_matrix.hpp`, with a reason for
   each distribution it skips.
+- **Running the runner from another directory.** The fixtures are found
+  relative to the repository root.
 - **Testing amd64 Arch on a Mac.** See the emulation note above; use CI.
 
 ## See also

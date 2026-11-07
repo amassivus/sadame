@@ -1,0 +1,17 @@
+# Managed by sadame. Local changes will be overwritten.
+user ~{(locals 'user)};
+worker_processes auto;
+pid /run/nginx.pid;
+error_log /var/log/nginx/error.log;
+
+events {
+  worker_connections 1024;
+}
+
+http {
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+  sendfile on;
+  access_log /var/log/nginx/access.log;
+  include /etc/nginx/conf.d/*.conf;
+}

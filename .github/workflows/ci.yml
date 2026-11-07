@@ -8,55 +8,33 @@ on:
 permissions:
   contents: read
 
+# The Docker, push-mode and release jobs of the Ruby build are gone until
+# those layers are adapted to the C++ and Guile binary; see
+# docs/contributing/building.md.
 jobs:
-  cruby:
-    name: Tests on CRuby ${{ matrix.ruby }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ruby: ["3.2", "3.3", "3.4"]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: ${{ matrix.ruby }}
-          bundler-cache: true
-      - run: bundle exec rake test:cruby
-
-  mruby:
-    name: Tests on mruby
+  test:
+    name: Unit tests and smoke test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.4"
-          bundler-cache: true
       - name: Install build tools
-        run: sudo apt-get update && sudo apt-get install -y bison
-      - name: Cache mruby and gem sources
-        uses: actions/cache@v6
-        with:
-          path: |
-            vendor
-            build/repos
-          key: mruby-sources-${{ runner.os }}-${{ hashFiles('Rakefile', 'build_config.rb.lock') }}
-      - run: bundle exec rake test:mruby
+        run: sudo apt-get update && sudo apt-get install -y g++ make pkg-config guile-3.0-dev
+      - run: make test
       - name: Smoke test the binary
         run: |
-          build/host/bin/sadame --version
-          build/host/bin/sadame plan examples/01-hello
-          build/host/bin/sadame apply examples/01-hello
-          build/host/bin/sadame plan examples/01-hello --json
+          build/sadame --version
+          build/sadame validate examples/01-hello
+          build/sadame plan examples/01-hello
+          build/sadame apply examples/01-hello
+          build/sadame plan examples/01-hello --json
       # The same pattern as docs/guides/drift-in-ci.md, on the runner itself:
       # no drift after apply, exit 1 once the file is edited.
       - name: Drift check
         run: |
-          build/host/bin/sadame drift examples/01-hello --json > drift.json
+          build/sadame drift examples/01-hello --json > drift.json
           echo "edited by hand" > /tmp/sadame-hello.txt
           status=0
-          build/host/bin/sadame drift examples/01-hello || status=$?
+          build/sadame drift examples/01-hello || status=$?
           test "$status" -eq 1
       - name: Keep the drift report
         if: always()
@@ -64,49 +42,3 @@ jobs:
         with:
           name: drift-report
           path: drift.json
-
-  build:
-    name: Release binaries
-    uses: ./.github/workflows/build.yml
-
-  push:
-    name: Push mode over SSH
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.4"
-          bundler-cache: true
-      - uses: actions/download-artifact@v8
-        with:
-          name: sadame-linux-amd64
-          path: dist
-      - run: chmod 0755 dist/sadame-linux-amd64
-      - run: bundle exec rake test:push
-
-  docker:
-    name: Docker ${{ matrix.distro }} (${{ matrix.arch }})
-    needs: build
-    # arm64 runs natively on GitHub's arm64 runners.
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
-    # A hang fails the job instead of holding a runner for six hours.
-    timeout-minutes: 120
-    strategy:
-      fail-fast: false
-      matrix:
-        distro: [ubuntu, debian, rocky, alpine, arch]
-        arch: [amd64, arm64]
-    steps:
-      - uses: actions/checkout@v7
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.4"
-          bundler-cache: true
-      - uses: actions/download-artifact@v8
-        with:
-          name: sadame-linux-${{ matrix.arch }}
-          path: dist
-      - run: chmod 0755 dist/sadame-linux-${{ matrix.arch }}
-      - run: bundle exec rake "test:docker[${{ matrix.distro }},${{ matrix.arch }}]"

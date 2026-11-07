@@ -1,11 +1,8 @@
-#!/usr/bin/env ruby
-# frozen_string_literal: true
-
-# Runs sadame from a source checkout with CRuby. Release builds are a single
-# mruby binary and do not use this file.
-# The binary includes mruby-iijson, so recipes and hosts.rb can call
-# JSON.parse; load CRuby's JSON to give them the same here.
-require "json"
-require_relative "../lib/sadame"
-
-exit Sadame.main(ARGV)
+#!/bin/sh
+# Runs sadame from a source checkout, building it first when needed. Release
+# builds are the single binary build/sadame; this script only locates it.
+root=$(cd "$(dirname "$0")/.." && pwd)
+if [ ! -x "$root/build/sadame" ]; then
+  make -C "$root" build/sadame >&2 || exit 2
+fi
+exec "$root/build/sadame" "$@"
